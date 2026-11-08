@@ -1,0 +1,102 @@
+import { ulid } from 'ulid'
+
+export interface Entry {
+  id: string
+  createdAt: number // ms epoch
+  updatedAt: number // ms epoch, bumped on every edit/delete
+  text: string
+  tags: string[] // lowercase, without '#'
+  day: string // YYYY-MM-DD, local time
+  hour: number // 0-23
+  minute: number // minutes since local midnight
+  weekday: number // 0 = Sunday
+  deleted: 0 | 1
+  dirty: 0 | 1 // changed since last sync
+}
+
+type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty'>
+
+/** Matches a #tag that is not glued to a preceding word (so "C#" or "a#b" aren't tags). */
+export const TAG_PATTERN = '(?<![\\p{L}\\p{N}_&#])#([\\p{L}\\p{N}_][\\p{L}\\p{N}_\\-/]*)'
+const TAG_RE = new RegExp(TAG_PATTERN, 'gu')
+
+const cleanTag = (t: string) => t.replace(/[-/]+$/, '').toLowerCase()
+
+export function extractTags(text: string): string[] {
+  const out = new Set<string>()
+  for (const m of text.matchAll(TAG_RE)) out.add(cleanTag(m[1]))
+  return [...out]
+}
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&')
+
+/** Replace every #from tag in text with #to (case-insensitive, whole tag only). */
+export function replaceTag(text: string, from: string, to: string): string {
+  const re = new RegExp(`(?<![\\p{L}\\p{N}_&#])#${escapeRe(from)}(?![\\p{L}\\p{N}_\\-/])`, 'giu')
+  return text.replace(re, `#${to}`)
+}
+
+export const pad = (n: number) => String(n).padStart(2, '0')
+
+export function dayKey(d: Date | number): string {
+  const x = new Date(d)
+  return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`
+}
+
+export function parseDayKey(k: string): Date {
+  const [y, m, d] = k.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+export function addDays(k: string, n: number): string {
+  const d = parseDayKey(k)
+  d.setDate(d.getDate() + n)
+  return dayKey(d)
+}
+
+export function timeLabel(ts: number): string {
+  const d = new Date(ts)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+export const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+export const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+export function longDayLabel(k: string): string {
+  const d = parseDayKey(k)
+  return `${WEEKDAY_NAMES[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`
+}
+
+export function shortDayLabel(k: string): string {
+  const d = parseDayKey(k)
+  return `${WEEKDAY_NAMES[d.getDay()].slice(0, 3)} ${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`
+}
+
+/** Fill in the fields that are derived from text and createdAt. */
+export function withDerived(e: CoreFields): Entry {
+  const d = new Date(e.createdAt)
+  return {
+    id: e.id,
+    createdAt: e.createdAt,
+    updatedAt: e.updatedAt,
+    text: e.text,
+    deleted: e.deleted,
+    dirty: e.dirty,
+    tags: extractTags(e.text),
+    day: dayKey(d),
+    hour: d.getHours(),
+    minute: d.getHours() * 60 + d.getMinutes(),
+    weekday: d.getDay(),
+  }
+}
+
+export function makeEntry(text: string, createdAt = Date.now(), id = ulid(createdAt)): Entry {
+  return withDerived({ id, createdAt, updatedAt: createdAt, text, deleted: 0, dirty: 1 })
+}
+
+export function formatGap(minutes: number): string {
+  const m = Math.round(minutes)
+  if (m < 60) return `+${m} min`
+  const h = Math.floor(m / 60)
+  return `+${h} h ${pad(m % 60)} min`
+}
