@@ -10,7 +10,7 @@ export interface Meta {
 export interface ThumbRow {
   hash: string
   blob: Blob
-  w: number
+  w: number // size of the ORIGINAL after EXIF rotation (the thumbnail's own size is in the blob)
   h: number
 }
 

@@ -46,6 +46,10 @@ src/
   lib/db.ts           Dexie (IndexedDB) schema + add/edit/delete/renameTag
   lib/markdown.ts     day file <-> entries (the on-disk format, see DESIGN.md)
   lib/merge.ts        union-by-id merge + tombstones
+  lib/images.ts       pure image helpers: SHA-256 name, type sniffing, paths, thumbnail size (tested in Node)
+  lib/images.worker.ts  decode + EXIF rotation + WebP thumbnail, off the main thread
+  lib/imageClient.ts  main-thread wrapper for the worker (makeThumbnail)
+  lib/attach.ts       attachImage: save original (byte for byte) + thumbnail to Dexie, return an ImageRef
   search/query.ts     search syntax parser
   search/engine.ts    MiniSearch full-text + filters, tag stats, day counts
   storage/types.ts    FileStore / StorageBackend / LocalStore interfaces
