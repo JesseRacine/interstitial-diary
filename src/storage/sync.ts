@@ -12,6 +12,10 @@ import type { FileStore, LocalStore, SyncReport, SyncState } from './types'
  *    missing remotely (e.g. a brand-new, empty folder). Remove files for days with no entries left.
  * 4. Save merged entries locally and clear their dirty flags.
  *
+ * Entries edited or added by hand in the files are picked up. Removing an entry by hand is NOT
+ * treated as a deletion (it is written back), because a stale copy from a slow sync app would
+ * otherwise wipe entries; delete entries in the app instead.
+ *
  * If anything throws, nothing is marked synced, so the next run simply retries.
  */
 
@@ -64,6 +68,17 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
     if (text === null) { delete revs[path]; continue }
     pulled.set(day, text)
     remoteEntries.push(...parseDay(text, day))
+  }
+
+  // Edits made directly in a file (e.g. in Notepad) keep the old "updated" stamp in the id comment.
+  // Same stamp + different text can only mean an outside edit, so give it a fresh stamp and let it win.
+  const stamp = Date.now()
+  for (let i = 0; i < remoteEntries.length; i++) {
+    const r = remoteEntries[i]
+    const l = localById.get(r.id)
+    if (l && !l.deleted && r.updatedAt === l.updatedAt && r.text !== l.text) {
+      remoteEntries[i] = { ...r, updatedAt: Math.max(stamp, l.updatedAt + 1) }
+    }
   }
 
   // 2. Merge

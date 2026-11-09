@@ -110,6 +110,50 @@ describe('syncOnce', () => {
     expect(a.live()).toHaveLength(1)
   })
 
+  it('accepts edits made to existing entries directly in the file', async () => {
+    const store = memoryStore()
+    const a = device([makeEntry('original text #old', at(8, 9), 'x')])
+    await a.sync(store)
+    const path = '2026/2026-11-08.md'
+    await store.write(path, store.files.get(path)!.content.replace('original text #old', 'edited in Notepad\nsecond line #new'))
+    const r = await a.sync(store)
+    const x = a.local.entries.get('x')!
+    expect(x.text).toBe('edited in Notepad\nsecond line #new')
+    expect(x.tags).toEqual(['new'])
+    expect(x.updatedAt).toBeGreaterThan(at(8, 9))
+    expect(r.updatedLocally).toBe(1)
+    // the file keeps the edit and records the new stamp, so other devices take it too
+    expect(store.files.get(path)!.content).toContain('edited in Notepad')
+    expect(store.files.get(path)!.content).toContain(`updated:${x.updatedAt}`)
+    const b = device()
+    await b.sync(store)
+    expect(b.live()).toEqual(['edited in Notepad\nsecond line #new'])
+  })
+
+  it('an edit made in the app after the file was last written still wins over the old file', async () => {
+    const store = memoryStore()
+    const a = device([makeEntry('v1', at(8, 9), 'x')])
+    const b = device()
+    await a.sync(store)
+    await b.sync(store)
+    a.edit('x', 'v2 from app', at(8, 10))
+    await a.sync(store)
+    await b.sync(store) // b's local is v1 with the old stamp; the file has v2 with a newer stamp
+    expect(b.live()).toEqual(['v2 from app'])
+  })
+
+  it('removing an entry by hand is not treated as a deletion', async () => {
+    const store = memoryStore()
+    const a = device([makeEntry('keep me', at(8, 9), 'x'), makeEntry('other', at(8, 10), 'y')])
+    await a.sync(store)
+    const path = '2026/2026-11-08.md'
+    const content = store.files.get(path)!.content
+    await store.write(path, content.slice(0, content.indexOf('## 09:00')))
+    await a.sync(store)
+    expect(a.live()).toEqual(['keep me', 'other'])
+    expect(store.files.get(path)!.content).toContain('keep me')
+  })
+
   it('ignores unrelated files in the folder', async () => {
     const store = memoryStore({ 'README.md': 'hello', '2026/notes.txt': 'x' })
     const a = device([makeEntry('one', at(8, 9), 'a1')])
