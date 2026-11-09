@@ -31,7 +31,13 @@ file in Notepad.
 - On platforms without the folder module (Android), a periodic export/backup reminder until pCloud exists.
 - **Done when:** each state is visible in Settings and tested at phone width.
 
-### 3. Hosting (needs the user)
+### 3. Images in entries
+- Photos attached to entries, thumbnails in the chat, a lightbox, originals written to the storage folder; then sync to
+  other devices, `has:image`, a Photos view. Fully planned in [images-plan.md](images-plan.md) (four phases, with tests
+  for every sync/format change). Replaces the earlier junior-plan.md, which had data-loss gaps.
+- **Done when:** the plan's phase 1 and phase 2 "done when" checks pass.
+
+### 4. Hosting (needs the user)
 - **Open decision:** GitHub Pages (recommended: the same GitHub account later covers native builds in Actions and a
   possible GitHub storage module) or Cloudflare Pages.
 - The user needs to create the account/repo; then add a deploy workflow and set Vite `base` if the site is served
@@ -40,13 +46,13 @@ file in Notepad.
   installed app empty, though files in a folder or pCloud carry over).
 - **Done when:** the app is installed on both Windows and Android from the hosted address.
 
-### 4. pCloud storage module
+### 5. pCloud storage module
 - See DESIGN.md "pCloud notes". The user registers an app in pCloud's developer console (needs the hosted address
   for the OAuth redirect) and provides the client id.
 - Implement `storage/backends/pcloud.ts`; handle the US/EU region; token stored in the backend config.
 - **Done when:** an entry written on Windows appears on Android and vice versa, including offline edits on both.
 
-### 5. Native apps (Tauri)
+### 6. Native apps (Tauri)
 - The user wants a "real app", with the PWA first. Wrap the same build with Tauri 2; build the Windows `.exe` and
   Android `.apk` in GitHub Actions (keeps Rust/Android SDK off the user's machine).
 - Native extras: global hotkey + tray on Windows; a native-folder storage module for Android.
@@ -59,7 +65,6 @@ file in Notepad.
 - No import of existing notes from other apps yet (export only).
 
 ## Ideas backlog
-- **Images in entries** (photos, thumbnails in the chat, full-size viewer, sync): fully planned in [junior-plan.md](junior-plan.md). Not started.
 - Restyle search results to match the chat look (they still use cards).
 - Idle nudge ("you haven't logged in 90 minutes").
 - Weekly review page: entries per day, top tags, time-of-day patterns.

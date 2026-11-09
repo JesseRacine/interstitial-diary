@@ -1,5 +1,7 @@
 # Plan: images in journal entries
 
+> **Superseded by [images-plan.md](images-plan.md)** (2026-11-08). Kept for reference only; do not build from this file.
+
 _Status: planned, nothing built yet. Written 2026-11-08._
 
 Goal: attach photos to entries, show thumbnails in the chat, open them full size, and sync them like everything
