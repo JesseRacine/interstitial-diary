@@ -2,6 +2,7 @@ import { strToU8, zipSync } from 'fflate'
 import { useMemo } from 'react'
 import type { Entry } from '../lib/entry'
 import { dayFilePath, serializeDay } from '../lib/markdown'
+import { StorageCard } from './StorageCard'
 
 export type Theme = 'system' | 'light' | 'dark'
 
@@ -28,10 +29,7 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
     <section className="settings">
       <h2>Settings</h2>
 
-      <div className="card">
-        <h3>Sync with pCloud</h3>
-        <p className="muted">Not connected yet. pCloud sync is the next thing being built; until then entries are stored only in this browser.</p>
-      </div>
+      <StorageCard />
 
       <div className="card">
         <h3>Appearance</h3>
@@ -48,7 +46,7 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
         <h3>Your data</h3>
         <p>{entries.length} entries over {dayCount} days, {tagCount} tags.</p>
         <button type="button" onClick={() => exportZip(entries)} disabled={!entries.length}>Export as Markdown (.zip)</button>
-        <p className="muted">One Markdown file per day, in the same format used for pCloud sync.</p>
+        <p className="muted">One Markdown file per day, the same format used by every storage option.</p>
       </div>
 
       <div className="card">

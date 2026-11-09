@@ -5,6 +5,8 @@ import { DayView } from './components/DayView'
 import { Results } from './components/Results'
 import { SearchBar } from './components/SearchBar'
 import { SettingsView, type Theme } from './components/SettingsView'
+import { StorageBadge } from './components/StorageCard'
+import { initStorage } from './storage/manager'
 import { TagsView } from './components/TagsView'
 import { db, getMeta, setMeta } from './lib/db'
 import { addDays, dayKey, type Entry } from './lib/entry'
@@ -38,6 +40,8 @@ export default function App() {
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const searchRef = useRef<HTMLInputElement>(null)
   const captureRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => { void initStorage() }, [])
 
   useEffect(() => {
     const root = document.documentElement
@@ -114,6 +118,7 @@ export default function App() {
             </button>
           ))}
         </nav>
+        <StorageBadge onOpenSettings={() => { setView('settings'); setQuery('') }} />
       </header>
 
       <SearchBar query={query} setQuery={changeQuery} inputRef={searchRef} tagStats={tagStats}

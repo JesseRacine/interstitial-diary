@@ -1,0 +1,63 @@
+import type { FileStore, StoredFile } from '../types'
+
+/** Only these files belong to the diary; anything else in the folder is ignored. */
+const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json'
+
+const isNotFound = (e: unknown) => e instanceof DOMException && (e.name === 'NotFoundError' || e.name === 'TypeMismatchError')
+
+const revOf = (f: File) => `${f.lastModified}-${f.size}`
+
+/** A FileStore on top of a directory handle: used by the local-folder and browser-files modules. */
+export function directoryStore(root: FileSystemDirectoryHandle): FileStore {
+  async function dirFor(path: string, create: boolean): Promise<[FileSystemDirectoryHandle, string]> {
+    const parts = path.split('/')
+    const name = parts.pop()!
+    let dir = root
+    for (const p of parts) dir = await dir.getDirectoryHandle(p, { create })
+    return [dir, name]
+  }
+
+  async function walk(dir: FileSystemDirectoryHandle, prefix: string, out: StoredFile[]): Promise<void> {
+    for await (const h of dir.values()) {
+      const path = prefix + h.name
+      if (h.kind === 'directory') {
+        if (/^\d{4}$/.test(h.name) || h.name === '.meta') await walk(h as FileSystemDirectoryHandle, `${path}/`, out)
+      } else if (isDiaryFile(path)) {
+        out.push({ path, rev: revOf(await (h as FileSystemFileHandle).getFile()) })
+      }
+    }
+  }
+
+  return {
+    async list() {
+      const out: StoredFile[] = []
+      await walk(root, '', out)
+      return out
+    },
+    async read(path) {
+      try {
+        const [dir, name] = await dirFor(path, false)
+        return await (await (await dir.getFileHandle(name)).getFile()).text()
+      } catch (e) {
+        if (isNotFound(e)) return null
+        throw e
+      }
+    },
+    async write(path, content) {
+      const [dir, name] = await dirFor(path, true)
+      const fh = await dir.getFileHandle(name, { create: true })
+      const w = await fh.createWritable()
+      await w.write(content)
+      await w.close()
+      return revOf(await fh.getFile())
+    },
+    async remove(path) {
+      try {
+        const [dir, name] = await dirFor(path, false)
+        await dir.removeEntry(name)
+      } catch (e) {
+        if (!isNotFound(e)) throw e
+      }
+    },
+  }
+}
