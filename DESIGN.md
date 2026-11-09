@@ -21,7 +21,10 @@
 
 - **IndexedDB (Dexie)** holds every entry, including soft-deleted ones. All UI reads come from here via `liveQuery`,
   so the UI updates by itself after edits or syncs.
-- **The journal is virtualised** (`react-virtuoso`): all entries are flattened into rows (a header per day plus its entries,\n  `lib/journalRows.ts`) and only the rows on screen exist in the DOM, so two years of entries (about 7,300) scroll\n  smoothly. Anything that changes a row's height after it renders (e.g. images) must reserve its space up front.\n- **Search** builds a MiniSearch index over all live entries in memory (rebuilt when entries change). This is fine
+- **The journal is virtualised** (`react-virtuoso`): all entries are flattened into rows (a header per day plus its entries,
+  `lib/journalRows.ts`) and only the rows on screen exist in the DOM, so two years of entries (about 7,300) scroll
+  smoothly. Anything that changes a row's height after it renders (e.g. images) must reserve its space up front.
+- **Search** builds a MiniSearch index over all live entries in memory (rebuilt when entries change). This is fine
   for tens of thousands of entries; move to incremental `add/replace/discard` if it ever gets slow.
 - **Storage modules** move files; the **sync engine** does all merging. One module is active at a time.
 
@@ -159,7 +162,12 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 - **Header:** app name, views (Journal, Calendar, Tags, Settings), storage status badge.
 - **Search bar** (always visible): tag autocomplete, chips, saved (★) and recent searches, `?` syntax help.
-- **Journal:** a chat. One continuous scroll through all days, oldest at the top and newest at the bottom, with the\n  capture bar pinned at the bottom. Entries are left-aligned bubbles (time underneath; Edit/Delete on hover, always\n  visible on touch screens). A faint divider shows the gap since the previous entry when it is an hour or more.\n  Two layouts, chosen with the **Days / Stream** toggle and remembered: *Days* puts each day in its own box with a date\n  header and entry count; *Stream* is one unbroken chat with a thin date divider between days. The header shows the day\n  currently at the top; the arrows, date picker and **Latest** button jump between days. Saving an entry scrolls to it.
+- **Journal:** a chat. One continuous scroll through all days, oldest at the top and newest at the bottom, with the
+  capture bar pinned at the bottom. Entries are left-aligned bubbles (time underneath; Edit/Delete on hover, always
+  visible on touch screens). A faint divider shows the gap since the previous entry when it is an hour or more.
+  Two layouts, chosen with the **Days / Stream** toggle and remembered: *Days* puts each day in its own box with a date
+  header and entry count; *Stream* is one unbroken chat with a thin date divider between days. The header shows the day
+  currently at the top; the arrows, date picker and **Latest** button jump between days. Saving an entry scrolls to it.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it.
