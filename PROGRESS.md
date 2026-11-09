@@ -57,6 +57,8 @@ file in Notepad.
 - The user wants a "real app", with the PWA first. Wrap the same build with Tauri 2; build the Windows `.exe` and
   Android `.apk` in GitHub Actions (keeps Rust/Android SDK off the user's machine).
 - Native extras: global hotkey + tray on Windows; a native-folder storage module for Android.
+- Android quick capture (home-screen widget, pop-up entry box): planned in [android-capture-plan.md](android-capture-plan.md).
+  Its stage 1 (open straight to capture, share target) belongs with the PWA and hosting steps.
 
 ## Known limitations
 - Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
