@@ -40,8 +40,14 @@ Entry {
   day, hour, minute, weekday  // derived from createdAt in LOCAL time
   deleted: 0 | 1      // soft delete (tombstone)
   dirty: 0 | 1        // changed since last successful sync
+  images?: ImageRef[] // missing = none; only small references, never image bytes
 }
+ImageRef { hash: string /* 16 hex chars of SHA-256, file name stem */, ext: string, w: number, h: number /* 0 = unknown */ }
 ```
+
+`withDerived` (entry.ts) rebuilds an entry field by field and must copy every core field, `images` included, or edits,
+tag renames and parsing would drop it. Dexie v2 adds `thumbs` (rebuildable thumbnails) and `blobs` (originals, with
+`onRemote` once the storage module has the file); see [images-plan.md](images-plan.md).
 
 **Tags** match `#` followed by letters/digits/`_`, then letters/digits/`_-/`, when not glued to a preceding word
 (`C#` and `a#b` are not tags). Stored lowercase; trailing `-`/`/` stripped.
@@ -75,6 +81,12 @@ A heading without the comment (typed by hand) is accepted too.
 - Hand-written headings get a stable id from day + time + text hash. After the next sync the file is rewritten with
   proper id comments.
 - CRLF line endings are accepted.
+- **Images:** a trailing block of lines `![<w>x<h>](images/<hex>.<ext>)` (blank lines allowed between them) after the
+  text becomes the entry's images; the files are in `<year>/images/`. `WxH` is optional. Written as the text, a blank
+  line, then one line per image; an entry without images is written exactly as before. Any other image syntax, or an
+  image line followed by more text, stays plain text. A text line that would read as an image line is escaped with a
+  leading `\`, like headings. Hand-written ids hash the whole body, image lines included, so they didn't change when
+  image support arrived.
 - Other files in the folder are ignored, so a README or notes in the folder are safe.
 
 ## Sync rules (`storage/sync.ts`)

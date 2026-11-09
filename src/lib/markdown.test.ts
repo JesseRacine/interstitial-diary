@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractTags, makeEntry, replaceTag } from './entry'
+import { type ImageRef, extractTags, makeEntry, replaceTag } from './entry'
 import { parseDay, serializeDay } from './markdown'
 import { merge } from './merge'
 
@@ -53,8 +53,111 @@ describe('markdown day files', () => {
   })
 })
 
+describe('markdown images', () => {
+  const A: ImageRef = { hash: '3f9a2c1b7d04e8aa', ext: 'jpg', w: 640, h: 480 }
+  const B: ImageRef = { hash: '9c01aa22f3b6d710', ext: 'png', w: 800, h: 600 }
+  const one = (md: string) => parseDay(md, DAY)[0]
+
+  it('writes the text, a blank line, then one line per image', () => {
+    const md = serializeDay(DAY, [makeEntry('Finished the sketch #work', at(9, 14), 'x', [A, B])])
+    expect(md).toBe(
+      '# Sunday, 8 November 2026\n\n' +
+        `## 09:14 <!-- id:x created:${at(9, 14)} updated:${at(9, 14)} -->\n` +
+        'Finished the sketch #work\n\n' +
+        '![640x480](images/3f9a2c1b7d04e8aa.jpg)\n' +
+        '![800x600](images/9c01aa22f3b6d710.png)\n',
+    )
+  })
+
+  it('round-trips text and images; image lines are not part of the text', () => {
+    const e = makeEntry('Line one\nLine two #work', at(9), 'x', [A, B])
+    const back = one(serializeDay(DAY, [e]))
+    expect(back.text).toBe('Line one\nLine two #work')
+    expect(back.images).toEqual([A, B])
+    expect(back.tags).toEqual(['work'])
+  })
+
+  it('round-trips text plus 10 images', () => {
+    const imgs = Array.from({ length: 10 }, (_, i): ImageRef => ({ hash: `${i}`.repeat(16), ext: 'jpg', w: 10 + i, h: 20 }))
+    const back = one(serializeDay(DAY, [makeEntry('ten', at(9), 'x', imgs)]))
+    expect(back.text).toBe('ten')
+    expect(back.images).toEqual(imgs)
+  })
+
+  it('writes files without images exactly as before', () => {
+    const md = serializeDay(DAY, [makeEntry('First entry', at(9, 14), 'a'), makeEntry('Second\n## 10:00 x', at(10, 30), 'b')])
+    expect(md).toBe(
+      '# Sunday, 8 November 2026\n\n' +
+        `## 09:14 <!-- id:a created:${at(9, 14)} updated:${at(9, 14)} -->\nFirst entry\n\n` +
+        `## 10:30 <!-- id:b created:${at(10, 30)} updated:${at(10, 30)} -->\nSecond\n\\## 10:00 x\n`,
+    )
+    expect('images' in one(md)).toBe(false)
+  })
+
+  it('reads image lines without WxH as size 0', () => {
+    const e = one(`## 09:00 <!-- id:x created:${at(9)} updated:${at(9)} -->\nhi\n![](images/3f9a2c1b7d04e8aa.jpg)\n`)
+    expect(e.images).toEqual([{ ...A, w: 0, h: 0 }])
+    expect(serializeDay(DAY, [e])).toContain('\nhi\n\n![](images/3f9a2c1b7d04e8aa.jpg)\n')
+  })
+
+  it('allows blank lines between image lines and handles CRLF', () => {
+    const md = `## 09:00 <!-- id:x created:${at(9)} updated:${at(9)} -->\r\nhi\r\n\r\n![640x480](images/3f9a2c1b7d04e8aa.jpg)\r\n\r\n![800x600](images/9c01aa22f3b6d710.png)\r\n`
+    const e = one(md)
+    expect(e.text).toBe('hi')
+    expect(e.images).toEqual([A, B])
+  })
+
+  it('leaves other image syntax as plain text', () => {
+    const body = 'see\n![](https://example.com/a.jpg)\n![x](images/notahash.jpg)\n![](images/3F9A2C1B7D04E8AA.JPG)'
+    const e = one(`## 09:00 <!-- id:x created:${at(9)} updated:${at(9)} -->\n${body}\n`)
+    expect(e.text).toBe(body)
+    expect('images' in e).toBe(false)
+  })
+
+  it('keeps an image line in the middle of the text as text', () => {
+    const body = 'before\n![640x480](images/3f9a2c1b7d04e8aa.jpg)\nafter'
+    const e = one(`## 09:00 <!-- id:x created:${at(9)} updated:${at(9)} -->\n${body}\n`)
+    expect(e.text).toBe(body)
+    expect('images' in e).toBe(false)
+  })
+
+  it('escapes text that would be read as an image line, so it stays text', () => {
+    const e = makeEntry('my last line\n![640x480](images/3f9a2c1b7d04e8aa.jpg)', at(9), 'x')
+    const md = serializeDay(DAY, [e])
+    expect(md).toContain('\n\\![640x480](images/3f9a2c1b7d04e8aa.jpg)\n')
+    const back = one(md)
+    expect(back.text).toBe(e.text)
+    expect('images' in back).toBe(false)
+    expect(serializeDay(DAY, [back])).toBe(md)
+  })
+
+  it('keeps an entry whose text was removed by hand, leaving only images', () => {
+    const e = one(`## 09:00 <!-- id:x created:${at(9)} updated:${at(9)} -->\n![640x480](images/3f9a2c1b7d04e8aa.jpg)\n`)
+    expect(e.text).toBe('')
+    expect(e.images).toEqual([A])
+    expect(one(serializeDay(DAY, [e])).images).toEqual([A])
+  })
+
+  it('gives a hand-written entry with an image line the same id as before images existed', () => {
+    // The id the previous app version (5d66390) generated for this entry.
+    const md = '# x\n\n## 14:30\nLunch with Sam #food\n\n![640x480](images/3f9a2c1b7d04e8aa.jpg)\n'
+    const e = one(md)
+    expect(e.id).toBe('h2026110814307kd8vm')
+    expect(e.text).toBe('Lunch with Sam #food')
+    expect(e.images).toEqual([A])
+  })
+})
+
 describe('merge', () => {
   const base = makeEntry('original', at(9), 'x')
+
+  it('images go with the winning version', () => {
+    const img: ImageRef = { hash: '3f9a2c1b7d04e8aa', ext: 'jpg', w: 1, h: 1 }
+    const withImg = { ...base, images: [img], updatedAt: at(12) }
+    const without = { ...base, updatedAt: at(11) }
+    expect(merge([without], [withImg], {}).entries[0].images).toEqual([img])
+    expect(merge([withImg], [{ ...without, updatedAt: at(13) }], {}).entries[0].images).toBeUndefined()
+  })
 
   it('unions concurrent adds from two devices', () => {
     const mine = makeEntry('from windows', at(10), 'w')
