@@ -1,8 +1,7 @@
 # Plan: images in journal entries
 
 _Status: planned, not started. Written 2026-11-08. Replaces [junior-plan.md](junior-plan.md) (see "Review of the
-junior plan" at the end for what changed and why). Scheduled as PROGRESS step 3, after the PWA (step 1) and
-data-safety features (step 2)._
+junior plan" at the end for what changed and why). Scheduled as PROGRESS step 1 (next up)._
 
 Goal: attach photos to entries, show thumbnails in the chat, open them full size, and keep the originals in the
 storage folder, without hurting scroll performance or risking journal data.
@@ -231,7 +230,7 @@ The pCloud module (PROGRESS step 5) implements `readBlob`/`writeBlob`/`hasBlob` 
   never evict the only copy.
 - **Hand-edited files:** a moved or renamed image shows a placeholder; never an error, never deleting the entry.
 - **Keys:** the lightbox, the paste handler, the capture box and the journal shortcuts must not fight.
-- **PWA:** the service worker must precache the image worker chunk.
+- **PWA (built after this):** its service worker must precache the image worker chunk.
 
 ## Out of scope
 
@@ -265,4 +264,4 @@ Checked against the code on 2026-11-08.
 15. Bytes are saved when the image is attached, so a lost edit draft doesn't lose the photo.
 16. Paste only takes over when the clipboard has files.
 17. Pure logic is split from the worker so it can be tested in Node.
-18. Scheduled after the PWA, whose service worker must include the image worker.
+18. The PWA (now after images) must precache the image worker chunk; `vite-plugin-pwa` picks it up from the build.

@@ -17,7 +17,14 @@ file in Notepad.
 
 ## Next steps (in order)
 
-### 1. Make it an installable PWA
+### 1. Images in entries
+- Photos attached to entries, thumbnails in the chat, a lightbox, originals written to the storage folder; then sync to
+  other devices, `has:image`, a Photos view. Fully planned in [images-plan.md](images-plan.md) (four phases, with tests
+  for every sync/format change). Replaces the earlier junior-plan.md, which had data-loss gaps.
+- Start with phase 1, step 1 (data model).
+- **Done when:** the plan's phase 1 and phase 2 "done when" checks pass.
+
+### 2. Make it an installable PWA
 - Add `vite-plugin-pwa` (already a dev dependency) to `vite.config.ts`: manifest (name, short_name "Interstitial",
   theme colours from `index.css`, `display: standalone`, `start_url`), and a `shortcuts` entry "New entry" that opens
   the journal with the capture box focused.
@@ -25,17 +32,11 @@ file in Notepad.
 - Service worker: precache the app shell so it works offline; prompt-to-reload when a new version is available.
 - **Done when:** Edge offers "Install", the installed app opens in its own window offline, and Lighthouse PWA checks pass.
 
-### 2. Data-safety features
+### 3. Data-safety features
 - Settings shows whether persistent storage was granted (`navigator.storage.persisted()`).
 - A warning when no file storage is set up ("Entries are only in this browser").
 - On platforms without the folder module (Android), a periodic export/backup reminder until pCloud exists.
 - **Done when:** each state is visible in Settings and tested at phone width.
-
-### 3. Images in entries
-- Photos attached to entries, thumbnails in the chat, a lightbox, originals written to the storage folder; then sync to
-  other devices, `has:image`, a Photos view. Fully planned in [images-plan.md](images-plan.md) (four phases, with tests
-  for every sync/format change). Replaces the earlier junior-plan.md, which had data-loss gaps.
-- **Done when:** the plan's phase 1 and phase 2 "done when" checks pass.
 
 ### 4. Hosting (needs the user)
 - **Open decision:** GitHub Pages (recommended: the same GitHub account later covers native builds in Actions and a
