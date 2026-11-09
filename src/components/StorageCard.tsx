@@ -22,7 +22,10 @@ function useTick(ms: number) {
 function statusText(s: StorageState): string {
   switch (s.status) {
     case 'syncing': return 'Saving…'
-    case 'ok': return s.pending ? `${s.pending} change${s.pending === 1 ? '' : 's'} waiting` : `Saved ${ago(s.lastSync)}`
+    case 'ok': {
+      const text = s.pending ? `${s.pending} change${s.pending === 1 ? '' : 's'} waiting` : `Saved ${ago(s.lastSync)}`
+      return s.imagesPending ? `${text} · ${s.imagesPending} image${s.imagesPending === 1 ? '' : 's'} waiting` : text
+    }
     case 'needs-permission': return 'Access needed'
     case 'error': return 'Problem saving'
     default: return 'Not saved to files'
@@ -68,6 +71,7 @@ export function StorageCard() {
                 ? ` · last run read ${s.lastReport.read}, wrote ${s.lastReport.written} file${s.lastReport.written === 1 ? '' : 's'}`
                 : ''}
             </div>
+            {s.imageError && <div className="muted error">Images: {s.imageError} (will retry)</div>}
           </div>
           <div className="row">
             {s.status === 'needs-permission' ? (

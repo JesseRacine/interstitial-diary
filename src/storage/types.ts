@@ -12,10 +12,30 @@ export interface StoredFile {
 }
 
 export interface FileStore {
-  list(): Promise<StoredFile[]> // every file under the root, recursively
+  list(): Promise<StoredFile[]> // the diary's text files (day files + tombstones), recursively; never images
   read(path: string): Promise<string | null> // null if missing
   write(path: string, content: string): Promise<string> // creates folders as needed; returns the new rev
   remove(path: string): Promise<void>
+
+  /*
+   * Binary files (images). Optional: a module without them simply doesn't sync images.
+   * Image files are named by their content and never change, so writeBlob never overwrites: if the file exists with
+   * the same size it does nothing; with a different size it throws BlobCollisionError and leaves the file alone.
+   */
+  readBlob?(path: string): Promise<Blob | null>
+  writeBlob?(path: string, blob: Blob): Promise<void>
+  hasBlob?(path: string): Promise<{ size: number } | null>
+}
+
+export type BlobStore = FileStore & Required<Pick<FileStore, 'readBlob' | 'writeBlob' | 'hasBlob'>>
+
+export const supportsBlobs = (s: FileStore): s is BlobStore => !!(s.readBlob && s.writeBlob && s.hasBlob)
+
+export class BlobCollisionError extends Error {
+  constructor(path: string, existing: number, incoming: number) {
+    super(`${path} already exists with different content (${existing} bytes, new file ${incoming} bytes); left as it was`)
+    this.name = 'BlobCollisionError'
+  }
 }
 
 /** Result of opening a module from its saved config. */

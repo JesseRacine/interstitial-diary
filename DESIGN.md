@@ -110,6 +110,14 @@ If anything throws, nothing is marked synced and the next run retries.
   on every device. Deletions go through the app (tombstones).
 - If the same entry is edited in a file *and* in the app before a sync runs, the app's version wins.
 
+**Images** (`storage/attachments.ts`, `storage/syncAll.ts`): each run first pushes images, in their own try/catch,
+then runs the text sync above. So originals land before the day files that refer to them, and an image failure
+never blocks or fails text sync (it shows as "N images waiting" and retries next run). An original is written to
+every `<year>/images/` folder whose live entries use it, plus `.thumbs/<hash>.webp`. Paths confirmed in storage are
+remembered per module (`images:<backendId>` in `meta`), so a quiet sync touches no image files. Choosing a new storage
+resets that list and every `blobs.onRemote`. Image files are never deleted automatically. `list()` never returns
+image files (it runs every sync).
+
 **When sync runs** (`storage/manager.ts`): on startup, ~1.5 s after local changes, when the page is hidden or
 shown again, every 5 minutes, and on "Save now".
 
@@ -121,6 +129,10 @@ interface FileStore {           // what a module implements
   read(path): Promise<string | null>
   write(path, content): Promise<string>                // creates folders; returns new rev
   remove(path): Promise<void>
+  // optional, for images; without them a module syncs text only
+  readBlob?(path): Promise<Blob | null>
+  writeBlob?(path, blob): Promise<void>               // never overwrites: same size = no-op, else BlobCollisionError
+  hasBlob?(path): Promise<{ size } | null>
 }
 interface StorageBackend<Config> { // how the app offers and reopens it
   id, name, description

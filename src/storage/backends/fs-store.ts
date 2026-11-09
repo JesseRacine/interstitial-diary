@@ -1,4 +1,4 @@
-import type { FileStore, StoredFile } from '../types'
+import { BlobCollisionError, type FileStore, type StoredFile } from '../types'
 
 /** Only these files belong to the diary; anything else in the folder is ignored. */
 const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json'
@@ -28,7 +28,18 @@ export function directoryStore(root: FileSystemDirectoryHandle): FileStore {
     }
   }
 
+  async function getFile(path: string): Promise<File | null> {
+    try {
+      const [dir, name] = await dirFor(path, false)
+      return await (await dir.getFileHandle(name)).getFile()
+    } catch (e) {
+      if (isNotFound(e)) return null
+      throw e
+    }
+  }
+
   return {
+    // list() deliberately doesn't walk image folders: it runs every sync and would stat thousands of photos.
     async list() {
       const out: StoredFile[] = []
       await walk(root, '', out)
@@ -57,6 +68,30 @@ export function directoryStore(root: FileSystemDirectoryHandle): FileStore {
         await dir.removeEntry(name)
       } catch (e) {
         if (!isNotFound(e)) throw e
+      }
+    },
+    async readBlob(path) {
+      return getFile(path)
+    },
+    async hasBlob(path) {
+      const f = await getFile(path)
+      return f ? { size: f.size } : null
+    },
+    async writeBlob(path, blob) {
+      const existing = await getFile(path)
+      if (existing) {
+        if (existing.size === blob.size) return
+        throw new BlobCollisionError(path, existing.size, blob.size)
+      }
+      const [dir, name] = await dirFor(path, true)
+      const fh = await dir.getFileHandle(name, { create: true })
+      const w = await fh.createWritable() // writes to a temporary file; replaced only on close, so never half-written
+      try {
+        await w.write(blob)
+        await w.close()
+      } catch (e) {
+        await w.abort().catch(() => {})
+        throw e
       }
     },
   }

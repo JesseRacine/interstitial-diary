@@ -1,13 +1,20 @@
 import type { Entry } from '../lib/entry'
-import type { FileStore, LocalStore } from './types'
+import { BlobCollisionError, type BlobStore, type LocalStore } from './types'
 
-/** In-memory FileStore: for tests, and a template for writing new storage modules. */
-export function memoryStore(initial: Record<string, string> = {}): FileStore & { files: Map<string, { content: string; rev: string }> } {
+/**
+ * In-memory FileStore: for tests, and a template for writing new storage modules.
+ * Binary files live in their own map and are not returned by list(), like the real stores.
+ */
+export function memoryStore(
+  initial: Record<string, string> = {},
+): BlobStore & { files: Map<string, { content: string; rev: string }>; blobs: Map<string, Blob> } {
   let counter = 0
   const files = new Map<string, { content: string; rev: string }>()
+  const blobs = new Map<string, Blob>()
   for (const [p, c] of Object.entries(initial)) files.set(p, { content: c, rev: `r${++counter}` })
   return {
     files,
+    blobs,
     async list() { return [...files].map(([path, f]) => ({ path, rev: f.rev })) },
     async read(path) { return files.get(path)?.content ?? null },
     async write(path, content) {
@@ -16,6 +23,19 @@ export function memoryStore(initial: Record<string, string> = {}): FileStore & {
       return rev
     },
     async remove(path) { files.delete(path) },
+    async readBlob(path) { return blobs.get(path) ?? null },
+    async hasBlob(path) {
+      const b = blobs.get(path)
+      return b ? { size: b.size } : null
+    },
+    async writeBlob(path, blob) {
+      const existing = blobs.get(path)
+      if (existing) {
+        if (existing.size === blob.size) return
+        throw new BlobCollisionError(path, existing.size, blob.size)
+      }
+      blobs.set(path, blob)
+    },
   }
 }
 

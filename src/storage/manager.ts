@@ -1,8 +1,10 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
 import { db, getMeta, setMeta } from '../lib/db'
+import type { ImageLocal } from './attachments'
 import { backendById } from './backends'
-import { emptySyncState, syncOnce } from './sync'
+import { emptySyncState } from './sync'
+import { syncAll } from './syncAll'
 import type { FileStore, LocalStore, SyncReport, SyncState } from './types'
 
 /** The real LocalStore: the Dexie database. */
@@ -13,6 +15,14 @@ export const dexieLocal: LocalStore = {
       const current = await db.entries.bulkGet(updates.map((u) => u.id))
       await db.entries.bulkPut(updates.filter((u, i) => current[i]?.updatedAt === base.get(u.id)))
     }),
+}
+
+/** The image side of the Dexie database, for the image passes. */
+export const dexieImages: ImageLocal = {
+  snapshot: () => db.entries.toArray(),
+  original: async (hash) => (await db.blobs.get(hash))?.blob ?? null,
+  thumb: async (hash) => (await db.thumbs.get(hash))?.blob ?? null,
+  markOnRemote: async (hash) => { await db.blobs.update(hash, { onRemote: 1 }) },
 }
 
 interface SavedStorage {
@@ -30,9 +40,14 @@ export interface StorageState {
   lastSync: number | null
   lastReport: SyncReport | null
   pending: number // local changes not yet written to storage
+  imagesPending: number // image files that failed to write in the last run (retried next sync)
+  imageError: string | null // last image problem; never turns the status into 'error'
 }
 
-let state: StorageState = { backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0 }
+let state: StorageState = {
+  backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0,
+  imagesPending: 0, imageError: null,
+}
 const listeners = new Set<() => void>()
 function set(patch: Partial<StorageState>) {
   state = { ...state, ...patch }
@@ -49,6 +64,7 @@ let running: Promise<void> | null = null
 let again = false
 let timer: ReturnType<typeof setTimeout> | undefined
 const syncKey = (id: string) => `sync:${id}`
+const imagesKey = (id: string) => `images:${id}` // image paths confirmed to exist in that storage
 
 function schedule(ms: number) {
   clearTimeout(timer)
@@ -71,9 +87,15 @@ export function syncNow(): Promise<void> {
       set({ status: 'syncing' })
       try {
         const prev = await getMeta<SyncState>(syncKey(id), emptySyncState())
-        const { state: next, report } = await syncOnce(dexieLocal, current, prev)
-        await setMeta(syncKey(id), next)
-        set({ status: 'ok', message: null, lastSync: Date.now(), lastReport: report })
+        const confirmed = new Set(await getMeta<string[]>(imagesKey(id), []))
+        const r = await syncAll(dexieLocal, dexieImages, current, prev, confirmed)
+        await setMeta(imagesKey(id), [...r.confirmed])
+        await setMeta(syncKey(id), r.state)
+        set({
+          status: 'ok', message: null, lastSync: Date.now(), lastReport: r.report,
+          imagesPending: r.images?.pending ?? 0,
+          imageError: r.images?.errors[0] ?? null,
+        })
       } catch (e) {
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')
         set({ status: lost ? 'needs-permission' : 'error', message: describe(e) })
@@ -124,8 +146,10 @@ export async function connect(backendId: string) {
     const { config, store: s, label } = await backend.setup()
     await setMeta('storage', { backendId, config } satisfies SavedStorage)
     await setMeta(syncKey(backendId), emptySyncState()) // new location: compare everything afresh
+    await setMeta(imagesKey(backendId), []) // ...and check every image again
+    await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
     store = s
-    set({ backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null })
+    set({ backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null, imagesPending: 0, imageError: null })
     await syncNow()
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return // picker cancelled
@@ -143,5 +167,5 @@ export async function disconnect() {
   store = null
   clearTimeout(timer)
   await db.meta.delete('storage')
-  set({ backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null })
+  set({ backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, imagesPending: 0, imageError: null })
 }

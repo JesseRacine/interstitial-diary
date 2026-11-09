@@ -1,7 +1,10 @@
 # Plan: images in journal entries
 
-_Status: in progress. Phase 1 steps 1–4 (data model, Markdown, `sync.ts` comparisons, image pipeline) done 2026-11-09; next is step 5
-(binary storage + `pushImages`). Step 4 notes: `attachImage` (lib/attach.ts) is the entry point the capture UI will
+_Status: in progress. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
+2026-11-09; next is step 6 (capture UI). Step 5 notes: instead of only `blobs.onRemote`, pushImages keeps a per-module
+set of confirmed paths (an image can be needed in several year folders, and switching storage must re-check
+everything); `onRemote` is set once all of an original's year copies are written. The order lives in
+`storage/syncAll.ts` so it is testable. A file deleted by hand from storage after being confirmed is not rewritten. Step 4 notes: `attachImage` (lib/attach.ts) is the entry point the capture UI will
 call; `ThumbRow.w/h` hold the original's size; AVIF is stored but not shown, like HEIC; very tall thumbnails are capped
 at 1024 px high. Checked in Edge: worker decode, EXIF orientation 6, originals byte for byte.
 Decided in step 2: a text line that looks like an image line is escaped with `\`; an entry whose text was removed by
