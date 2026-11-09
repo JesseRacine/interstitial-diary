@@ -84,6 +84,11 @@ src/
   importing `/src/storage/manager.ts` may give you a disconnected copy. Import the URL from
   `performance.getEntriesByType('resource')`, or trigger things through the UI.
 - **Browser pane screenshots can lag behind the DOM.** Verify state with `javascript_tool` / `read_page` instead.
+- **The Browser pane only repaints when it is asked to** (e.g. a screenshot). The virtualised journal (react-virtuoso) measures with
+  ResizeObserver, so right after a reload it can look empty (0 `.vrow` elements) until you take a screenshot. That is the pane, not a bug.
+- **Never seed fake entries into `localhost:5173`**: that origin may have a storage backend, which would sync them into real files.
+  For performance tests (e.g. 7,300 entries) use `http://127.0.0.1:5173`: a different origin, so its own empty database and no sync.
+  Delete the database afterwards (`indexedDB.deleteDatabase("interstitial-diary")`).
 - The folder picker (`showDirectoryPicker`) opens a native dialog that can't be driven from the pane; the user tests that.
 - The dev database at `localhost:5173` in the pane contains ~360 generated sample entries (not real data).
 

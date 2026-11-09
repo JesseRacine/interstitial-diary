@@ -52,12 +52,15 @@ file in Notepad.
 - Native extras: global hotkey + tray on Windows; a native-folder storage module for Android.
 
 ## Known limitations
+- Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
 - Removing an entry from a file by hand doesn't delete it (by design; see DESIGN.md).
 - The folder module needs Chrome/Edge on desktop and usually needs "Reconnect folder" after a browser restart.
 - On Android there is currently no copy outside the browser.
 - No import of existing notes from other apps yet (export only).
 
 ## Ideas backlog
+- **Images in entries** (photos, thumbnails in the chat, full-size viewer, sync): fully planned in [junior-plan.md](junior-plan.md). Not started.
+- Restyle search results to match the chat look (they still use cards).
 - Idle nudge ("you haven't logged in 90 minutes").
 - Weekly review page: entries per day, top tags, time-of-day patterns.
 - Edit an entry's time.
