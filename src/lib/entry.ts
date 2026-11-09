@@ -1,5 +1,13 @@
 import { ulid } from 'ulid'
 
+/** A photo attached to an entry. Only this small reference lives on the entry; the bytes live elsewhere. */
+export interface ImageRef {
+  hash: string // first 16 hex chars of the SHA-256 of the original bytes; also the file name stem
+  ext: string // from the sniffed file type: 'jpg' | 'png' | 'webp' | 'gif' | 'heic' | ...
+  w: number // width after EXIF rotation, 0 if not known yet
+  h: number // height after EXIF rotation, 0 if not known yet
+}
+
 export interface Entry {
   id: string
   createdAt: number // ms epoch
@@ -12,9 +20,13 @@ export interface Entry {
   weekday: number // 0 = Sunday
   deleted: 0 | 1
   dirty: 0 | 1 // changed since last sync
+  images?: ImageRef[] // missing means none (old rows and files have no images)
 }
 
-type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty'>
+type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty' | 'images'>
+
+/** An entry's images; treats a missing field as none. */
+export const entryImages = (e: Pick<Entry, 'images'>): ImageRef[] => e.images ?? []
 
 /** Matches a #tag that is not glued to a preceding word (so "C#" or "a#b" aren't tags). */
 export const TAG_PATTERN = '(?<![\\p{L}\\p{N}_&#])#([\\p{L}\\p{N}_][\\p{L}\\p{N}_\\-/]*)'
@@ -72,10 +84,14 @@ export function shortDayLabel(k: string): string {
   return `${WEEKDAY_NAMES[d.getDay()].slice(0, 3)} ${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`
 }
 
-/** Fill in the fields that are derived from text and createdAt. */
+/**
+ * Fill in the fields that are derived from text and createdAt.
+ * Every field of CoreFields must be copied here: anything left out is silently dropped on edit, tag rename and parse.
+ * `images` is only set when there are some, so entries without images look exactly as they did before images existed.
+ */
 export function withDerived(e: CoreFields): Entry {
   const d = new Date(e.createdAt)
-  return {
+  const out: Entry = {
     id: e.id,
     createdAt: e.createdAt,
     updatedAt: e.updatedAt,
@@ -88,10 +104,12 @@ export function withDerived(e: CoreFields): Entry {
     minute: d.getHours() * 60 + d.getMinutes(),
     weekday: d.getDay(),
   }
+  if (e.images?.length) out.images = e.images.map((i) => ({ hash: i.hash, ext: i.ext, w: i.w, h: i.h }))
+  return out
 }
 
-export function makeEntry(text: string, createdAt = Date.now(), id = ulid(createdAt)): Entry {
-  return withDerived({ id, createdAt, updatedAt: createdAt, text, deleted: 0, dirty: 1 })
+export function makeEntry(text: string, createdAt = Date.now(), id = ulid(createdAt), images: ImageRef[] = []): Entry {
+  return withDerived({ id, createdAt, updatedAt: createdAt, text, deleted: 0, dirty: 1, images })
 }
 
 export function formatGap(minutes: number): string {

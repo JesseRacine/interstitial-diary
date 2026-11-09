@@ -1,20 +1,48 @@
 import Dexie, { type Table } from 'dexie'
-import { type Entry, makeEntry, replaceTag, withDerived } from './entry'
+import { type Entry, type ImageRef, makeEntry, replaceTag, withDerived } from './entry'
 
 export interface Meta {
   key: string
   value: unknown
 }
 
+/** A rebuildable thumbnail (about 512 px wide, WebP). */
+export interface ThumbRow {
+  hash: string
+  blob: Blob
+  w: number
+  h: number
+}
+
+/**
+ * The full original of an attached image, byte for byte. Saved when the image is attached, before the entry is saved,
+ * so a lost edit can only lose the reference, never the photo.
+ */
+export interface BlobRow {
+  hash: string
+  blob: Blob
+  mime: string
+  size: number
+  onRemote: 0 | 1 // the active storage module confirmed it has the file
+  addedAt: number
+}
+
 class DiaryDB extends Dexie {
   entries!: Table<Entry, string>
   meta!: Table<Meta, string>
+  thumbs!: Table<ThumbRow, string>
+  blobs!: Table<BlobRow, string>
 
   constructor() {
     super('interstitial-diary')
     this.version(1).stores({
       entries: 'id, createdAt, day, *tags, dirty',
       meta: 'key',
+    })
+    // v2: images. Entries need no migration: a missing `images` field means no images.
+    this.version(2).stores({
+      thumbs: 'hash',
+      blobs: 'hash, onRemote',
     })
   }
 }
@@ -23,10 +51,11 @@ export const db = new DiaryDB()
 
 const nextStamp = (prev: number) => Math.max(Date.now(), prev + 1)
 
-export async function addEntry(text: string): Promise<Entry | null> {
+/** Text is required; images are optional. */
+export async function addEntry(text: string, images: ImageRef[] = []): Promise<Entry | null> {
   const t = text.trim()
   if (!t) return null
-  const e = makeEntry(t)
+  const e = makeEntry(t, Date.now(), undefined, images)
   await db.entries.add(e)
   return e
 }
@@ -37,7 +66,14 @@ export async function updateEntryText(id: string, text: string): Promise<void> {
   await db.entries.put(withDerived({ ...e, text: text.trim(), updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
 }
 
-/** Soft delete: kept as a tombstone so the deletion can sync to other devices. */
+/** Replace an entry's images (add, remove or reorder). */
+export async function setEntryImages(id: string, images: ImageRef[]): Promise<void> {
+  const e = await db.entries.get(id)
+  if (!e) return
+  await db.entries.put(withDerived({ ...e, images, updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
+}
+
+/** Soft delete: kept as a tombstone so the deletion can sync to other devices. Its images are kept too. */
 export async function deleteEntry(id: string): Promise<void> {
   const e = await db.entries.get(id)
   if (!e) return
