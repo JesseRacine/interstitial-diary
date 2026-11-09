@@ -57,7 +57,7 @@ export function Capture({ tagStats, onSaved, inputRef }: {
     }
   }
 
-  const rows = Math.min(8, Math.max(2, text.split('\n').length))
+  const rows = Math.min(8, Math.max(1, text.split('\n').length))
 
   return (
     <form className="capture" onSubmit={(e) => { e.preventDefault(); void save() }}>

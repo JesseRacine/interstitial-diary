@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
-import { DayView } from './components/DayView'
+import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
 import { Results } from './components/Results'
 import { SearchBar } from './components/SearchBar'
 import { SettingsView, type Theme } from './components/SettingsView'
@@ -9,7 +9,8 @@ import { StorageBadge } from './components/StorageCard'
 import { initStorage } from './storage/manager'
 import { TagsView } from './components/TagsView'
 import { db, getMeta, setMeta } from './lib/db'
-import { addDays, dayKey, type Entry } from './lib/entry'
+import { isTyping } from './lib/dom'
+import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
 import { buildIndex, computeTagStats } from './search/engine'
 
@@ -20,9 +21,8 @@ function loadTheme(): Theme {
   try { return (localStorage.getItem('theme') as Theme | null) ?? 'system' } catch { return 'system' }
 }
 
-function isTyping(el: EventTarget | null): boolean {
-  const t = el as HTMLElement | null
-  return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)
+function loadLayout(): JournalLayout {
+  try { return localStorage.getItem('journalLayout') === 'stream' ? 'stream' : 'cards' } catch { return 'cards' }
 }
 
 export default function App() {
@@ -33,10 +33,11 @@ export default function App() {
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
 
   const [view, setView] = useState<View>(() => (new URLSearchParams(location.search).get('view') as View | null) ?? 'journal')
-  const [day, setDay] = useState(() => dayKey(Date.now()))
+  const [jump, setJump] = useState<Jump | null>(null)
+  const [bottomTick, setBottomTick] = useState(0)
+  const [layout, setLayoutState] = useState<JournalLayout>(loadLayout)
   const [query, setQuery] = useState('')
   const [backQuery, setBackQuery] = useState<string | null>(null)
-  const [focusId, setFocusId] = useState<string | null>(null)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const searchRef = useRef<HTMLInputElement>(null)
   const captureRef = useRef<HTMLTextAreaElement>(null)
@@ -66,9 +67,12 @@ export default function App() {
     changeQuery(`#${tag}`)
     searchRef.current?.focus()
   }
+  const setLayout = (l: JournalLayout) => {
+    setLayoutState(l)
+    try { localStorage.setItem('journalLayout', l) } catch { /* private mode */ }
+  }
   const openDay = (d: string, id: string | null = null) => {
-    setDay(d)
-    setFocusId(id)
+    setJump((j) => ({ day: d, id, n: (j?.n ?? 0) + 1 }))
     setView('journal')
   }
   const openFromResults = (e: Entry) => {
@@ -94,20 +98,15 @@ export default function App() {
       if (isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return
       if (e.key === '/') { e.preventDefault(); searchRef.current?.focus() }
       else if (e.key === 'n') { e.preventDefault(); setQuery(''); setView('journal'); setTimeout(() => captureRef.current?.focus()) }
-      else if (view === 'journal' && !query) {
-        if (e.key === 'ArrowLeft') setDay((d) => addDays(d, -1))
-        else if (e.key === 'ArrowRight') setDay((d) => addDays(d, 1))
-        else if (e.key === 't') setDay(dayKey(Date.now()))
-      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [view, query])
+  }, [])
 
   const searching = query.trim() !== ''
 
   return (
-    <div className="app">
+    <div className={`app${view === 'journal' && !searching ? ' fill' : ''}`}>
       <header className="top">
         <h1>Interstitial</h1>
         <nav>
@@ -129,9 +128,9 @@ export default function App() {
           <Results query={query} setQuery={changeQuery} entries={entries} index={index} onOpenDay={openFromResults} onTag={searchTag} />
         ) : view === 'journal' ? (
           <>
-            <Capture tagStats={tagStats} inputRef={captureRef} onSaved={() => { setDay(dayKey(Date.now())); setFocusId(null) }} />
-            <DayView day={day} setDay={(d) => { setDay(d); setFocusId(null) }} entries={entries} focusId={focusId}
+            <JournalView entries={entries} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
               onTag={searchTag} backQuery={backQuery} onBack={backToResults} />
+            <Capture tagStats={tagStats} inputRef={captureRef} onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
           <CalendarView entries={entries} onOpenDay={(d) => openDay(d)} />

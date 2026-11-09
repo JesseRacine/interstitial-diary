@@ -111,6 +111,9 @@ kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 
 code { background: var(--surface-2); padding: 0.05em 0.35em; border-radius: 4px; font-size: 0.88em; }
 
 .app { max-width: 760px; margin: 0 auto; padding: 0 16px 4rem; }
+/* Journal view: the chat fills the window and the capture bar stays pinned at the bottom. */
+.app.fill { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding-bottom: 0.75rem; }
+.app.fill main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 /* Header */
 .top { display: flex; align-items: center; gap: 1rem; padding: 1rem 0 0.75rem; flex-wrap: wrap; }
@@ -143,7 +146,8 @@ button.icon.on { color: var(--accent); border-color: var(--accent); }
 .suggestions li[aria-selected="true"] button { background: var(--accent-soft); }
 
 /* Capture */
-.capture { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; box-shadow: var(--shadow); margin-bottom: 1.25rem; }
+.capture { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; box-shadow: var(--shadow); margin-top: 0.6rem; flex: none; }
+.capture .suggestions { top: auto; bottom: 100%; margin: 0 0 4px; }
 .capture-head { display: flex; gap: 0.75rem; align-items: baseline; margin-bottom: 0.4rem; font-size: 0.8rem; flex-wrap: wrap; }
 .capture textarea { border: 0; padding: 0.25rem 0; background: transparent; resize: none; font-size: 1.05rem; }
 .capture textarea:focus-visible { outline: none; }
@@ -179,6 +183,35 @@ button.tag:hover { text-decoration: underline; }
 .empty { color: var(--muted); text-align: center; padding: 2rem 0; }
 .error { color: var(--danger); font-size: 0.9rem; margin: 0 0 0.5rem; }
 .more { align-self: center; margin-top: 0.5rem; }
+
+/* Journal chat */
+.journal-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.journal-view .day-nav { flex: none; }
+.chat { flex: 1 1 0; height: auto !important; min-height: 0; overscroll-behavior: contain; }
+.vrow { padding: 0.15rem 0; }
+.bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 4px var(--radius) var(--radius) var(--radius); padding: 0.45rem 0.75rem; max-width: 92%; width: fit-content; min-width: 7rem; scroll-margin: 8rem; }
+.bubble .entry-text { margin-top: 0; }
+.bubble .entry-meta { margin-top: 0.15rem; font-size: 0.75rem; color: var(--muted); }
+.bubble .entry-meta .time { font-weight: 500; }
+.bubble .edit { min-width: min(30rem, 80vw); }
+.gap-divider { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0 0.4rem; color: var(--muted); font-size: 0.75rem; }
+.gap-divider::before, .gap-divider::after { content: ''; flex: 1; border-top: 1px dashed var(--border); }
+.day-head { display: flex; align-items: baseline; gap: 0.6rem; }
+.day-title { font-weight: 600; }
+.day-head .count { margin-left: auto; font-size: 0.8rem; }
+
+/* Layout: one box per day */
+.journal-view.cards .day-row { padding-top: 1rem; }
+.journal-view.cards .day-head { background: var(--surface-2); border: 1px solid var(--border); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; padding: 0.5rem 0.75rem; }
+.journal-view.cards .entry-row { background: var(--surface-2); border: 1px solid var(--border); border-top: 0; border-bottom: 0; padding: 0.15rem 0.75rem; }
+.journal-view.cards .entry-row.last { border-bottom: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); padding-bottom: 0.6rem; }
+
+/* Layout: one continuous stream */
+.journal-view.stream .day-row { padding: 1rem 0 0.4rem; }
+.journal-view.stream .day-head { gap: 0.75rem; color: var(--muted); font-size: 0.8rem; }
+.journal-view.stream .day-head::before, .journal-view.stream .day-head::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+.journal-view.stream .day-head::before { order: -1; }
+.journal-view.stream .day-head .count { display: none; }
 
 /* Results */
 .results-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
@@ -241,6 +274,8 @@ button.tag:hover { text-decoration: underline; }
   .top { gap: 0.5rem; }
   .capture-head .muted { display: none; }
   .entry-meta { flex-wrap: wrap; }
+  .bubble { max-width: 100%; }
+  .app.fill { padding-bottom: 0.5rem; }
   .cell .num { font-size: 0.7rem; }
   .tag-table td:nth-child(3), .tag-table th:nth-child(3) { display: none; }
 }

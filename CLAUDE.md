@@ -53,7 +53,8 @@ src/
   storage/manager.ts  runtime: active backend, auto-sync, status for the UI
   storage/backends/   one file per storage module + index.ts registry
   storage/memory.ts   in-memory FileStore/LocalStore for tests (and a template)
-  components/         React UI (Capture, DayView, Results, SearchBar, Calendar, Tags, Settings, StorageCard)
+  components/         React UI (Capture, JournalView, EntryItem, Results, SearchBar, Calendar, Tags, Settings, StorageCard)
+  lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal
   App.tsx             views, routing, keyboard shortcuts
 ```
 

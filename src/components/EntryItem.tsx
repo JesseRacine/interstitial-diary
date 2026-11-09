@@ -3,12 +3,14 @@ import { deleteEntry, updateEntryText } from '../lib/db'
 import { type Entry, formatGap, shortDayLabel, timeLabel } from '../lib/entry'
 import { EntryText } from './text'
 
-export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, onTag, onOpenDay }: {
+export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bubble, onTag, onOpenDay }: {
   entry: Entry
   gapMinutes?: number | null
   showDate?: boolean
   terms?: string[]
   highlighted?: boolean
+  /** Chat-bubble look: text first, small time and actions underneath. */
+  bubble?: boolean
   onTag: (tag: string) => void
   onOpenDay?: (e: Entry) => void
 }) {
@@ -23,24 +25,28 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, onT
     if (confirm('Delete this entry?')) await deleteEntry(entry.id)
   }
 
+  const meta = (
+    <header className="entry-meta">
+      {showDate && (
+        <button type="button" className="link" onClick={() => onOpenDay?.(entry)} title="Open this day">
+          {shortDayLabel(entry.day)}
+        </button>
+      )}
+      <span className="time">{timeLabel(entry.createdAt)}</span>
+      {!bubble && gapMinutes != null && <span className="gap">{formatGap(gapMinutes)}</span>}
+      <span className="spacer" />
+      {!editing && (
+        <span className="entry-actions">
+          <button type="button" className="ghost" onClick={() => { setDraft(entry.text); setEditing(true) }}>Edit</button>
+          <button type="button" className="ghost danger" onClick={remove}>Delete</button>
+        </span>
+      )}
+    </header>
+  )
+
   return (
-    <article id={`entry-${entry.id}`} className={`entry${highlighted ? ' flash' : ''}`}>
-      <header className="entry-meta">
-        {showDate && (
-          <button type="button" className="link" onClick={() => onOpenDay?.(entry)} title="Open this day">
-            {shortDayLabel(entry.day)}
-          </button>
-        )}
-        <span className="time">{timeLabel(entry.createdAt)}</span>
-        {gapMinutes != null && <span className="gap">{formatGap(gapMinutes)}</span>}
-        <span className="spacer" />
-        {!editing && (
-          <span className="entry-actions">
-            <button type="button" className="ghost" onClick={() => { setDraft(entry.text); setEditing(true) }}>Edit</button>
-            <button type="button" className="ghost danger" onClick={remove}>Delete</button>
-          </span>
-        )}
-      </header>
+    <article id={`entry-${entry.id}`} className={`entry${bubble ? ' bubble' : ''}${highlighted ? ' flash' : ''}`}>
+      {!bubble && meta}
       {editing ? (
         <div className="edit">
           <textarea
@@ -62,6 +68,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, onT
       ) : (
         <EntryText text={entry.text} terms={terms} onTag={onTag} />
       )}
+      {bubble && meta}
     </article>
   )
 }
