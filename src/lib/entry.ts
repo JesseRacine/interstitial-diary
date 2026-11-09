@@ -28,6 +28,13 @@ type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'delet
 /** An entry's images; treats a missing field as none. */
 export const entryImages = (e: Pick<Entry, 'images'>): ImageRef[] => e.images ?? []
 
+/** Same images in the same order (a missing field equals none). */
+export function sameImages(a: Pick<Entry, 'images'>, b: Pick<Entry, 'images'>): boolean {
+  const x = entryImages(a)
+  const y = entryImages(b)
+  return x.length === y.length && x.every((i, n) => i.hash === y[n].hash && i.ext === y[n].ext && i.w === y[n].w && i.h === y[n].h)
+}
+
 /** Matches a #tag that is not glued to a preceding word (so "C#" or "a#b" aren't tags). */
 export const TAG_PATTERN = '(?<![\\p{L}\\p{N}_&#])#([\\p{L}\\p{N}_][\\p{L}\\p{N}_\\-/]*)'
 const TAG_RE = new RegExp(TAG_PATTERN, 'gu')

@@ -94,7 +94,8 @@ A heading without the comment (typed by hand) is accepted too.
 Each run:
 1. **List** files. Read `.meta/tombstones.json` and every day file whose `rev` differs from the last sync.
 2. **Detect hand edits:** a file entry whose `updated` stamp equals the local one but whose text differs was edited
-   outside the app. It gets a fresh `updatedAt` so it wins.
+   outside the app. It gets a fresh `updatedAt` so it wins. Images count too (`sameImages`): adding or removing an
+   image line by hand is an edit, so a removed line is not written back.
 3. **Merge** by id: newest `updatedAt` wins; on a tie, a deletion wins; a tombstone beats any version not edited after it.
 4. **Write** day files that have dirty local entries, that changed after merging, or that are missing from storage
    (so a new empty folder gets everything). Remove files for days left with no live entries. Write tombstones if changed.

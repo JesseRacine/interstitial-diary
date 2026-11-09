@@ -1,6 +1,7 @@
 # Plan: images in journal entries
 
-_Status: in progress. Phase 1 steps 1 (data model) and 2 (Markdown) done 2026-11-09; next is step 3 (`sync.ts` comparisons).
+_Status: in progress. Phase 1 steps 1 (data model), 2 (Markdown) and 3 (`sync.ts` comparisons) done 2026-11-09; next is step 4 (image
+pipeline).
 Decided in step 2: a text line that looks like an image line is escaped with `\`; an entry whose text was removed by
 hand keeps its images with empty text. Written 2026-11-08. Replaces [junior-plan.md](junior-plan.md) (see "Review of the
 junior plan" at the end for what changed and why). Scheduled as PROGRESS step 1 (next up)._

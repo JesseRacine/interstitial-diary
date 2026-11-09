@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { type Entry, makeEntry } from '../lib/entry'
+import { type Entry, type ImageRef, makeEntry } from '../lib/entry'
 import { memoryLocal, memoryStore } from './memory'
-import { dayFromPath, emptySyncState, syncOnce, TOMBSTONES_PATH } from './sync'
+import { dayFromPath, emptySyncState, sameVersion, syncOnce, TOMBSTONES_PATH } from './sync'
 import type { FileStore, SyncState } from './types'
 
 const at = (d: number, h: number, m = 0) => new Date(2026, 10, d, h, m).getTime()
@@ -177,6 +177,60 @@ describe('syncOnce', () => {
     store.write = realWrite
     await a.sync(store)
     expect(store.files.get('2026/2026-11-08.md')!.content).toContain('v2 typed during sync')
+  })
+
+  describe('images edited by hand', () => {
+    const A: ImageRef = { hash: '3f9a2c1b7d04e8aa', ext: 'jpg', w: 640, h: 480 }
+    const B: ImageRef = { hash: '9c01aa22f3b6d710', ext: 'png', w: 800, h: 600 }
+    const path = '2026/2026-11-08.md'
+
+    it('an image line removed by hand wins and is not written back', async () => {
+      const store = memoryStore()
+      const a = device([makeEntry('two photos', at(8, 9), 'x', [A, B])])
+      await a.sync(store)
+      const content = store.files.get(path)!.content
+      await store.write(path, content.replace('![800x600](images/9c01aa22f3b6d710.png)\n', ''))
+      const r = await a.sync(store)
+      const x = a.local.entries.get('x')!
+      expect(x.images).toEqual([A])
+      expect(x.updatedAt).toBeGreaterThan(at(8, 9))
+      expect(r.updatedLocally).toBe(1)
+      expect(store.files.get(path)!.content).not.toContain('9c01aa22f3b6d710')
+      // another device takes the edit too
+      const b = device()
+      await b.sync(store)
+      expect(b.local.entries.get('x')!.images).toEqual([A])
+    })
+
+    it('an image line added by hand (text unchanged) counts as a change', async () => {
+      const store = memoryStore()
+      const a = device([makeEntry('no photos yet', at(8, 9), 'x')])
+      await a.sync(store)
+      const content = store.files.get(path)!.content
+      await store.write(path, content.replace('no photos yet\n', 'no photos yet\n\n![640x480](images/3f9a2c1b7d04e8aa.jpg)\n'))
+      const r = await a.sync(store)
+      expect(r.updatedLocally).toBe(1)
+      expect(a.local.entries.get('x')!.images).toEqual([A])
+      expect(a.local.entries.get('x')!.text).toBe('no photos yet')
+    })
+
+    it('images sync between devices, and an unchanged entry stays quiet', async () => {
+      const store = memoryStore()
+      const a = device([makeEntry('photo', at(8, 9), 'x', [A])])
+      const b = device()
+      await a.sync(store)
+      await b.sync(store)
+      expect(b.local.entries.get('x')!.images).toEqual([A])
+      expect(await a.sync(store)).toEqual({ read: 0, written: 0, removed: 0, updatedLocally: 0 })
+    })
+
+    it('sameVersion compares images', () => {
+      const e = makeEntry('same', at(8, 9), 'x', [A])
+      expect(sameVersion(e, { ...e })).toBe(true)
+      expect(sameVersion(e, { ...e, images: [B] })).toBe(false)
+      expect(sameVersion(e, { ...e, images: undefined })).toBe(false)
+      expect(sameVersion({ ...e, images: undefined }, { ...e, images: [] })).toBe(true)
+    })
   })
 
   it('a failed write leaves changes pending for the next attempt', async () => {

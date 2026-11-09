@@ -1,4 +1,4 @@
-import type { Entry } from '../lib/entry'
+import { type Entry, sameImages } from '../lib/entry'
 import { dayFilePath, parseDay, serializeDay } from '../lib/markdown'
 import { merge, type Tombstones } from '../lib/merge'
 import type { FileStore, LocalStore, SyncReport, SyncState } from './types'
@@ -29,7 +29,9 @@ export function dayFromPath(path: string): string | null {
 
 export const emptySyncState = (): SyncState => ({ revs: {} })
 
-const sameVersion = (a: Entry, b: Entry) => a.updatedAt === b.updatedAt && a.deleted === b.deleted && a.text === b.text
+/** Same content as far as the files and the UI are concerned; anything else must be saved locally. */
+export const sameVersion = (a: Entry, b: Entry) =>
+  a.updatedAt === b.updatedAt && a.deleted === b.deleted && a.text === b.text && sameImages(a, b)
 
 function stableJson(t: Tombstones): string {
   const sorted: Tombstones = {}
@@ -71,12 +73,13 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
   }
 
   // Edits made directly in a file (e.g. in Notepad) keep the old "updated" stamp in the id comment.
-  // Same stamp + different text can only mean an outside edit, so give it a fresh stamp and let it win.
+  // Same stamp + different text or images can only mean an outside edit, so give it a fresh stamp and let it win.
+  // (Images count too: otherwise an image line removed by hand would be written back.)
   const stamp = Date.now()
   for (let i = 0; i < remoteEntries.length; i++) {
     const r = remoteEntries[i]
     const l = localById.get(r.id)
-    if (l && !l.deleted && r.updatedAt === l.updatedAt && r.text !== l.text) {
+    if (l && !l.deleted && r.updatedAt === l.updatedAt && (r.text !== l.text || !sameImages(r, l))) {
       remoteEntries[i] = { ...r, updatedAt: Math.max(stamp, l.updatedAt + 1) }
     }
   }
