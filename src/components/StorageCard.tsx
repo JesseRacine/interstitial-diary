@@ -1,5 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { BACKENDS, PLANNED_BACKENDS } from '../storage/backends'
+import { db } from '../lib/db'
+import { browserOnlyMode, browserOnlyWarning } from '../lib/dataSafety'
+import { useLive } from '../lib/hooks'
+import { BACKENDS, PLANNED_BACKENDS, backendById } from '../storage/backends'
 import {
   connect, disconnect, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
 } from '../storage/manager'
@@ -35,11 +38,22 @@ function statusText(s: StorageState): string {
   }
 }
 
-/** Compact indicator for the header. */
+/** Photos this device holds (live, so the warning appears with the first photo). */
+const usePhotoCount = () => useLive(() => db.blobs.count(), [], 0)
+
+/**
+ * Compact indicator for the header. With no storage chosen it shows nothing, except a warning once there are photos:
+ * they are the data most at risk if the browser's data is cleared (the general no-storage warning is in Settings).
+ */
 export function StorageBadge({ onOpenSettings }: { onOpenSettings: () => void }) {
   const s = useStorage()
+  const photos = usePhotoCount()
   useTick(30_000)
-  if (s.status === 'off') return null
+  if (s.status === 'off') {
+    if (photos === 0) return null
+    const w = browserOnlyWarning('none', photos)
+    return <button type="button" className="badge warn" onClick={onOpenSettings} title={w.body}>⚠ {w.short}</button>
+  }
   if (s.status === 'needs-permission') {
     return <button type="button" className="badge warn" onClick={() => void reconnect()} title={`Allow access to ${s.label ?? 'storage'} again`}>⚠ Reconnect folder</button>
   }
@@ -54,15 +68,23 @@ export function StorageCard() {
   const s = useStorage()
   const missing = useSyncExternalStore(missingImages.subscribe, () => missingImages.size)
   const [choosing, setChoosing] = useState(false)
+  const photos = usePhotoCount()
   useTick(30_000)
   const showChoices = s.status === 'off' || choosing
+  const mode = browserOnlyMode(s.backendId, !!(s.backendId && backendById(s.backendId)?.insideBrowser))
+  const warning = mode ? browserOnlyWarning(mode, photos) : null
 
   return (
     <div className="card">
       <h3>Where entries are saved</h3>
       <p className="muted">
-        Entries are always kept in this browser for fast search. Choose a storage below to also save them as Markdown files.
+        Entries are always kept in this browser for fast search. A storage also saves them (and their photos) as files you own.
       </p>
+      {warning && (
+        <div className="notice warn" role="note">
+          <strong>{warning.title}.</strong> {warning.body}
+        </div>
+      )}
 
       {s.status !== 'off' && (
         <div className="storage-current">

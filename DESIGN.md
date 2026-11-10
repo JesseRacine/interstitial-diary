@@ -232,7 +232,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## UI
 
-- **Header:** app name, views (Journal, Calendar, Photos, Tags, Settings), storage status badge.
+- **Header:** app name, views (Journal, Calendar, Photos, Tags, Settings), storage status badge. With no storage chosen
+  the badge is hidden, except a red "⚠ Photos only in this browser" once the device holds photos.
 - **Search bar** (always visible): tag autocomplete, chips, saved (★) and recent searches, `?` syntax help.
 - **Journal:** a chat. One continuous scroll through all days, oldest at the top and newest at the bottom, with the
   capture bar pinned at the bottom. Entries are left-aligned bubbles (time underneath; Edit/Delete on hover, always
@@ -280,6 +281,11 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   for Chrome, eviction under low disk (unless persistent storage was granted; the app requests it at startup), or the
   app's address changing. This is why file storage matters. On Android, until pCloud or native exists, the only copy
   is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
+- **The app says so** (`lib/dataSafety.ts`): with no storage chosen, or only "Files inside this browser" (same browser
+  data, so not a backup), the Settings storage card shows a warning: "Entries are only in this browser", or "Entries and
+  photos are only in this browser" with the photo count when the device holds any, suggesting a storage or Export. The
+  header badge adds "Photos only in this browser" when storage is off and there are photos. A storage outside the
+  browser's data (the folder module) gives no warning.
 - **Photo files are never deleted automatically**: not when an entry is deleted, and not when a photo is removed from
   an entry. Local originals are a bounded cache (1 GB unless changed in Settings: 256 MB to 10 GB or no limit, saved
   as `originalsLimit` in `meta`, read by `trimOriginals` each time; an invalid saved value means the 1 GB default, so

@@ -62,7 +62,14 @@ in the browser on 127.0.0.1 with "Files inside this browser": 3 entries deleted 
 the 2 photos nothing live uses (the one shared with a live entry and an unreferenced file were left alone), Cancel changed
 nothing, Remove deleted the 2 originals + 2 thumbnails from storage and the device, day file and tombstones untouched, a
 second look found nothing; 375 px. The "sync failed, so refuse" path and the real folder are not exercised in the pane.
-Next: 3.5 (data-safety wording).
+**3.5 done (phase 3 done):** there was no "only in this browser" warning yet, so this adds it with the photo wording the plan
+asks for. `lib/dataSafety.ts` (pure, tested): `browserOnlyMode` (no storage, or "Files inside this browser", which lives
+in the same browser data and is not a backup; a folder is a real copy) and `browserOnlyWarning(mode, photos)` ("Entries
+are only in this browser" / "Entries and photos are only in this browser", with the photo count, Export suggested). Shown
+as a notice in the Settings storage card, and as a "⚠ Photos only in this browser" header badge when storage is off and
+the device holds photos (nothing new in the header for entries-only users; that is PROGRESS step 3). Checked on
+127.0.0.1: no photos (no badge, entries wording), photos (badge + photo wording, singular too, live), inside-browser
+storage (normal "Saved" badge, "not a backup" wording); 375 px dark, light. Phase 4 (pCloud) is next, with the pCloud module.
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the

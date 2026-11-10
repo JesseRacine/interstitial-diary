@@ -35,14 +35,15 @@ _Last updated: 2026-11-09_
 | aba1edd | Images 3.1: `has:image` / `-has:image` search filter, "With photos" chip, help row, DESIGN.md |
 | 97b5ff1 | Images 3.2: Photos view (virtualised thumbnail grid by day, tile opens the lightbox, day heading opens the journal) |
 | 5e3ccbe | Images 3.3: "Photos on this device" card in Settings (space used, browser estimate, adjustable original-cache limit) |
-| (3.4, hash to add) | Images 3.4: "Remove photos of deleted entries" (confirmed, sync-first cleanup; `storage/cleanup.ts`, `removeBlob` on stores) |
+| 4e9a162 | Images 3.4: "Remove photos of deleted entries" (confirmed, sync-first cleanup; `storage/cleanup.ts`, `removeBlob` on stores) |
+| (3.5, hash to add) | Images 3.5: "only in this browser" warning with photo wording (Settings box, header badge); phase 3 done |
 
-241 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+248 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
 
-### 1. Images in entries (phases 1 and 2 done; phase 3 in progress)
+### 1. Images in entries (phases 1, 2 and 3 done; phase 4 comes with pCloud)
 - Planned in [images-plan.md](images-plan.md) (four phases, with tests for every sync/format change); its status line
   records what each step decided.
 - **Phase 1 (done 2026-11-09):** attach, show, open full size, export, and write originals to the storage folder.
@@ -56,9 +57,9 @@ file in Notepad.
   cache), "Not synced yet" for photos found nowhere, "N photos waiting" in the badge, failures retried next sync.
   Checked in the browser step by step and by a two-device test. **Still to confirm by the user:** a real second
   device; that needs hosting or a shared folder (e.g. pCloud Drive) between two browsers.
-- **Phase 3 in progress** (see the plan): **3.1 `has:image` search, 3.2 Photos view, 3.3 photo storage in Settings and 3.4
-  removing photos of deleted entries done (2026-11-09)**. Still to do: 3.5 data-safety wording. **Still to confirm by
-  the user:** with the real Windows folder, (a) the cache limit (lower it, and see originals leave the browser only once
+- **Phase 3 (done 2026-11-09)** (see the plan): `has:image` search, a Photos view, photo storage and the original-cache
+  limit in Settings, removing photos of deleted entries, and the "only in this browser" warning with photo wording
+  (Settings box; header badge when there are photos and no storage). **Still to confirm by the user:** with the real Windows folder, (a) the cache limit (lower it, and see originals leave the browser only once
   saved to the folder) and (b) "Photos of deleted entries" (delete an entry that has a photo, then run it and see the
   files leave `<folder>\<year>\images\` and `.thumbs\`); the folder picker can't be driven from the pane. Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
 
@@ -73,7 +74,10 @@ file in Notepad.
 
 ### 3. Data-safety features
 - Settings shows whether persistent storage was granted (`navigator.storage.persisted()`).
-- A warning when no file storage is set up ("Entries are only in this browser").
+- A warning when no file storage is set up ("Entries are only in this browser"). **Partly done (images 3.5):** the
+  Settings storage card shows it (also for "Files inside this browser", which isn't a backup), worded for photos when
+  the device holds any; the header badge shows "Photos only in this browser" once there are photos. Still to do: decide
+  whether entries-only users should also get the header badge.
 - On platforms without the folder module (Android), a periodic export/backup reminder until pCloud exists.
 - **Done when:** each state is visible in Settings and tested at phone width.
 
