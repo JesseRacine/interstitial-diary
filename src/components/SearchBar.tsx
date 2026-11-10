@@ -14,6 +14,7 @@ const QUICK: [label: string, token: string][] = [
   ['Evenings', 'time:18-24'],
   ['Late night', 'time:22-05'],
   ['Weekends', 'day:weekend'],
+  ['With photos', 'has:image'],
 ]
 
 const SYNTAX: [string, string][] = [
@@ -28,6 +29,7 @@ const SYNTAX: [string, string][] = [
   ['today  yesterday  last:7d  last:3m', 'relative dates (d, w, m, y)'],
   ['time:09-12  after:22:00  before:7', 'time of day'],
   ['day:mon  day:weekend  day:mon,fri', 'day of the week'],
+  ['has:image  -has:image', 'entries with photos / without photos (has:photo works too)'],
 ]
 
 export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, onCommit }: {

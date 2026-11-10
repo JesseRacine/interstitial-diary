@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseQuery, toggleToken, tokenize } from './query'
+import { isEmptyQuery, parseQuery, toggleToken, tokenize } from './query'
 
 const NOW = new Date(2026, 10, 8, 12, 0) // Sun 8 Nov 2026
 const p = (s: string) => parseQuery(s, NOW)
@@ -53,6 +53,29 @@ describe('parseQuery', () => {
     expect(p('day:mon').weekdays).toEqual([1])
     expect(p('day:weekend').weekdays).toEqual([0, 6])
     expect(p('day:monday,fri').weekdays).toEqual([1, 5])
+  })
+  it('has:image', () => {
+    expect(p('has:image').hasImages).toBe(true)
+    expect(p('has:photo').hasImages).toBe(true)
+    expect(p('HAS:Photos').hasImages).toBe(true)
+    expect(p('-has:image').hasImages).toBe(false)
+    expect(p('tired').hasImages).toBeUndefined()
+    expect(p('has:image').errors).toEqual([])
+  })
+  it('has:image counts as a filter, so a query of only it is not empty', () => {
+    expect(isEmptyQuery(p('has:image'))).toBe(false)
+    expect(isEmptyQuery(p('-has:image'))).toBe(false)
+    expect(isEmptyQuery(p(''))).toBe(true)
+  })
+  it('reports an unknown has: value', () => {
+    expect(p('has:video').errors).toHaveLength(1)
+    expect(p('has:video').hasImages).toBeUndefined()
+  })
+  it('only has: can be negated as a filter; other -key:value stay excluded words', () => {
+    const q = p('-on:2026-11-08')
+    expect(q.excludeTerms).toEqual(['on:2026-11-08'])
+    expect(q.from).toBeUndefined()
+    expect(q.errors).toEqual([])
   })
   it('combination', () => {
     const q = p('#work tired time:13-17 last:30d')

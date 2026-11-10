@@ -12,8 +12,11 @@ export interface ParsedQuery {
   timeFrom?: number // minutes since midnight, inclusive
   timeTo?: number // minutes since midnight, exclusive; < timeFrom means wraps past midnight
   weekdays?: number[]
+  hasImages?: boolean // true: only entries with photos (has:image); false: only entries without (-has:image)
   errors: string[]
 }
+
+const IMAGE_WORDS = new Set(['image', 'images', 'photo', 'photos'])
 
 const DAY_ALIASES: Record<string, number[]> = {
   sun: [0], mon: [1], tue: [2], wed: [3], thu: [4], fri: [5], sat: [6],
@@ -105,11 +108,14 @@ export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
     if (lower === 'yesterday') { const y = addDays(today, -1); narrowFrom(y); narrowTo(y); continue }
 
     // key:value filters
-    const kv = lower.match(/^(on|from|to|in|last|time|after|before|day):(.+)$/)
-    if (kv) {
-      const [, key, val] = kv
+    const kv = lower.match(/^(-?)(on|from|to|in|last|time|after|before|day|has):(.+)$/)
+    if (kv && (!kv[1] || kv[2] === 'has')) { // only has: can be negated (-has:image)
+      const [, neg, key, val] = kv
       let ok = true
-      if (key === 'on' || key === 'in') {
+      if (key === 'has') {
+        if (IMAGE_WORDS.has(val)) q.hasImages = !neg
+        else ok = false
+      } else if (key === 'on' || key === 'in') {
         const r = dateRange(val)
         if (r) { narrowFrom(r[0]); narrowTo(r[1]) } else ok = false
       } else if (key === 'from') {
@@ -155,7 +161,8 @@ export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
 
 export function isEmptyQuery(q: ParsedQuery): boolean {
   return !q.terms.length && !q.phrases.length && !q.excludeTerms.length && !q.tags.length && !q.anyTags.length &&
-    !q.excludeTags.length && !q.from && !q.to && q.timeFrom === undefined && !q.weekdays
+    !q.excludeTags.length && !q.from && !q.to && q.timeFrom === undefined && !q.weekdays &&
+    q.hasImages === undefined
 }
 
 /** Add the token if absent, remove it if present (used by filter chips). */

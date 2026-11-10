@@ -32,12 +32,14 @@ _Last updated: 2026-11-09_
 
 | 5a2c729 | Images 2.5: docs (DESIGN.md image sync + storage modules), two-device "done when" test; phase 2 done |
 
-181 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+| (3.1, hash to add) | Images 3.1: `has:image` / `-has:image` search filter, "With photos" chip, help row, DESIGN.md |
+
+189 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
 
-### 1. Images in entries (phases 1 and 2 done; phase 3 next)
+### 1. Images in entries (phases 1 and 2 done; phase 3 in progress)
 - Planned in [images-plan.md](images-plan.md) (four phases, with tests for every sync/format change); its status line
   records what each step decided.
 - **Phase 1 (done 2026-11-09):** attach, show, open full size, export, and write originals to the storage folder.
@@ -51,8 +53,8 @@ file in Notepad.
   cache), "Not synced yet" for photos found nowhere, "N photos waiting" in the badge, failures retried next sync.
   Checked in the browser step by step and by a two-device test. **Still to confirm by the user:** a real second
   device; that needs hosting or a shared folder (e.g. pCloud Drive) between two browsers.
-- **Phase 3 next** (see the plan): `has:image` search, a Photos view, image storage in Settings, removing images of
-  deleted entries. Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
+- **Phase 3 in progress** (see the plan): **3.1 `has:image` search done (2026-11-09)**. Still to do: 3.2 a Photos view,
+  3.3 image storage in Settings, 3.4 removing images of deleted entries, 3.5 data-safety wording. Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
 
 ### 2. Make it an installable PWA
 - Add `vite-plugin-pwa` (already a dev dependency) to `vite.config.ts`: manifest (name, short_name "Interstitial",

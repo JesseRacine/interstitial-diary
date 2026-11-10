@@ -24,7 +24,12 @@ checks `ImageLocal.unsaved()`. Settings shows how many photos from another devic
 **2.5 done:** DESIGN.md "Images in a sync run" (push → text → pull, originals on demand, what the user sees) and the
 storage-module section (blob methods, `insideBrowser`, pCloud image calls). The "done when" check is one two-device
 test in `attachments.test.ts` (upload fails then recovers; "missing", then a failed read, then the thumbnail within one
-sync; the original fetched and hash-checked); each part was also checked in the browser in 2.1–2.4. Next: phase 3.
+sync; the original fetched and hash-checked); each part was also checked in the browser in 2.1–2.4. **Phase 3 in
+progress (started 2026-11-09). 3.1 done:** `has:image` (also `has:photo`, `has:images`, `has:photos`) keeps entries that
+have photos, `-has:image` keeps entries without (an empty `images` list counts as none); `ParsedQuery.hasImages`, a
+"With photos" quick chip, the SYNTAX help row and DESIGN.md. Only `has:` can be negated; `-on:x` etc. stay excluded
+words. An unknown `has:` value is a "Didn't understand" error. Checked on 127.0.0.1: results, `-has:image #work`, the
+error, the chip and the help row. Next: 3.2 (Photos view).
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the

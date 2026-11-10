@@ -223,6 +223,7 @@ One search bar; filter chips write the same syntax. Parser: `search/query.ts`. E
 | `today`, `yesterday`, `last:7d` / `w` / `m` / `y` | relative dates (`last:7d` = the 7 days ending today) |
 | `time:09-12`, `time:22-05` (wraps midnight), `after:22:00`, `before:7` | time of day (end exclusive) |
 | `day:mon`, `day:weekend`, `day:mon,fri` | weekday |
+| `has:image` / `-has:image` | only entries with photos / only entries without (`has:photo`, `has:images`, `has:photos` work too) |
 
 Date filters intersect. Unknown `key:value` tokens are treated as words. Bad filter values show an error under the
 search bar. Results are sorted by relevance when there are keywords, otherwise newest first.

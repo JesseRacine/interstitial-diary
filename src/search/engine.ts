@@ -47,6 +47,7 @@ export function runSearch(q: ParsedQuery, entries: Entry[], index: SearchIndex, 
     if (q.to && e.day > q.to) continue
     if (q.timeFrom !== undefined && q.timeTo !== undefined && !inTimeWindow(e.minute, q.timeFrom, q.timeTo)) continue
     if (q.weekdays && !q.weekdays.includes(e.weekday)) continue
+    if (q.hasImages !== undefined && q.hasImages !== !!e.images?.length) continue
     if (!q.tags.every((t) => e.tags.includes(t))) continue
     if (!q.anyTags.every((g) => g.some((t) => e.tags.includes(t)))) continue
     if (q.excludeTags.some((t) => e.tags.includes(t))) continue
