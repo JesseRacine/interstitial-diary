@@ -297,7 +297,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
     `/<repo>/` only needs Vite's `base`. `vite.config.ts` reads it from the `BASE_PATH` environment variable
     (`base-path.ts`: unset = `/`; a malformed value fails the build). The planned address is
     `https://jesseracine.github.io/interstitial-diary/` (`BASE_PATH=/interstitial-diary/`); the service worker's scope
-    then is that path, and the installed app's data belongs to that origin.
+    then is that path, and the installed app's data belongs to that origin. `.github/workflows/deploy.yml` builds and
+    publishes on every push to `main` (tests first: a failing test stops the deploy).
 - **Later:** Tauri wraps the same build into a Windows `.exe` and Android `.apk`, built in GitHub Actions so nothing
   extra is installed locally. Native-only features (tray, global hotkey, Android folders) go in as small
   platform-specific pieces or storage modules.

@@ -13,9 +13,9 @@ Read these before changing anything substantial:
   built; phase 4 = pCloud). [android-capture-plan.md](android-capture-plan.md): quick capture on Android (not started).
 
 **Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3), the installable PWA and the data-safety features are built; 277 tests pass. **In progress: PROGRESS.md
-step 4, hosting on GitHub Pages** (decisions made, pre-publish cleanup and the `BASE_PATH` base path done; next the deploy
-workflow, then `gh` sign-in, repo and first push). After that: pCloud, Tauri.
+(phases 1–3), the installable PWA and the data-safety features are built; 282 tests pass. **In progress: PROGRESS.md
+step 4, hosting on GitHub Pages** (decisions made, pre-publish cleanup, the `BASE_PATH` base path and the deploy workflow
+written; next `gh` sign-in, repo creation and the first push, which is the workflow's first real run). After that: pCloud, Tauri.
 
 **Public repo (step 4):** this repo is going public on GitHub (hosted on GitHub Pages). Keep it free of personal data:
 no machine paths, personal email addresses, keys or tokens. Commits use the GitHub noreply address (set as the repo's
@@ -76,6 +76,8 @@ git commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
 ```
 pwa-manifest.ts       web app manifest (tested by src/pwa.test.ts); vite.config.ts wires vite-plugin-pwa (precache, prompt update)
 base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (tested by src/basePath.test.ts); unset = "/"
+.github/workflows/deploy.yml  GitHub Pages deploy on push to main: npm ci, test, build with BASE_PATH=/interstitial-diary/, deploy
+                      (checked by src/deployWorkflow.test.ts; keep BASE_PATH there in step with the repo name)
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
   main.tsx, App.tsx   entry point; views (Journal, Calendar, Photos, Tags, Settings), routing, keyboard shortcuts,

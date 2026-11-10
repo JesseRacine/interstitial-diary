@@ -1,0 +1,62 @@
+# Builds the app and publishes it to GitHub Pages at https://jesseracine.github.io/interstitial-diary/
+# Runs on every push to main, and by hand from the Actions tab. The tests run first: a failing test stops the deploy.
+# One-time setup in the repo: Settings > Pages > Build and deployment > Source: GitHub Actions.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push waits for the running deploy instead of cancelling it half-way.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # The site lives under /<repo>/, so Vite needs this as its base path (see base-path.ts).
+      BASE_PATH: /interstitial-diary/
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26 # the version used while developing (check with `node -v` in WSL)
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Build (type check + production build)
+        run: npm run build
+
+      - name: Check that the build uses the sub-path
+        run: |
+          grep -q 'src="/interstitial-diary/assets/' dist/index.html
+          grep -q '"scope":"./"' dist/manifest.webmanifest
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
