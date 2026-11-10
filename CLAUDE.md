@@ -18,18 +18,20 @@ Read these before changing anything substantial:
 hosting on GitHub Pages** (decided; nothing built yet: it starts with four open questions for the user and a pre-publish
 cleanup, all written out there). After that: pCloud, Tauri.
 
-**Before the repo goes public (step 4):** this file still holds machine-specific paths, the user's name and Gmail address
-(the commit command below), and the git history is authored with that Gmail address. PROGRESS.md step 4 lists exactly
-what to fix and asks the user which way to go. Do not push to any remote before doing that cleanup. (Edge's Install offer and Lighthouse are still to be confirmed by the user.)
+**Public repo (step 4):** this repo is going public on GitHub (hosted on GitHub Pages). Keep it free of personal data:
+no machine paths, personal email addresses, keys or tokens. Commits use the GitHub noreply address (set as the repo's
+local git identity). Do not push to any remote until the pre-publish checks in PROGRESS.md step 4 are done. (Edge's
+Install offer and Lighthouse are still to be confirmed by the user.)
 
 ## Where things are
 
-- **Repo (source of truth):** WSL Ubuntu, `~/projects/interstitial-diary`
-  - From Windows tools: `\\wsl.localhost\Ubuntu\home\<user>\projects\interstitial-diary\`
-- **Claude session folder (Windows):** `C:\Users\<user>\Documents\Claude\Projects\Interstitial Diary`. It holds
-  `.claude/launch.json` (dev server config), a pointer `CLAUDE.md`, and a **read-only backup** (`archive/` plus a zip of
-  it: source snapshot, full git history as a `.bundle`, Claude's notes). No working code lives there; never edit or build
-  in the snapshot. To refresh it after more work, make a new dated archive (the first one is of commit f4ef4d9).
+- **Repo (source of truth):** the WSL Ubuntu home directory, `~/projects/interstitial-diary`. Tools on Windows reach it
+  through the `\\wsl.localhost\Ubuntu\...` network path (the exact path is in the Claude session folder's own
+  `CLAUDE.md`, which is not part of this repo).
+- **Claude session folder (Windows, outside this repo):** holds `.claude/launch.json` (dev server config), a pointer
+  `CLAUDE.md`, and a **read-only backup** (`archive/` plus a zip of it: source snapshot, full git history as a `.bundle`,
+  Claude's notes). No working code lives there; never edit or build in the snapshot. To refresh it after more work, make a
+  new dated archive.
 - Node (via nvm), npm and git are installed **inside WSL only**. The user wants installs kept in WSL and off Windows.
   **Ask before installing anything on Windows.**
 - Stack: Vite + React 19 + TypeScript, Dexie (IndexedDB), MiniSearch, `react-virtuoso`, `fflate` (zip), Vitest with
@@ -53,9 +55,10 @@ wsl -d Ubuntu -- bash -ic "cd ~/projects/interstitial-diary && npm test"
 | Production build served (PWA/service worker) | `preview_start` with name `interstitial-preview` (builds, then serves on 4173); the service worker does not run in the dev server |
 | Regenerate icons | `npm run icons` (`scripts/make-icons.mjs`, no dependencies) |
 
-Before every commit run tests, `npx tsc -b` and lint. Commit with the user's identity and the co-author trailer:
+Before every commit run tests, `npx tsc -b` and lint. The repo's local git identity is `JesseRacine` with the GitHub
+noreply address (`git config user.email` shows it; never use a personal address). Commit with the co-author trailer:
 ```
-git -c user.email=9375408+JesseRacine@users.noreply.github.com -c user.name=JesseRacine commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
+git commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
 ```
 
 ## How we work

@@ -36,7 +36,14 @@ _Last updated: 2026-11-09_
 
 | daa2fb8 | Data safety 3: Settings "Data safety" card (persistent-storage state, last backup, reminder switch), header badge for entries-only users, backup reminder, `restored` startup flag; 18 new tests |
 
-| (this commit) | Docs: handoff for step 4 (GitHub Pages): open decisions, user tasks, pre-publish cleanup, checklist |
+| f3c682f | Docs: handoff for step 4 (GitHub Pages): open decisions, user tasks, pre-publish cleanup, checklist |
+
+| (this commit) | Step 4.1: pre-publish cleanup: personal paths/email removed from the docs; whole history rewritten to the GitHub noreply identity (and old doc versions scrubbed); branch renamed `master` to `main` |
+
+**All hashes above, except the last two, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
+old doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
+history is only in the local backup bundle `~/interstitial-diary-pre-rewrite.bundle` (outside the repo, private; it still
+holds the old identity, so never push or share it) and in the older Windows-folder archive of f4ef4d9.
 
 272 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
 
@@ -109,8 +116,14 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
   and the reminder do say it isn't a backup).
 
 ### 4. Hosting on GitHub Pages: NEXT (decided 2026-11-10: GitHub Pages, not Cloudflare)
-Not started. Nothing in the repo has changed for it yet. **Start by asking the user the four open decisions below**, then
-get their account details, then do the checklist in order (one sub-step per turn, as usual).
+**Status (2026-11-10): decisions made; checklist sub-step 1 (clean-up) done except the new archive, the remote and the first
+push. Next: base path (sub-step 2), then GitHub sign-in/repo creation, workflow, push.** Work through the checklist in
+order, one sub-step per turn.
+
+**Decisions (answered 2026-11-10):** GitHub account `JesseRacine` (numeric id 9375408; looked up from GitHub's public
+profile API); repo `interstitial-diary`, public; address `https://jesseracine.github.io/interstitial-diary/` (so
+`base: '/interstitial-diary/'`); commits use `JesseRacine <9375408+JesseRacine@users.noreply.github.com>` (set as the
+repo's local git identity); branch `main`. Still to ask: whether to delete the superseded `junior-plan.md`.
 
 **What the user has already been told (don't re-explain at length):**
 - The hosted site is **public**; on GitHub's free plan the repo must be public too (Pages from a private repo needs a
@@ -123,13 +136,13 @@ get their account details, then do the checklist in order (one sub-step per turn
 - The address is permanent in practice (browser data belongs to the exact address). Changing it later starts the
   installed app empty (files in a folder or pCloud carry over).
 
-**Open decisions (ask first; not yet answered):**
+**The four decisions that were asked (answers above; the options and reasoning are kept for the record):**
 1. **Address:** `https://<username>.github.io/<repo>/` (default; needs `base: '/<repo>/'`), or a repo named exactly
    `<username>.github.io` (address with no sub-path, `base: '/'`), or later a custom domain (about $10/year, survives
    a change of host). Recommend one of the first two; custom domain only if they want long-term permanence.
 2. **Public repo OK?** Required on the free plan.
-3. **Commit email.** All 39 commits are authored `JesseRacine <9375408+JesseRacine@users.noreply.github.com>`; a public repo would show that Gmail
-   address. Recommend rewriting the author email to their GitHub noreply address
+3. **Commit email.** All 40 commits were authored with the user's personal Gmail address; a public repo would show it
+   (also in the text of two doc commits). Recommend rewriting the author email to their GitHub noreply address
    (`<id>+<username>@users.noreply.github.com`, shown at github.com > Settings > Emails) before the first push, and
    switching on "Keep my email addresses private" and "Block command line pushes that expose my email". Alternative:
    accept the exposure. A rewrite changes every commit hash (see cleanup below).
@@ -148,7 +161,7 @@ get their account details, then do the checklist in order (one sub-step per turn
 **Checklist for Claude (in order):**
 1. **Clean up before anything is public.**
    - Re-run the scan (all 2026-11-10 results are listed here; there are no keys, tokens or secrets in the repo):
-     `git grep -n -I -E "<personal-email>|jesse|C:\\\\Users|/home/|wsl.localhost" -- . ':!package-lock.json'` and
+     `git grep -n -I -E "gmail|C:\\\\Users|/home/|wsl.localhost" -- . ':!package-lock.json'` and
      `git log --format='%an <%ae>' | sort | uniq -c`. Findings: the repo's `CLAUDE.md` lines 23, 24 and 53 hold the
      WSL/Windows paths, the user's name and their Gmail address (in the commit command). Move the machine-specific
      paths into the Windows session folder's own `CLAUDE.md` (outside the repo) and use the noreply address in the
