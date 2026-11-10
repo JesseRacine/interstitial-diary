@@ -20,8 +20,10 @@ Read these before changing anything substantial:
 
 - **Repo (source of truth):** WSL Ubuntu, `~/projects/interstitial-diary`
   - From Windows tools: `\\wsl.localhost\Ubuntu\home\<user>\projects\interstitial-diary\`
-- **Claude session folder (Windows):** `C:\Users\<user>\Documents\Claude\Projects\Interstitial Diary`. It only holds
-  `.claude/launch.json` (dev server config) and a pointer `CLAUDE.md`. No code lives there.
+- **Claude session folder (Windows):** `C:\Users\<user>\Documents\Claude\Projects\Interstitial Diary`. It holds
+  `.claude/launch.json` (dev server config), a pointer `CLAUDE.md`, and a **read-only backup** (`archive/` plus a zip of
+  it: source snapshot, full git history as a `.bundle`, Claude's notes). No working code lives there; never edit or build
+  in the snapshot. To refresh it after more work, make a new dated archive (the first one is of commit f4ef4d9).
 - Node (via nvm), npm and git are installed **inside WSL only**. The user wants installs kept in WSL and off Windows.
   **Ask before installing anything on Windows.**
 - Stack: Vite + React 19 + TypeScript, Dexie (IndexedDB), MiniSearch, `react-virtuoso`, `fflate` (zip), Vitest with
