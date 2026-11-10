@@ -1,6 +1,7 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
 import { db, getMeta, setMeta } from '../lib/db'
+import { makeThumbnail } from '../lib/imageClient'
 import type { ImageLocal } from './attachments'
 import { backendById } from './backends'
 import { emptySyncState } from './sync'
@@ -23,6 +24,8 @@ export const dexieImages: ImageLocal = {
   original: async (hash) => (await db.blobs.get(hash))?.blob ?? null,
   thumb: async (hash) => (await db.thumbs.get(hash))?.blob ?? null,
   markOnRemote: async (hash) => { await db.blobs.update(hash, { onRemote: 1 }) },
+  saveThumb: async (hash, blob, w, h) => { await db.thumbs.put({ hash, blob, w, h }) },
+  thumbnail: makeThumbnail,
 }
 
 interface SavedStorage {
@@ -40,7 +43,7 @@ export interface StorageState {
   lastSync: number | null
   lastReport: SyncReport | null
   pending: number // local changes not yet written to storage
-  imagesPending: number // image files that failed to write in the last run (retried next sync)
+  imagesPending: number // image files that failed to write or read in the last run (retried next sync)
   imageError: string | null // last image problem; never turns the status into 'error'
 }
 
@@ -93,8 +96,8 @@ export function syncNow(): Promise<void> {
         await setMeta(syncKey(id), r.state)
         set({
           status: 'ok', message: null, lastSync: Date.now(), lastReport: r.report,
-          imagesPending: r.images?.pending ?? 0,
-          imageError: r.images?.errors[0] ?? null,
+          imagesPending: (r.images?.pending ?? 0) + (r.pulled?.failed ?? 0),
+          imageError: r.images?.errors[0] ?? r.pulled?.errors[0] ?? null,
         })
       } catch (e) {
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')

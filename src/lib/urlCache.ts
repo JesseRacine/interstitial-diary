@@ -29,23 +29,37 @@ export class UrlCache {
     this.maxIdle = maxIdle
   }
 
+  private load(key: string, slot: Slot): Promise<string | null> {
+    return this.deps.load(key).then(
+      (b) => {
+        if (!b || this.slots.get(key) !== slot) return null // evicted while loading
+        if (slot.resolved) return slot.resolved // a retry raced with an earlier load
+        slot.resolved = this.deps.create(b)
+        return slot.resolved
+      },
+      () => null,
+    )
+  }
+
   acquire(key: string): Promise<string | null> {
     let s = this.slots.get(key)
     if (!s) {
       const slot: Slot = { url: Promise.resolve(null), resolved: null, refs: 0 }
-      slot.url = this.deps.load(key).then(
-        (b) => {
-          if (!b || this.slots.get(key) !== slot) return null // evicted while loading
-          slot.resolved = this.deps.create(b)
-          return slot.resolved
-        },
-        () => null,
-      )
+      slot.url = this.load(key, slot)
       this.slots.set(key, slot)
       s = slot
     }
     if (s.refs === 0) this.idle = this.idle.filter((k) => k !== key)
     s.refs++
+    return s.url
+  }
+
+  /** Load again a key that had nothing (e.g. its thumbnail arrived by sync). Keeps the reference count. */
+  retry(key: string): Promise<string | null> {
+    const s = this.slots.get(key)
+    if (!s) return Promise.resolve(null)
+    if (s.resolved) return Promise.resolve(s.resolved)
+    s.url = this.load(key, s)
     return s.url
   }
 

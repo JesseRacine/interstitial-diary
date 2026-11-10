@@ -22,7 +22,9 @@ _Last updated: 2026-11-09_
 | 0cb6125 | Images 1.8: lightbox (zoom, pan, keys, back button, save, remove) |
 | 924391e | Images 1.9: export with photos (streamed zip, per year over 4 GB); then 1.10: docs, phase 1 done |
 
-154 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+| (next) | Images 2.1: `pullImages` after the text sync: thumbnails to other devices, rebuild missing ones |
+
+165 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
@@ -36,8 +38,9 @@ file in Notepad.
   **Still to confirm by the user:** with the real Windows folder, attach a photo on `localhost:5173` and check that
   `<folder>\2026\images\` and `<folder>\.thumbs\` get the files after the next save; and try one real export with
   photos through the Save dialog.
-- **Phase 2 next:** `pullImages` (thumbnails to other devices, rebuild missing thumbnails), originals on demand in the
-  lightbox with a bounded cache, "not synced yet" placeholder, badge shows images pending.
+- **Phase 2 in progress:** 2.1 `pullImages` done (thumbnails to other devices, rebuild missing thumbnails). Next:
+  2.2 originals on demand in the lightbox with a bounded cache, 2.3 "not synced yet" placeholder, 2.4 badge shows
+  images pending, 2.5 docs.
 - **Done when:** the plan's phase 2 "done when" check passes.
 
 ### 2. Make it an installable PWA
@@ -83,7 +86,8 @@ file in Notepad.
 - The folder module needs Chrome/Edge on desktop and usually needs "Reconnect folder" after a browser restart.
 - On Android there is currently no copy outside the browser.
 - No import of existing notes from other apps yet (export only).
-- Photos don't reach other devices yet (images phase 2): a second device sees the photo lines but shows placeholders.
+- Photos only partly reach other devices yet (images phase 2): thumbnails arrive, but a full-size original can't be
+  opened on a device that didn't add it.
 - A photo file deleted by hand from the storage folder after it was saved there is not written back.
 - An unsaved edit's photo references can be lost like its text (see the first point), but the photo bytes are already
   saved in the browser and are never lost.

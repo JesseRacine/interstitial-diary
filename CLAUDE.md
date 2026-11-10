@@ -54,8 +54,8 @@ src/
   search/engine.ts    MiniSearch full-text + filters, tag stats, day counts
   storage/types.ts    FileStore / StorageBackend / LocalStore interfaces
   storage/sync.ts     backend-agnostic sync engine (text: day files + tombstones)
-  storage/attachments.ts  image passes: pushImages (originals + thumbnails to storage)
-  storage/syncAll.ts  one sync run: pushImages (own try/catch) then syncOnce
+  storage/attachments.ts  image passes: pushImages (originals + thumbnails to storage), pullImages (thumbnails back)
+  storage/syncAll.ts  one sync run: pushImages → syncOnce → pullImages (image passes in their own try/catch)
   storage/manager.ts  runtime: active backend, auto-sync, status for the UI
   storage/backends/   one file per storage module + index.ts registry
   storage/memory.ts   in-memory FileStore/LocalStore for tests (and a template)

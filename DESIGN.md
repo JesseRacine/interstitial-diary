@@ -123,6 +123,14 @@ remembered per module (`images:<backendId>` in `meta`), so a quiet sync touches 
 resets that list and every `blobs.onRemote`. Image files are never deleted automatically. `list()` never returns
 image files (it runs every sync).
 
+After the text sync, a **pull pass** (`pullImages`, own try/catch too) gives this device a thumbnail for every image a
+live entry uses: it downloads `.thumbs/<hash>.webp` (small, so eagerly; the original's size comes from the image
+line), or, if storage has none but this device has the original, makes it again in the worker and writes it back.
+An image that is nowhere yet (the other device hasn't uploaded it) is reported missing and tried again next run.
+Formats without thumbnails (HEIC, AVIF) are skipped, and originals are never downloaded by sync. A row already on
+screen picks up a thumbnail that arrives later (`useThumbUrl` watches the `thumbs` table; `UrlCache.retry`). A
+quiet sync reads nothing, because only images without a local thumbnail are looked up.
+
 **When sync runs** (`storage/manager.ts`): on startup, ~1.5 s after local changes, when the page is hidden or
 shown again, every 5 minutes, and on "Save now".
 

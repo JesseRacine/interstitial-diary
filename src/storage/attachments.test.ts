@@ -16,16 +16,21 @@ const bytes = (n: number) => new Blob([new Uint8Array(n).fill(7)])
 function device(entries: Entry[], originals: Record<string, Blob> = {}, thumbs: Record<string, Blob> = {}) {
   const local = memoryLocal(entries)
   const onRemote = new Set<string>()
+  const sizes: Record<string, [number, number]> = {} // hash -> original w/h saved with the thumbnail
+  let thumbnailCalls = 0
   const images: ImageLocal = {
     snapshot: () => local.snapshot(),
     original: async (h) => originals[h] ?? null,
     thumb: async (h) => thumbs[h] ?? null,
     markOnRemote: async (h) => { onRemote.add(h) },
+    saveThumb: async (h, b, w, hh) => { thumbs[h] = b; sizes[h] = [w, hh] },
+    thumbnail: async (b) => { thumbnailCalls++; return { w: 40, h: 30, thumb: bytes(Math.max(1, b.size >> 1)), tw: 4, th: 3 } },
   }
   let state: SyncState = emptySyncState()
   let confirmed = new Set<string>()
   return {
-    local, images, onRemote,
+    local, images, onRemote, thumbs, sizes,
+    get thumbnailCalls() { return thumbnailCalls },
     async sync(store: FileStore) {
       const r = await syncAll(local, images, store, state, confirmed)
       state = r.state
@@ -177,5 +182,136 @@ describe('pushing images to storage', () => {
     const d = device([], {})
     const r = await pushImages(d.images, store, new Set(['2020/images/old.jpg']))
     expect([...r.confirmed]).toEqual(['2020/images/old.jpg'])
+  })
+})
+
+describe('pulling thumbnails from storage', () => {
+  /** Device 1 adds a photo and syncs; returns the shared store. */
+  async function shared(entries = [makeEntry('photo', at(2026, 8, 9), 'x', [A])]) {
+    const store = memoryStore()
+    const thumb = bytes(3)
+    const one = device(entries, { [A.hash]: bytes(10) }, { [A.hash]: thumb })
+    await one.sync(store)
+    return { store, thumb }
+  }
+
+  it('a second device gets the thumbnail in the same sync that brings the entry', async () => {
+    const { store, thumb } = await shared()
+    const two = device([])
+    const r = await two.sync(store)
+    expect(two.local.entries.get('x')?.images).toEqual([A]) // the entry arrived...
+    expect(two.thumbs[A.hash]).toBe(thumb) // ...and so did its thumbnail
+    expect(two.sizes[A.hash]).toEqual([A.w, A.h]) // with the original's size from the image line
+    expect(r.pulled).toEqual({ fetched: 1, rebuilt: 0, missing: [], failed: 0, errors: [] })
+    expect(await two.images.original(A.hash)).toBeNull() // originals are not downloaded by sync
+  })
+
+  it('a later sync with every thumbnail present reads nothing', async () => {
+    const { store } = await shared()
+    const two = device([])
+    await two.sync(store)
+    let reads = 0
+    const read = store.readBlob.bind(store)
+    store.readBlob = async (p) => { reads++; return read(p) }
+    const r = await two.sync(store)
+    expect(reads).toBe(0)
+    expect(r.pulled?.fetched).toBe(0)
+  })
+
+  it('a missing thumbnail is made again from the local original and written back', async () => {
+    const store = memoryStore()
+    const d = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])], { [A.hash]: bytes(10) }) // no thumbnail yet
+    const r = await d.sync(store)
+    expect(r.pulled).toMatchObject({ fetched: 0, rebuilt: 1, missing: [], failed: 0 })
+    expect(d.thumbs[A.hash]).toBeDefined()
+    expect(d.sizes[A.hash]).toEqual([40, 30]) // size measured from the original
+    expect(store.blobs.get('.thumbs/aaaaaaaaaaaaaaaa.webp')).toBe(d.thumbs[A.hash])
+    const again = await d.sync(store)
+    expect(again.pulled?.rebuilt).toBe(0)
+    expect(d.thumbnailCalls).toBe(1)
+  })
+
+  it('prefers the thumbnail in storage over making one', async () => {
+    const { store, thumb } = await shared()
+    const two = device([], { [A.hash]: bytes(10) }) // has the original too, but no thumbnail
+    await two.sync(store)
+    expect(two.thumbs[A.hash]).toBe(thumb)
+    expect(two.thumbnailCalls).toBe(0)
+  })
+
+  it('an image that is nowhere yet is reported missing, then picked up on a later sync', async () => {
+    const store = memoryStore()
+    const one = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])]) // only the reference, e.g. images still uploading
+    await one.sync(store)
+    const two = device([])
+    const r1 = await two.sync(store)
+    expect(r1.pulled).toMatchObject({ fetched: 0, missing: [A.hash], failed: 0 })
+    expect(two.thumbs[A.hash]).toBeUndefined()
+
+    store.blobs.set('.thumbs/aaaaaaaaaaaaaaaa.webp', bytes(3)) // the first device's images arrive
+    const r2 = await two.sync(store)
+    expect(r2.pulled).toMatchObject({ fetched: 1, missing: [] })
+    expect(two.thumbs[A.hash]).toBeDefined()
+  })
+
+  it('formats without thumbnails (HEIC) are not looked for', async () => {
+    const store = memoryStore()
+    let reads = 0
+    const read = store.readBlob.bind(store)
+    store.readBlob = async (p) => { reads++; return read(p) }
+    const d = device([makeEntry('heic', at(2026, 8, 9), 'x', [B])])
+    const r = await d.sync(store)
+    expect(reads).toBe(0)
+    expect(r.pulled?.missing).toEqual([])
+  })
+
+  it('images used only by deleted entries are not pulled', async () => {
+    const { store } = await shared()
+    const two = device([])
+    await two.sync(store)
+    delete two.thumbs[A.hash]
+    const e = two.local.entries.get('x')!
+    two.local.entries.set('x', { ...e, deleted: 1 })
+    const r = await two.sync(store)
+    expect(two.thumbs[A.hash]).toBeUndefined()
+    expect(r.pulled?.fetched).toBe(0)
+  })
+
+  it('a failed read does not fail the text sync and is retried next time', async () => {
+    const { store } = await shared()
+    const read = store.readBlob.bind(store)
+    store.readBlob = async () => { throw new Error('network down') }
+    const two = device([])
+    const r1 = await two.sync(store)
+    expect(two.local.entries.has('x')).toBe(true) // text got through
+    expect(r1.pulled).toMatchObject({ fetched: 0, failed: 1, errors: ['network down'] })
+
+    store.readBlob = read
+    const r2 = await two.sync(store)
+    expect(r2.pulled).toMatchObject({ fetched: 1, failed: 0 })
+  })
+
+  it('a rebuilt thumbnail that cannot be written is kept and pushed on a later sync', async () => {
+    const store = memoryStore()
+    const realWrite = store.writeBlob.bind(store)
+    const d = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])], { [A.hash]: bytes(10) })
+    store.writeBlob = async (p, b) => { if (p.startsWith('.thumbs/')) throw new Error('quota'); return realWrite(p, b) }
+    const r1 = await d.sync(store)
+    expect(r1.pulled).toMatchObject({ rebuilt: 1, failed: 1 })
+    expect(d.thumbs[A.hash]).toBeDefined()
+
+    store.writeBlob = realWrite
+    const r2 = await d.sync(store)
+    expect(r2.images?.written).toBe(1) // the push pass writes the kept thumbnail
+    expect(store.blobs.has('.thumbs/aaaaaaaaaaaaaaaa.webp')).toBe(true)
+  })
+
+  it('an unexpected crash in the pull pass is reported, not thrown', async () => {
+    const { store } = await shared()
+    const two = device([])
+    two.images.saveThumb = async () => { throw new Error('database closed') }
+    const r = await two.sync(store)
+    expect(r.pulled?.errors).toEqual(['database closed'])
+    expect(two.local.entries.has('x')).toBe(true)
   })
 })

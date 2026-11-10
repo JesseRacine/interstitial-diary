@@ -81,4 +81,26 @@ describe('UrlCache', () => {
     await cache.acquire('missing-1')
     expect(load).toHaveBeenCalledTimes(2)
   })
+
+  it('retry loads a key that had nothing, for every user of it, without changing the count', async () => {
+    const revoked: string[] = []
+    let arrived = false
+    const cache = new UrlCache({
+      load: async () => (arrived ? new Blob(['t']) : null),
+      create: () => 'blob:t',
+      revoke: (u) => revoked.push(u),
+    }, 0)
+    expect(await cache.acquire('k')).toBeNull()
+    expect(await cache.acquire('k')).toBeNull() // two rows show the same photo
+    arrived = true // sync brought the thumbnail
+    expect(await cache.retry('k')).toBe('blob:t')
+    expect(await cache.acquire('k')).toBe('blob:t') // a third user gets it straight away
+    expect(await cache.retry('k')).toBe('blob:t') // retrying a loaded key changes nothing
+    cache.release('k')
+    cache.release('k')
+    expect(revoked).toEqual([])
+    cache.release('k')
+    expect(revoked).toEqual(['blob:t'])
+    expect(await cache.retry('gone')).toBeNull()
+  })
 })
