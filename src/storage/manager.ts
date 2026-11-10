@@ -1,13 +1,13 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
-import { db, evictOriginals, getMeta, saveFetchedOriginal, setMeta, touchOriginal } from '../lib/db'
+import { db, evictOriginalsToLimit, getMeta, saveFetchedOriginal, setMeta, touchOriginal } from '../lib/db'
 import type { ImageRef } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
 import { KeySet } from '../lib/keySet'
 import { isDisplayable, typeForExt } from '../lib/images'
 import { type ImageLocal, imagesWaiting } from './attachments'
 import { backendById } from './backends'
-import { ORIGINALS_CACHE_BYTES, fetchOriginal } from './originals'
+import { fetchOriginal, limitMode } from './originals'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
 import { type FileStore, type LocalStore, type SyncReport, type SyncState, supportsBlobs } from './types'
@@ -144,16 +144,28 @@ export function holdOriginal(hash: string): () => void {
 }
 
 /**
- * Keep local originals within the cache limit, but only while the active storage is a separate copy that has
- * confirmed them (never with "Files inside this browser", never without storage). Never throws.
+ * Keep local originals within the cache limit (the saved setting, 1 GB unless changed in Settings), but only while the
+ * active storage is a separate copy that has confirmed them (never with "Files inside this browser", never without
+ * storage). Never throws.
  */
 async function trimOriginals(backendId: string, keep: ReadonlySet<string> = new Set()) {
   if (!store || state.backendId !== backendId || backendById(backendId)?.insideBrowser) return
   try {
-    await evictOriginals(ORIGINALS_CACHE_BYTES, new Set([...keep, ...held.keys()]))
+    await evictOriginalsToLimit(new Set([...keep, ...held.keys()]))
   } catch (e) {
     console.warn('Could not trim cached photos:', e)
   }
+}
+
+/** Trim now, e.g. after the limit was lowered in Settings. Does nothing unless the limit applies (see `trimOriginals`). */
+export async function applyOriginalsLimit(): Promise<void> {
+  if (state.backendId) await trimOriginals(state.backendId)
+}
+
+/** Whether the cache limit does anything right now, for Settings. */
+export function useOriginalsLimitMode() {
+  const s = useStorage()
+  return limitMode(s.backendId, !!(s.backendId && backendById(s.backendId)?.insideBrowser), s.status === 'needs-permission')
 }
 
 export type OriginalResult =

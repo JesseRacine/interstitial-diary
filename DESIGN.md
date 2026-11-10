@@ -59,7 +59,7 @@ tag renames and parsing would drop it. Dexie v2 adds `thumbs` (rebuildable thumb
 
 Other local data lives in the Dexie `meta` table: `savedSearches`, `recentSearches`, `storage` (active backend id +
 config, e.g. a folder handle), `sync:<backendId>` (file revisions from the last sync), `images:<backendId>` (image
-paths confirmed in that storage). `blobs` rows also carry `usedAt` (last opened, for the original cache). The theme and the journal layout (`journalLayout`: `cards` or `stream`) are in `localStorage`.
+paths confirmed in that storage), `originalsLimit` (the cache limit in bytes, 0 = none). `blobs` rows also carry `usedAt` (last opened, for the original cache). The theme and the journal layout (`journalLayout`: `cards` or `stream`) are in `localStorage`.
 
 ## File format (public contract)
 
@@ -257,7 +257,12 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it.
 - **Tags:** count and last-used date per tag; rename/merge.
-- **Settings:** storage, theme, export, shortcuts. Export is a zip of the Markdown files; with **Include photos** it
+- **Settings:** storage, **photos on this device**, theme, export, shortcuts. The photos card (`PhotoStorageCard`) lists
+  full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
+  the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The
+  limit says in words when it does nothing: no storage connected, "Files inside this browser" (not a separate copy),
+  or access to storage paused. Lowering it frees space at once (`applyOriginalsLimit`), still only for photos storage
+  has confirmed. Export is a zip of the Markdown files; with **Include photos** it
   also holds the originals in the storage-folder layout, streamed (photos stored uncompressed), size shown first,
   one year at a time when over the 4 GB a plain zip can hold.
 - **Shortcuts:** `n` new entry, `/` or Ctrl+K search, ←/→ previous/next day with entries, `t` jump to the latest entry, Esc clears search.
@@ -274,7 +279,9 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   app's address changing. This is why file storage matters. On Android, until pCloud or native exists, the only copy
   is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
 - **Photo files are never deleted automatically**: not when an entry is deleted, and not when a photo is removed from
-  an entry. Local originals are a bounded cache (about 1 GB, `ORIGINALS_CACHE_BYTES`): beyond it, the least recently
+  an entry. Local originals are a bounded cache (1 GB unless changed in Settings: 256 MB to 10 GB or no limit, saved
+  as `originalsLimit` in `meta`, read by `trimOriginals` each time; an invalid saved value means the 1 GB default, so
+  a bad value can never make it drop photos): beyond it, the least recently
   viewed are dropped from the browser, but only ones the active storage has confirmed (`blobs.onRemote`), only while
   that storage is a separate copy (not "Files inside this browser": `StorageBackend.insideBrowser`), and never the
   photo on screen. Choosing another storage resets every `onRemote`, so nothing is dropped until the new one has the

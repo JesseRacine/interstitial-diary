@@ -1,5 +1,6 @@
 import type { Entry } from '../lib/entry'
 import { ExportCard } from './ExportCard'
+import { PhotoStorageCard } from './PhotoStorageCard'
 import { StorageCard } from './StorageCard'
 
 export type Theme = 'system' | 'light' | 'dark'
@@ -15,6 +16,8 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
       <h2>Settings</h2>
 
       <StorageCard />
+
+      <PhotoStorageCard />
 
       <div className="card">
         <h3>Appearance</h3>

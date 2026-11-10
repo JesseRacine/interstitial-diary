@@ -37,7 +37,18 @@ row was 119 px in a 2,420-photo check and at most ~60 tiles were in the DOM. A t
 `openPhoto`, so Esc/Back close it and the scroll position is kept); a day heading opens that day in the journal. Five
 tabs no longer fit a 375 px phone, so the nav's padding is tighter there. Empty state: "No photos yet…". Checked on
 127.0.0.1 with 800 seeded entries / 2,420 photos (some without thumbnails): 6 columns at desktop, 3 at 375 px, dark and
-light, viewer open/close, heading jump; the seeded rows were deleted afterwards. Next: 3.3 (storage in Settings).
+light, viewer open/close, heading jump; the seeded rows were deleted afterwards. **3.3 done:** a "Photos on this device" card in Settings
+(`PhotoStorageCard`): full-size photos (count, size, and how many storage doesn't have yet), thumbnails, the browser's
+`storage.estimate()` and a picker for the original-cache limit (256 MB, 512 MB, 1 GB default, 2 GB, 5 GB, 10 GB, no
+limit). The limit is saved as `originalsLimit` in `meta` (`getOriginalsLimit`/`setOriginalsLimit`; anything that isn't
+one of the choices reads as the 1 GB default; 0 = no limit = `Infinity`); `trimOriginals` in the manager now calls
+`evictOriginalsToLimit`, and lowering the limit trims at once (`applyOriginalsLimit`, same rule: only `onRemote: 1`,
+never with `insideBrowser`, never the photo on screen). `limitMode` (pure, tested) says when the limit does nothing
+(no storage / inside browser / permission paused) and the card says so in words. Checked on 127.0.0.1 with seeded
+rows: numbers, saving and reloading the setting, the "no storage" and "Files inside this browser" texts, and that with
+the browser module and a 256 MB limit nothing was dropped from 1.34 GB; 375 px dark. The "applies" text and a real
+eviction need a separate-copy storage (the folder picker), so that part is covered by unit tests only (13 new).
+Next: 3.4 (remove images of deleted entries).
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the

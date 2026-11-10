@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { type CachedOriginal, chooseEvictions } from '../storage/originals'
+import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
 import { type Entry, type ImageRef, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 
 export interface Meta {
@@ -137,6 +137,43 @@ export async function evictOriginals(limit: number, keep: ReadonlySet<string> = 
     await db.blobs.bulkDelete(drop)
     return drop
   })
+}
+
+const ORIGINALS_LIMIT_KEY = 'originalsLimit'
+
+/** The saved cache limit in bytes (0 = no limit); the default if nothing valid is saved. */
+export async function getOriginalsLimit(): Promise<number> {
+  return normaliseLimit(await getMeta<unknown>(ORIGINALS_LIMIT_KEY, ORIGINALS_CACHE_BYTES))
+}
+
+export async function setOriginalsLimit(bytes: number): Promise<void> {
+  await setMeta(ORIGINALS_LIMIT_KEY, normaliseLimit(bytes))
+}
+
+/** evictOriginals with the saved limit. The same rule applies: the CALLER must only call it when storage is a separate copy. */
+export async function evictOriginalsToLimit(keep: ReadonlySet<string> = new Set()): Promise<string[]> {
+  return evictOriginals(limitBytes(await getOriginalsLimit()), keep)
+}
+
+/** What this device holds for photos, for Settings. Sizes are the stored files' sizes. */
+export interface PhotoUsage {
+  originals: number
+  originalBytes: number
+  unsavedOriginals: number // originals storage hasn't confirmed (never dropped automatically)
+  unsavedBytes: number
+  thumbs: number
+  thumbBytes: number
+}
+
+export async function photoUsage(): Promise<PhotoUsage> {
+  const u: PhotoUsage = { originals: 0, originalBytes: 0, unsavedOriginals: 0, unsavedBytes: 0, thumbs: 0, thumbBytes: 0 }
+  await db.blobs.each((b) => {
+    u.originals++
+    u.originalBytes += b.size
+    if (!b.onRemote) { u.unsavedOriginals++; u.unsavedBytes += b.size }
+  })
+  await db.thumbs.each((t) => { u.thumbs++; u.thumbBytes += t.blob.size })
+  return u
 }
 
 export async function getMeta<T>(key: string, fallback: T): Promise<T> {

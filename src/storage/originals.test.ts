@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { hashBytes } from '../lib/images'
 import { memoryStore } from './memory'
-import { type CachedOriginal, chooseEvictions, fetchOriginal } from './originals'
+import {
+  type CachedOriginal, ORIGINALS_CACHE_BYTES, ORIGINALS_LIMIT_CHOICES, chooseEvictions, fetchOriginal, limitBytes, limitMode,
+  normaliseLimit,
+} from './originals'
 
 const photo = async (seed: number) => {
   const bytes = new Uint8Array(32).fill(seed)
@@ -69,4 +72,42 @@ describe('chooseEvictions', () => {
   it('never drops a kept one (the photo on screen)', () => {
     expect(chooseEvictions([r('a', 10, 1, 1), r('b', 10, 1, 2)], 10, new Set(['a']))).toEqual(['b'])
   })
+
+  it('an unlimited cache (Infinity) drops nothing, however much there is', () => {
+    expect(chooseEvictions([r('a', 1e12, 1, 1), r('b', 1e12, 1, 2)], Infinity)).toEqual([])
+  })
+})
+
+describe('cache limit setting', () => {
+  it('the default is one of the choices', () => {
+    expect(ORIGINALS_LIMIT_CHOICES.map((c) => c.bytes)).toContain(ORIGINALS_CACHE_BYTES)
+  })
+
+  it('keeps a valid saved value, including 0 (no limit)', () => {
+    for (const c of ORIGINALS_LIMIT_CHOICES) expect(normaliseLimit(c.bytes)).toBe(c.bytes)
+    expect(normaliseLimit(0)).toBe(0)
+  })
+
+  it('anything else falls back to the default, so a bad value can never make the cache drop photos', () => {
+    for (const bad of [undefined, null, 'abc', '1024', -1, NaN, 1, 123456, Infinity, {}]) {
+      expect(normaliseLimit(bad)).toBe(ORIGINALS_CACHE_BYTES)
+    }
+  })
+
+  it('0 means no limit and becomes Infinity', () => {
+    expect(limitBytes(0)).toBe(Infinity)
+    expect(limitBytes(ORIGINALS_CACHE_BYTES)).toBe(ORIGINALS_CACHE_BYTES)
+  })
+})
+
+describe('limitMode', () => {
+  it('applies only with a separate, reachable storage', () => {
+    expect(limitMode('folder', false, false)).toBe('applies')
+  })
+  it('does nothing without storage', () => expect(limitMode(null, false, false)).toBe('no-storage'))
+  it('does nothing with files inside the browser, which are not a separate copy', () => {
+    expect(limitMode('browser', true, false)).toBe('inside-browser')
+    expect(limitMode('browser', true, true)).toBe('inside-browser')
+  })
+  it('waits while storage needs permission again', () => expect(limitMode('folder', false, true)).toBe('paused'))
 })

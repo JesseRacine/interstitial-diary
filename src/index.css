@@ -314,6 +314,10 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; margin-bottom: 0.75rem; }
 .card p { margin: 0.25rem 0 0.6rem; }
 .card table td { padding: 0.15rem 1rem 0.15rem 0; }
+.card table.usage { margin-bottom: 0.6rem; }
+.card table.usage td:first-child { white-space: nowrap; }
+.card table.usage td:last-child { padding-right: 0; }
+@media (max-width: 520px) { .card table.usage td { display: block; padding: 0; } .card table.usage tr { display: block; padding: 0.2rem 0; } .card table.usage td:first-child { color: var(--muted); font-size: 0.85rem; } }
 
 /* Storage */
 .badge { margin-left: auto; font-size: 0.8rem; border-radius: 999px; padding: 0.15rem 0.65rem; color: var(--muted); display: inline-flex; align-items: center; gap: 0.4rem; }

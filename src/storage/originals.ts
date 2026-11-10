@@ -10,8 +10,44 @@ import type { BlobStore } from './types'
  *   (not "Files inside this browser", which lives in the same browser storage). The caller checks the last two.
  */
 
-/** About how much space local originals may take before the least recently used safe ones are dropped. */
+/** The default for how much space local originals may take before the least recently used safe ones are dropped. */
 export const ORIGINALS_CACHE_BYTES = 1024 * 1024 * 1024
+
+const MB = 1024 * 1024
+/** What Settings offers. `bytes: 0` means no limit. The saved setting must be one of these (see `normaliseLimit`). */
+export const ORIGINALS_LIMIT_CHOICES: { bytes: number; label: string }[] = [
+  { bytes: 256 * MB, label: '256 MB' },
+  { bytes: 512 * MB, label: '512 MB' },
+  { bytes: 1024 * MB, label: '1 GB' },
+  { bytes: 2048 * MB, label: '2 GB' },
+  { bytes: 5 * 1024 * MB, label: '5 GB' },
+  { bytes: 10 * 1024 * MB, label: '10 GB' },
+  { bytes: 0, label: 'No limit' },
+]
+
+/** A saved limit setting, or the default if it is missing or isn't one of the choices (so a bad value can't drop photos). */
+export function normaliseLimit(v: unknown): number {
+  return ORIGINALS_LIMIT_CHOICES.some((c) => c.bytes === v) ? (v as number) : ORIGINALS_CACHE_BYTES
+}
+
+/** The setting as a byte limit for `chooseEvictions`: 0 (no limit) becomes Infinity, which never drops anything. */
+export const limitBytes = (setting: number): number => (setting === 0 ? Infinity : setting)
+
+export type LimitMode =
+  | 'applies' // storage holds its own copy: confirmed originals over the limit are dropped
+  | 'no-storage' // nothing connected: no safe copy, so nothing is ever dropped
+  | 'inside-browser' // "Files inside this browser" lives in the same browser data, so it isn't a separate copy
+  | 'paused' // storage needs permission again; trimming waits for it
+
+/**
+ * Whether the limit does anything right now. Mirrors the rule trimOriginals enforces in manager.ts: only with an active
+ * storage that is a separate copy and is reachable.
+ */
+export function limitMode(backendId: string | null, insideBrowser: boolean, needsPermission: boolean): LimitMode {
+  if (!backendId) return 'no-storage'
+  if (insideBrowser) return 'inside-browser'
+  return needsPermission ? 'paused' : 'applies'
+}
 
 /**
  * Downloads an original from storage, trying each year folder given (the entry's own year first). The bytes must hash

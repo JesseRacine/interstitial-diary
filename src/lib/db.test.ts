@@ -140,4 +140,53 @@ describe('cached originals', () => {
     expect(await m.evictOriginals(5, new Set(['held']))).toEqual(['old'])
     expect((await m.db.blobs.toCollection().primaryKeys()).sort()).toEqual(['held', 'only-copy'])
   })
+
+  const MB = 1024 * 1024
+  const big = (hash: string, mb: number, onRemote: 0 | 1, addedAt: number) => ({ ...row(hash, 1, onRemote, addedAt), size: mb * MB })
+
+  it('the cache limit defaults to 1 GB and is remembered', async () => {
+    await m.db.meta.delete('originalsLimit')
+    expect(await m.getOriginalsLimit()).toBe(1024 * MB)
+    await m.setOriginalsLimit(256 * MB)
+    expect(await m.getOriginalsLimit()).toBe(256 * MB)
+    await m.setOriginalsLimit(0)
+    expect(await m.getOriginalsLimit()).toBe(0) // 0 = no limit, and must not turn back into the default
+  })
+
+  it('an invalid saved limit falls back to the default instead of dropping photos', async () => {
+    await m.db.meta.put({ key: 'originalsLimit', value: 5 })
+    expect(await m.getOriginalsLimit()).toBe(1024 * MB)
+    await m.setOriginalsLimit(7)
+    expect(await m.getOriginalsLimit()).toBe(1024 * MB)
+  })
+
+  it('trimming follows the saved limit: a lower one drops more, no limit drops nothing, unconfirmed ones always stay', async () => {
+    await m.db.blobs.bulkPut([big('a', 200, 1, 1), big('b', 200, 1, 2), big('c', 200, 0, 3), big('d', 200, 1, 4)])
+    await m.setOriginalsLimit(1024 * MB)
+    expect(await m.evictOriginalsToLimit()).toEqual([]) // 800 MB fits in 1 GB
+    await m.setOriginalsLimit(512 * MB)
+    expect(await m.evictOriginalsToLimit()).toEqual(['a', 'b']) // 800 -> 400 MB, oldest confirmed first
+    await m.setOriginalsLimit(256 * MB)
+    expect(await m.evictOriginalsToLimit(new Set(['d']))).toEqual([]) // 'd' is on screen, 'c' is the only copy
+    await m.setOriginalsLimit(256 * MB)
+    expect(await m.evictOriginalsToLimit()).toEqual(['d']) // still over; 'c' is never dropped
+    await m.db.blobs.bulkPut([big('e', 5000, 1, 5)])
+    await m.setOriginalsLimit(0)
+    expect(await m.evictOriginalsToLimit()).toEqual([]) // no limit
+    expect((await m.db.blobs.toCollection().primaryKeys()).sort()).toEqual(['c', 'e'])
+  })
+
+  it('photoUsage adds up originals, those storage has not confirmed, and thumbnails', async () => {
+    await m.db.blobs.clear()
+    await m.db.thumbs.clear()
+    expect(await m.photoUsage()).toEqual({ originals: 0, originalBytes: 0, unsavedOriginals: 0, unsavedBytes: 0, thumbs: 0, thumbBytes: 0 })
+    await m.db.blobs.bulkPut([row('a', 10, 1, 1), row('b', 5, 0, 2), row('c', 7, 0, 3)])
+    await m.db.thumbs.bulkPut([
+      { hash: 'a', blob: new Blob([new Uint8Array(3)]), w: 1, h: 1 },
+      { hash: 'b', blob: new Blob([new Uint8Array(4)]), w: 1, h: 1 },
+    ])
+    expect(await m.photoUsage()).toEqual({ originals: 3, originalBytes: 22, unsavedOriginals: 2, unsavedBytes: 12, thumbs: 2, thumbBytes: 7 })
+    await m.db.blobs.clear()
+    await m.db.thumbs.clear()
+  })
 })

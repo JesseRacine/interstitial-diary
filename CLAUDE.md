@@ -74,6 +74,8 @@ src/
   lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal
   lib/photoRows.ts    entries -> day headers + rows of square tiles (and columnsFor(width)) for the Photos view
   components/PhotosView.tsx  Photos tab: virtualised grid of every photo, newest day first; tile -> lightbox
+  components/PhotoStorageCard.tsx  Settings: photo space used (db.photoUsage, storage.estimate) + original-cache limit
+                      (limit setting in db.ts + originals.ts; manager.applyOriginalsLimit / useOriginalsLimitMode)
   App.tsx             views, routing, keyboard shortcuts
 ```
 
