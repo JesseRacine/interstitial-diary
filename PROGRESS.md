@@ -34,7 +34,9 @@ _Last updated: 2026-11-09_
 
 | afa7135 | PWA 2: installable PWA: manifest + generated icons + "New entry" shortcut, `vite-plugin-pwa` precaching the whole build (image worker included), update banner, theme-color/apple-touch-icon; 6 new tests |
 
-| (this commit) | Data safety 3: Settings "Data safety" card (persistent-storage state, last backup, reminder switch), header badge for entries-only users, backup reminder, `restored` startup flag; 18 new tests |
+| daa2fb8 | Data safety 3: Settings "Data safety" card (persistent-storage state, last backup, reminder switch), header badge for entries-only users, backup reminder, `restored` startup flag; 18 new tests |
+
+| (this commit) | Docs: handoff for step 4 (GitHub Pages): open decisions, user tasks, pre-publish cleanup, checklist |
 
 272 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
 
@@ -106,14 +108,86 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
 - Possible later polish: a "Files inside this browser" user still sees a green "Saved" header badge (the Settings card
   and the reminder do say it isn't a backup).
 
-### 4. Hosting (needs the user)
-- **Open decision:** GitHub Pages (recommended: the same GitHub account later covers native builds in Actions and a
-  possible GitHub storage module) or Cloudflare Pages.
-- The user needs to create the account/repo; then add a deploy workflow and set Vite `base` if the site is served
-  from a sub-path.
-- Note: browser data belongs to the exact address, so pick the final address early (moving later starts the
-  installed app empty, though files in a folder or pCloud carry over).
-- **Done when:** the app is installed on both Windows and Android from the hosted address.
+### 4. Hosting on GitHub Pages: NEXT (decided 2026-11-10: GitHub Pages, not Cloudflare)
+Not started. Nothing in the repo has changed for it yet. **Start by asking the user the four open decisions below**, then
+get their account details, then do the checklist in order (one sub-step per turn, as usual).
+
+**What the user has already been told (don't re-explain at length):**
+- The hosted site is **public**; on GitHub's free plan the repo must be public too (Pages from a private repo needs a
+  paid plan, and even then the site is public; only Enterprise can restrict it). Cloudflare Pages + Access was the
+  private alternative; the user chose GitHub Pages anyway.
+- Their **journal is never uploaded**: entries and photos stay in their browser or their own folder; the site is only the
+  app's code, and a stranger opening it gets their own empty journal.
+- An app installed from the hosted address has its **own empty data**, separate from the `localhost:4173` test install
+  (bring a journal across with Export, or a shared folder).
+- The address is permanent in practice (browser data belongs to the exact address). Changing it later starts the
+  installed app empty (files in a folder or pCloud carry over).
+
+**Open decisions (ask first; not yet answered):**
+1. **Address:** `https://<username>.github.io/<repo>/` (default; needs `base: '/<repo>/'`), or a repo named exactly
+   `<username>.github.io` (address with no sub-path, `base: '/'`), or later a custom domain (about $10/year, survives
+   a change of host). Recommend one of the first two; custom domain only if they want long-term permanence.
+2. **Public repo OK?** Required on the free plan.
+3. **Commit email.** All 39 commits are authored `JesseRacine <9375408+JesseRacine@users.noreply.github.com>`; a public repo would show that Gmail
+   address. Recommend rewriting the author email to their GitHub noreply address
+   (`<id>+<username>@users.noreply.github.com`, shown at github.com > Settings > Emails) before the first push, and
+   switching on "Keep my email addresses private" and "Block command line pushes that expose my email". Alternative:
+   accept the exposure. A rewrite changes every commit hash (see cleanup below).
+4. **Default branch:** the repo's branch is `master` and there is no remote. Recommend renaming it to `main` (what
+   GitHub and most workflow examples assume).
+
+**What the user must do (Claude can't):**
+- Create the GitHub account (and make the privacy settings above), then give Claude the username and the numeric id
+  from the noreply address; create the empty repo (no README/licence) or let `gh repo create` do it.
+- Sign in from WSL once. `gh` is **not installed** in WSL: Claude asks before installing it there (installs stay in
+  WSL), then the user runs `gh auth login` themselves (Claude never handles the password/token). Alternative: an SSH key
+  or a personal access token the user sets up.
+- Repo **Settings > Pages > Source: GitHub Actions** (one click, after the first push).
+- Test the installs: Edge on Windows, Chrome on Android (needs the hosted HTTPS address).
+
+**Checklist for Claude (in order):**
+1. **Clean up before anything is public.**
+   - Re-run the scan (all 2026-11-10 results are listed here; there are no keys, tokens or secrets in the repo):
+     `git grep -n -I -E "<personal-email>|jesse|C:\\\\Users|/home/|wsl.localhost" -- . ':!package-lock.json'` and
+     `git log --format='%an <%ae>' | sort | uniq -c`. Findings: the repo's `CLAUDE.md` lines 23, 24 and 53 hold the
+     WSL/Windows paths, the user's name and their Gmail address (in the commit command). Move the machine-specific
+     paths into the Windows session folder's own `CLAUDE.md` (outside the repo) and use the noreply address in the
+     commit command. `junior-plan.md` is superseded: ask whether to delete it.
+   - If the history is rewritten (decision 3): use `git filter-branch --env-filter` (or `git-filter-repo`, which is not
+     installed: ask first), keep the `Co-Authored-By: Claude ... <noreply@anthropic.com>` trailers, check
+     `git log --format='%an <%ae>' | sort -u` shows only the noreply address, and note in PROGRESS.md that the hashes in
+     the "Done" table predate the rewrite. Then make a **new dated archive** in the Windows folder (the existing
+     `archive/` snapshot is of f4ef4d9 and is read-only; never edit it).
+   - Rename `master` to `main` if chosen; add the remote; first push.
+2. **Base path.** Set Vite `base` from an environment variable in the workflow (`/<repo>/`, or `/`), leaving local `dev`
+   and `preview` at `/`. Check with a build under the sub-path (`npm run build` then `npm run preview`): the manifest,
+   service worker scope, icons, the image worker chunk, and the `?view=journal` shortcut. Notes: `index.html` uses
+   `/favicon.svg` and `/apple-touch-icon.png` (Vite rewrites them with `base`); the manifest's `start_url`/`scope`/icons are
+   already relative; the app uses query parameters, not path routes, so no 404 fallback is needed; `src/pwa.test.ts`
+   expects those two `href="/..."` strings in `index.html`.
+3. **Deploy workflow** `.github/workflows/deploy.yml`: on push to `main` (and manual): checkout, setup-node (match
+   the Node version in WSL: check `node -v`; pin it), `npm ci`, `npm test`, `npm run build` (runs `tsc -b`),
+   `actions/configure-pages`, `actions/upload-pages-artifact` (path `dist`), `actions/deploy-pages`; permissions
+   `contents: read`, `pages: write`, `id-token: write`; a `concurrency` group. Look up the current major versions of those
+   actions rather than trusting memory. Tests run with `TZ=UTC` already via the npm script.
+4. **Push and watch** the first run (`gh run watch`, or the user's Actions tab; do not poll in a loop). Pages can take a
+   minute or two to start serving.
+5. **Verify the hosted site** in the Browser pane (read-only checks: manifest, service worker active and its scope, precache
+   list, offline reload on the hosted origin, icons load) and ask the user to install it in Edge and on Android.
+6. **Close the loop on the update banner** (waiting-list item 7): make a visible change, deploy a second time, and the
+   installed app should show "A new version is ready".
+7. **Docs:** add the live URL to README, CLAUDE.md (status, commands, code map: `.github/workflows/deploy.yml`, the
+   `BASE_PATH` variable) and DESIGN.md ("Platform plan"); move the done items into the "Done" table; update the memory
+   note `interstitial-diary-project`.
+
+**Things to remember afterwards:**
+- Step 5 (pCloud) needs this address for the OAuth redirect URI; the pCloud app is registered in their developer console.
+- The Android folder module is still unsupported there, so Android users depend on the export reminder until pCloud or
+  native exists.
+- A custom domain later means a new origin: installed apps start empty again (plan it before many installs).
+
+**Done when:** the app is installed on both Windows and Android from the hosted address, and a second deploy shows the
+update banner.
 
 ### 5. pCloud storage module
 - See DESIGN.md "pCloud notes". The user registers an app in pCloud's developer console (needs the hosted address

@@ -14,8 +14,13 @@ Read these before changing anything substantial:
   `junior-plan.md` is superseded; ignore it.
 
 **Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3), the installable PWA and the data-safety features are built; 272 tests pass. Next up in PROGRESS.md:
-hosting, pCloud, Tauri. (Edge's Install offer and Lighthouse are still to be confirmed by the user.)
+(phases 1–3), the installable PWA and the data-safety features are built; 272 tests pass. **Next: PROGRESS.md step 4,
+hosting on GitHub Pages** (decided; nothing built yet: it starts with four open questions for the user and a pre-publish
+cleanup, all written out there). After that: pCloud, Tauri.
+
+**Before the repo goes public (step 4):** this file still holds machine-specific paths, the user's name and Gmail address
+(the commit command below), and the git history is authored with that Gmail address. PROGRESS.md step 4 lists exactly
+what to fix and asks the user which way to go. Do not push to any remote before doing that cleanup. (Edge's Install offer and Lighthouse are still to be confirmed by the user.)
 
 ## Where things are
 

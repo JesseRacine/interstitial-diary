@@ -290,8 +290,11 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
     shows "A new version is ready. Reload": a new version is never applied on its own, so a half-written entry is never
     lost. It also checks for updates hourly (an installed window can stay open for days).
   - The service worker only exists in production builds (`npm run build`, `npm run preview`), not in `npm run dev`.
-  - **Next (PROGRESS step 4):** host it over HTTPS (required for installing on Android). Browser data belongs to the
-    exact address, so the final address should be chosen before anyone installs.
+  - **Next (PROGRESS step 4):** host it on GitHub Pages over HTTPS (required for installing on Android; decided
+    2026-11-10). The hosted site is public and contains only the app's code: journal data never leaves the user's browser
+    or their own folder. Browser data belongs to the exact address, so the final address is chosen before anyone
+    installs. The build is path-independent (relative manifest paths, query-parameter routing), so a sub-path such as
+    `/<repo>/` only needs Vite's `base`.
 - **Later:** Tauri wraps the same build into a Windows `.exe` and Android `.apk`, built in GitHub Actions so nothing
   extra is installed locally. Native-only features (tray, global hotkey, Android folders) go in as small
   platform-specific pieces or storage modules.
