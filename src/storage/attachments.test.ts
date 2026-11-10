@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { type Entry, type ImageRef, makeEntry } from '../lib/entry'
 import type { ImageLocal } from './attachments'
-import { pushImages } from './attachments'
+import { imagesWaiting, pushImages } from './attachments'
 import { memoryLocal, memoryStore } from './memory'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
@@ -23,6 +23,7 @@ function device(entries: Entry[], originals: Record<string, Blob> = {}, thumbs: 
     original: async (h) => originals[h] ?? null,
     thumb: async (h) => thumbs[h] ?? null,
     markOnRemote: async (h) => { onRemote.add(h) },
+    unsaved: async () => Object.keys(originals).filter((h) => !onRemote.has(h)),
     saveThumb: async (h, b, w, hh) => { thumbs[h] = b; sizes[h] = [w, hh] },
     thumbnail: async (b) => { thumbnailCalls++; return { w: 40, h: 30, thumb: bytes(Math.max(1, b.size >> 1)), tw: 4, th: 3 } },
   }
@@ -182,6 +183,45 @@ describe('pushing images to storage', () => {
     const d = device([], {})
     const r = await pushImages(d.images, store, new Set(['2020/images/old.jpg']))
     expect([...r.confirmed]).toEqual(['2020/images/old.jpg'])
+  })
+})
+
+describe('photos waiting to be saved', () => {
+  it('a photo attached again after its files were confirmed is marked as stored on the next sync', async () => {
+    const { store, log } = loggingStore()
+    const d = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])], { [A.hash]: bytes(10) }, { [A.hash]: bytes(3) })
+    await d.sync(store)
+    d.onRemote.delete(A.hash) // the cache dropped it, then the same photo was attached again (a new local row)
+    log.length = 0
+    await d.sync(store)
+    expect(log).toEqual([]) // nothing to write: the files were confirmed before
+    expect(d.onRemote.has(A.hash)).toBe(true)
+    expect(imagesWaiting(await d.local.snapshot(), new Set(await d.images.unsaved()))).toBe(0)
+  })
+
+  it('stays unmarked while one of its year copies fails', async () => {
+    const { store } = loggingStore()
+    const d = device([makeEntry('a', at(2025, 8, 9), 'x', [A]), makeEntry('b', at(2026, 8, 9), 'y', [A])],
+      { [A.hash]: bytes(10) }, { [A.hash]: bytes(3) })
+    const writeBlob = store.writeBlob.bind(store)
+    store.writeBlob = async (p, b) => { if (p.startsWith('2026/')) throw new Error('disk full'); return writeBlob(p, b) }
+    await d.sync(store)
+    expect(d.onRemote.has(A.hash)).toBe(false)
+    await d.sync(store) // the 2025 copy is confirmed now, the 2026 one still fails
+    expect(d.onRemote.has(A.hash)).toBe(false)
+    store.writeBlob = writeBlob
+    await d.sync(store)
+    expect(d.onRemote.has(A.hash)).toBe(true)
+  })
+
+  it('counts each waiting photo once, and only for live entries', () => {
+    const live = makeEntry('a', at(2026, 8, 9), 'x', [A, B])
+    const again = makeEntry('b', at(2026, 8, 10), 'y', [A])
+    const C = { ...A, hash: 'cccccccccccccccc' }
+    const gone = { ...makeEntry('c', at(2026, 8, 11), 'z', [C]), deleted: 1 as const }
+    expect(imagesWaiting([live, again, gone], new Set([A.hash, B.hash, C.hash, 'dddddddddddddddd']))).toBe(2)
+    expect(imagesWaiting([live, again], new Set([B.hash]))).toBe(1)
+    expect(imagesWaiting([live], new Set())).toBe(0)
   })
 })
 

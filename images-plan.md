@@ -3,7 +3,7 @@
 _Status: **phase 1 done (2026-11-09)**; phase 2 in progress, split into steps 2.1 `pullImages`, 2.2 originals on
 demand + bounded cache, 2.3 "not synced yet" placeholder, 2.4 badge, 2.5 docs. **2.1 done:** `pullImages` runs after
 `syncOnce`; a missing thumbnail is downloaded, else rebuilt from a local original (via `ImageLocal.thumbnail`) and
-written back, else reported in `missing` (step 2.3 will use it); a failed read/write counts in `imagesPending`. Rows on
+written back, else reported in `missing` (step 2.3 will use it); a failed read counts in the badge. Rows on
 screen pick up a thumbnail that arrives later (`useThumbUrl` + `UrlCache.retry`). Checked on 127.0.0.1 with "Files
 inside this browser": fetched, rebuilt and written back, and shown in place with no height change. **2.2 done:**
 the lightbox calls `loadOriginal` (manager): local, else `fetchOriginal` from storage (entry's year first, bytes must
@@ -15,7 +15,12 @@ the device. Checked on 127.0.0.1: download on open, "not in storage yet", then T
 report's `missing` feeds `missingImages` (a `KeySet` in manager, cleared on connect/disconnect); `Thumb` shows "Not
 synced yet" with a dashed edge for those, an empty box while loading, the format name for HEIC/AVIF. Only images with
 no thumbnail in storage and no local original count (a failed read doesn't). Checked on 127.0.0.1: placeholder, then
-the thumbnail in place after the next sync (same height), light and dark.
+the thumbnail in place after the next sync (same height), light and dark. **2.4 done:** the badge's "N photos waiting"
+is `imagesWaiting` (live: local originals with `onRemote: 0` that a live entry uses) plus pull failures
+(`imagesFailed`); push write failures are already in the live count. Found and fixed on the way: a photo attached
+again after its files were confirmed was never marked `onRemote` (so it would wait forever); `pushImages` now also
+checks `ImageLocal.unsaved()`. Settings shows how many photos from another device haven't arrived yet. Checked on
+127.0.0.1: "1 change waiting · 1 photo waiting", then "Saved just now"; an unused photo isn't counted; 375 px dark.
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the

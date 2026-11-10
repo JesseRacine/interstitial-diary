@@ -21,6 +21,7 @@ export interface ImageLocal {
   original(hash: string): Promise<Blob | null> // the full original, if this device has it
   thumb(hash: string): Promise<Blob | null>
   markOnRemote(hash: string): Promise<void> // the storage module now has the original
+  unsaved(): Promise<string[]> // hashes of local originals not marked as in storage yet
   saveThumb(hash: string, blob: Blob, w: number, h: number): Promise<void> // w/h: the original's size, 0 if unknown
   thumbnail: Thumbnailer // makes a thumbnail from an original (the worker in the app)
 }
@@ -70,7 +71,8 @@ export async function pushImages(
 ): Promise<{ confirmed: Set<string>; report: PushReport }> {
   const done = new Set(confirmed)
   const report: PushReport = { written: 0, pending: 0, errors: [] }
-  const jobs = (await wantedFiles(local)).filter((j) => !done.has(j.path))
+  const wanted = await wantedFiles(local)
+  const jobs = wanted.filter((j) => !done.has(j.path))
   const originalFailed = new Set<string>()
 
   for (const job of jobs) {
@@ -92,11 +94,33 @@ export async function pushImages(
     }
   }
 
-  // An original counts as safely stored once every year copy it needs is there.
-  for (const hash of new Set(jobs.filter((j) => j.kind === 'original').map((j) => j.hash))) {
-    if (!originalFailed.has(hash) && (await local.original(hash))) await local.markOnRemote(hash)
+  // An original counts as safely stored once every year copy it needs is there. Check the ones written now, and any
+  // local original not yet marked although its files were confirmed earlier (e.g. attached again after the cache
+  // dropped it), so the "waiting" count always gets back to 0.
+  const paths = new Map<string, string[]>() // hash -> its original paths
+  for (const j of wanted) if (j.kind === 'original') paths.set(j.hash, [...(paths.get(j.hash) ?? []), j.path])
+  const check = new Set([...jobs.filter((j) => j.kind === 'original').map((j) => j.hash), ...(await local.unsaved())])
+  for (const hash of check) {
+    const need = paths.get(hash)
+    if (!need || originalFailed.has(hash) || !need.every((p) => done.has(p))) continue
+    if (await local.original(hash)) await local.markOnRemote(hash)
   }
   return { confirmed: done, report }
+}
+
+/**
+ * How many photos are waiting to be saved: originals this device holds that storage doesn't have yet (`notOnRemote`)
+ * and that a live entry uses. Photos of deleted entries or discarded drafts never count, so the number always reaches
+ * 0 after a good sync. Each photo counts once, however many entries use it.
+ */
+export function imagesWaiting(entries: readonly Entry[], notOnRemote: ReadonlySet<string>): number {
+  if (!notOnRemote.size) return 0
+  const waiting = new Set<string>()
+  for (const e of entries) {
+    if (e.deleted) continue
+    for (const img of entryImages(e)) if (notOnRemote.has(img.hash)) waiting.add(img.hash)
+  }
+  return waiting.size
 }
 
 export interface PullReport {

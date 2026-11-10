@@ -117,11 +117,18 @@ If anything throws, nothing is marked synced and the next run retries.
 
 **Images** (`storage/attachments.ts`, `storage/syncAll.ts`): each run first pushes images, in their own try/catch,
 then runs the text sync above. So originals land before the day files that refer to them, and an image failure
-never blocks or fails text sync (it shows as "N images waiting" and retries next run). An original is written to
+never blocks or fails text sync (it retries next run). An original is written to
 every `<year>/images/` folder whose live entries use it, plus `.thumbs/<hash>.webp`. Paths confirmed in storage are
-remembered per module (`images:<backendId>` in `meta`), so a quiet sync touches no image files. Choosing a new storage
-resets that list and every `blobs.onRemote`. Image files are never deleted automatically. `list()` never returns
-image files (it runs every sync).
+remembered per module (`images:<backendId>` in `meta`), so a quiet sync touches no image files. An original is marked
+`onRemote: 1` once every year copy it needs is confirmed, including a local copy whose files were confirmed earlier
+(a photo attached again after the cache dropped it: `ImageLocal.unsaved`). Choosing a new storage resets that list and
+every `blobs.onRemote`. Image files are never deleted automatically. `list()` never returns image files (it runs every
+sync).
+
+The **status badge** adds "· N photos waiting": photos on this device that storage doesn't have yet and a live entry
+uses (`imagesWaiting`, a live count like the text's "changes waiting", so it shows before the next sync and drops to 0
+after a good one; photos of deleted entries or discarded drafts never count), plus photos the last pull failed to
+fetch. Settings also says how many photos from another device haven't arrived yet (the "Not synced yet" ones).
 
 After the text sync, a **pull pass** (`pullImages`, own try/catch too) gives this device a thumbnail for every image a
 live entry uses: it downloads `.thumbs/<hash>.webp` (small, so eagerly; the original's size comes from the image

@@ -5,7 +5,7 @@ import type { ImageRef } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
 import { KeySet } from '../lib/keySet'
 import { isDisplayable, typeForExt } from '../lib/images'
-import type { ImageLocal } from './attachments'
+import { type ImageLocal, imagesWaiting } from './attachments'
 import { backendById } from './backends'
 import { ORIGINALS_CACHE_BYTES, fetchOriginal } from './originals'
 import { emptySyncState } from './sync'
@@ -28,6 +28,7 @@ export const dexieImages: ImageLocal = {
   original: async (hash) => (await db.blobs.get(hash))?.blob ?? null,
   thumb: async (hash) => (await db.thumbs.get(hash))?.blob ?? null,
   markOnRemote: async (hash) => { await db.blobs.update(hash, { onRemote: 1 }) },
+  unsaved: () => db.blobs.where('onRemote').equals(0).primaryKeys(),
   saveThumb: async (hash, blob, w, h) => { await db.thumbs.put({ hash, blob, w, h }) },
   thumbnail: makeThumbnail,
 }
@@ -47,13 +48,17 @@ export interface StorageState {
   lastSync: number | null
   lastReport: SyncReport | null
   pending: number // local changes not yet written to storage
-  imagesPending: number // image files that failed to write or read in the last run (retried next sync)
+  imagesWaiting: number // photos on this device that storage doesn't have yet (live, like `pending`)
+  imagesFailed: number // photos the last run couldn't fetch from storage (retried next sync)
   imageError: string | null // last image problem; never turns the status into 'error'
 }
 
+/** Photos the badge reports as waiting: still to save from here, plus ones that failed to download. */
+export const imagesPending = (s: StorageState) => s.imagesWaiting + s.imagesFailed
+
 let state: StorageState = {
   backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0,
-  imagesPending: 0, imageError: null,
+  imagesWaiting: 0, imagesFailed: 0, imageError: null,
 }
 const listeners = new Set<() => void>()
 function set(patch: Partial<StorageState>) {
@@ -111,7 +116,7 @@ export function syncNow(): Promise<void> {
         await setMeta(syncKey(id), r.state)
         set({
           status: 'ok', message: null, lastSync: Date.now(), lastReport: r.report,
-          imagesPending: (r.images?.pending ?? 0) + (r.pulled?.failed ?? 0),
+          imagesFailed: r.pulled?.failed ?? 0, // failed writes stay unsaved, so imagesWaiting already counts them
           imageError: r.images?.errors[0] ?? r.pulled?.errors[0] ?? null,
         })
         missingImages.replace(r.pulled?.missing ?? [])
@@ -224,6 +229,11 @@ export async function initStorage() {
       if (n && store) schedule(1500)
     },
   })
+  // Cheap when everything is saved (an index count); only then looks at which entries use the unsaved photos.
+  liveQuery(async () => {
+    const unsaved = await dexieImages.unsaved()
+    return unsaved.length ? imagesWaiting(await db.entries.toArray(), new Set(unsaved)) : 0
+  }).subscribe({ next: (n) => set({ imagesWaiting: n }) })
   document.addEventListener('visibilitychange', () => void syncNow()) // flush when hidden, pull when shown
   setInterval(() => void syncNow(), 5 * 60_000) // pick up changes made by other apps
   const saved = await getMeta<SavedStorage | null>('storage', null)
@@ -242,7 +252,7 @@ export async function connect(backendId: string) {
     await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
     store = s
     missingImages.replace([]) // that answer was about the old storage
-    set({ backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null, imagesPending: 0, imageError: null })
+    set({ backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null, imagesFailed: 0, imageError: null })
     await syncNow()
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return // picker cancelled
@@ -261,5 +271,5 @@ export async function disconnect() {
   clearTimeout(timer)
   missingImages.replace([])
   await db.meta.delete('storage')
-  set({ backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, imagesPending: 0, imageError: null })
+  set({ backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, imagesFailed: 0, imageError: null })
 }

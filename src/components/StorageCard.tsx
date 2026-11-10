@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { BACKENDS, PLANNED_BACKENDS } from '../storage/backends'
-import { connect, disconnect, reconnect, type StorageState, syncNow, useStorage } from '../storage/manager'
+import {
+  connect, disconnect, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
+} from '../storage/manager'
 
 export function ago(ts: number | null): string {
   if (!ts) return 'never'
@@ -24,7 +26,8 @@ function statusText(s: StorageState): string {
     case 'syncing': return 'Saving…'
     case 'ok': {
       const text = s.pending ? `${s.pending} change${s.pending === 1 ? '' : 's'} waiting` : `Saved ${ago(s.lastSync)}`
-      return s.imagesPending ? `${text} · ${s.imagesPending} image${s.imagesPending === 1 ? '' : 's'} waiting` : text
+      const photos = imagesPending(s)
+      return photos ? `${text} · ${photos} photo${photos === 1 ? '' : 's'} waiting` : text
     }
     case 'needs-permission': return 'Access needed'
     case 'error': return 'Problem saving'
@@ -49,6 +52,7 @@ export function StorageBadge({ onOpenSettings }: { onOpenSettings: () => void })
 
 export function StorageCard() {
   const s = useStorage()
+  const missing = useSyncExternalStore(missingImages.subscribe, () => missingImages.size)
   const [choosing, setChoosing] = useState(false)
   useTick(30_000)
   const showChoices = s.status === 'off' || choosing
@@ -71,7 +75,13 @@ export function StorageCard() {
                 ? ` · last run read ${s.lastReport.read}, wrote ${s.lastReport.written} file${s.lastReport.written === 1 ? '' : 's'}`
                 : ''}
             </div>
-            {s.imageError && <div className="muted error">Images: {s.imageError} (will retry)</div>}
+            {s.imageError && <div className="muted error">Photos: {s.imageError} (will retry)</div>}
+            {missing > 0 && (
+              <div className="muted">
+                {missing} photo{missing === 1 ? '' : 's'} from another device {missing === 1 ? "hasn't" : "haven't"} arrived
+                yet ({missing === 1 ? 'it appears' : 'they appear'} once that device has synced)
+              </div>
+            )}
           </div>
           <div className="row">
             {s.status === 'needs-permission' ? (
