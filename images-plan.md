@@ -1,7 +1,12 @@
 # Plan: images in journal entries
 
 _Status: in progress. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
-2026-11-09, and steps 6 (capture UI), 7 (bubbles) and 8 (lightbox) the same day; next is step 9 (export with photos). Step 8
+2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the
+phase 1 "done when" checks. Step 9 notes: "Include photos" makes ONE zip with the day files and the originals (same
+layout as the storage folder), not a second photos-only zip, so it is a complete backup on its own. Chrome/Edge desktop
+stream it into the file chosen in a save dialog; elsewhere (Android) it is collected into a Blob and downloaded.
+fflate doesn't write ZIP64, so a zip is capped just under 4 GB; over that, export one year at a time (offered
+automatically). Export file names now use the local date. Step 8
 notes: the viewer is always dark; "Remove" takes the photo off the entry but keeps the file (as the plan's rule says);
 history is pushed when opening (App), so Esc/×/tap-outside all close through `history.back()`; keys are taken in the
 capture phase so ←/→/t/n never reach the journal; a HEIC shows a message with Save; an original that isn't on the

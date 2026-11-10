@@ -1,22 +1,8 @@
-import { strToU8, zipSync } from 'fflate'
-import { useMemo } from 'react'
 import type { Entry } from '../lib/entry'
-import { dayFilePath, serializeDay } from '../lib/markdown'
+import { ExportCard } from './ExportCard'
 import { StorageCard } from './StorageCard'
 
 export type Theme = 'system' | 'light' | 'dark'
-
-function exportZip(entries: Entry[]) {
-  const days = [...new Set(entries.map((e) => e.day))].sort()
-  const files: Record<string, Uint8Array> = {}
-  for (const d of days) files[`InterstitialDiary/${dayFilePath(d)}`] = strToU8(serializeDay(d, entries))
-  const blob = new Blob([zipSync(files) as BlobPart], { type: 'application/zip' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `interstitial-diary-${new Date().toISOString().slice(0, 10)}.zip`
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000)
-}
 
 export function SettingsView({ entries, theme, setTheme, tagCount }: {
   entries: Entry[]
@@ -24,7 +10,6 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
   setTheme: (t: Theme) => void
   tagCount: number
 }) {
-  const dayCount = useMemo(() => new Set(entries.map((e) => e.day)).size, [entries])
   return (
     <section className="settings">
       <h2>Settings</h2>
@@ -42,12 +27,7 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
         </div>
       </div>
 
-      <div className="card">
-        <h3>Your data</h3>
-        <p>{entries.length} entries over {dayCount} days, {tagCount} tags.</p>
-        <button type="button" onClick={() => exportZip(entries)} disabled={!entries.length}>Export as Markdown (.zip)</button>
-        <p className="muted">One Markdown file per day, the same format used by every storage option.</p>
-      </div>
+      <ExportCard entries={entries} tagCount={tagCount} />
 
       <div className="card">
         <h3>Keyboard shortcuts</h3>

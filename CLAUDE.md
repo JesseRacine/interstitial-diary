@@ -65,6 +65,7 @@ src/
   components/EntryImages.tsx  photos in a bubble (layout from lib/imageLayout.ts, sized before decode)
   components/Thumb.tsx + useThumbUrl.ts  thumbnails via one shared ref-counted URL cache (lib/urlCache.ts)
   components/Lightbox.tsx  full-size viewer (zoom maths in lib/zoom.ts); opened/closed via history in App.tsx
+  components/ExportCard.tsx  export: text zip, or "Include photos" (lib/exportZip.ts: streamed, photos stored, <4 GB, per year)
   lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal
   App.tsx             views, routing, keyboard shortcuts
 ```

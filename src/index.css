@@ -228,6 +228,8 @@ button.tag:hover { text-decoration: underline; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .empty { color: var(--muted); text-align: center; padding: 2rem 0; }
 .error { color: var(--danger); font-size: 0.9rem; margin: 0 0 0.5rem; }
+label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 0 0.75rem; cursor: pointer; }
+.card .row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 .more { align-self: center; margin-top: 0.5rem; }
 
 /* Journal chat */
