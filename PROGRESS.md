@@ -51,8 +51,8 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
 5. **A real second device** (needs hosting, or a shared folder such as pCloud Drive between two browsers): a photo added
    on one device shows as a thumbnail on the other within one sync, and its original downloads when opened.
 6. **PWA install in Edge: confirmed working by the user (2026-11-10)** on `localhost:4173` (`npm run build && npm run
-   preview`). Not individually reported, so still unchecked: the jump-list "New entry" shortcut and Lighthouse (recent
-   Lighthouse versions have no separate PWA score; DevTools > Application > Manifest shows installability instead).
+   preview`), and the jump-list "New entry" shortcut works. Not reported, so unchecked: Lighthouse (recent Lighthouse
+   versions have no separate PWA score; DevTools > Application > Manifest shows installability instead).
    Note: an install from `localhost:<port>` is tied to that address and its own empty data; the real install comes after
    hosting (step 4).
 7. **The update banner.** Install, then change something and rebuild: the open app should show "A new version is ready"
@@ -78,8 +78,8 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
   `public/` for real artwork any time). Details in DESIGN.md "Platform plan".
 - Checked in the Browser pane on a production build: manifest served, worker active, 12 files precached (the image
   worker chunk included), app reloads and runs with the server stopped, the shortcut URL focuses the capture box.
-- **Confirmed by the user:** installs and works in Edge. **Not yet verified:** the "New entry" jump-list shortcut, the
-  update banner (waiting list items 6 and 7).
+- **Confirmed by the user:** installs and works in Edge, and the "New entry" jump-list shortcut works. **Not yet
+  verified:** the update banner (waiting list item 7).
 - Still a small polish idea: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.
 
 ### 3. Data-safety features
