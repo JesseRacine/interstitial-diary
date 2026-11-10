@@ -117,3 +117,27 @@ describe('db with images', () => {
     expect((await m.db.thumbs.get(IMG_A.hash))?.w).toBe(512)
   })
 })
+
+describe('cached originals', () => {
+  const row = (hash: string, size: number, onRemote: 0 | 1, addedAt: number) =>
+    ({ hash, blob: new Blob([new Uint8Array(size)]), mime: 'image/jpeg', size, onRemote, addedAt })
+
+  beforeEach(async () => { await m.db.blobs.clear() })
+
+  it('a downloaded original is kept as confirmed by storage, and never replaces one already there', async () => {
+    const mine = row('a', 5, 0, 1)
+    await m.db.blobs.put(mine)
+    await m.saveFetchedOriginal('a', new Blob([new Uint8Array(5)]), 'image/jpeg')
+    expect((await m.db.blobs.get('a'))?.onRemote).toBe(0) // unchanged: storage hasn't confirmed this device's copy
+    await m.saveFetchedOriginal('b', new Blob([new Uint8Array(7)]), 'image/png')
+    expect(await m.db.blobs.get('b')).toMatchObject({ size: 7, mime: 'image/png', onRemote: 1 })
+  })
+
+  it('drops the least recently used confirmed originals beyond the limit, never unconfirmed or held ones', async () => {
+    await m.db.blobs.bulkPut([row('old', 10, 1, 1), row('only-copy', 10, 0, 0), row('held', 10, 1, 2), row('new', 10, 1, 3)])
+    await m.touchOriginal('old') // just viewed: now the most recent
+    expect(await m.evictOriginals(30, new Set(['held']))).toEqual(['new']) // 40 bytes in total
+    expect(await m.evictOriginals(5, new Set(['held']))).toEqual(['old'])
+    expect((await m.db.blobs.toCollection().primaryKeys()).sort()).toEqual(['held', 'only-copy'])
+  })
+})

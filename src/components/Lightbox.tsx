@@ -1,28 +1,62 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { db, setEntryImages } from '../lib/db'
-import { type Entry, entryImages, longDayLabel, timeLabel } from '../lib/entry'
+import { setEntryImages } from '../lib/db'
+import { type Entry, type ImageRef, entryImages, longDayLabel, timeLabel } from '../lib/entry'
 import { isDisplayable } from '../lib/images'
+import { holdOriginal, loadOriginal } from '../storage/manager'
 import { FIT, type View, clampView, fitSize, panBy, zoomAt } from '../lib/zoom'
 import { useThumbUrl } from './useThumbUrl'
 
-/** The full original as an object URL (revoked when no longer shown); 'missing' when this device doesn't have it. */
-function useOriginal(hash: string): { url: string | null; missing: boolean } {
-  const [state, setState] = useState<{ hash: string; url: string | null; missing: boolean } | null>(null)
+type OriginalState =
+  | { kind: 'loading' }
+  | { kind: 'ok'; url: string }
+  | { kind: 'no-storage' | 'not-found' }
+  | { kind: 'error'; message: string }
+
+/**
+ * The full original as an object URL (revoked when no longer shown): from this device, else downloaded from storage.
+ * While shown it is held, so the cache never drops it from under the viewer.
+ */
+function useOriginal(image: ImageRef | undefined, day: string): { state: OriginalState; retry: () => void } {
+  const [result, setResult] = useState<{ key: string; state: OriginalState } | null>(null)
+  const [attempt, setAttempt] = useState(0)
+  const hash = image?.hash
+  const ext = image?.ext
+  const key = hash ? `${hash}.${ext}:${day}:${attempt}` : ''
   useEffect(() => {
+    if (!hash || !ext) return
     let live = true
     let url: string | null = null
-    void db.blobs.get(hash).then((row) => {
+    const release = holdOriginal(hash)
+    void loadOriginal({ hash, ext }, day).then((r) => {
       if (!live) return
-      url = row ? URL.createObjectURL(row.blob) : null
-      setState({ hash, url, missing: !row })
+      if (r.kind === 'ok') {
+        url = URL.createObjectURL(r.blob)
+        setResult({ key, state: { kind: 'ok', url } })
+      } else {
+        setResult({ key, state: r })
+      }
     })
     return () => {
       live = false
+      release()
       if (url) URL.revokeObjectURL(url)
     }
-  }, [hash])
-  return state?.hash === hash ? state : { url: null, missing: false }
+  }, [hash, ext, day, key])
+  return {
+    state: result?.key === key ? result.state : { kind: 'loading' },
+    retry: () => setAttempt((a) => a + 1),
+  }
+}
+
+function originalNote(s: OriginalState, displayable: boolean): string {
+  switch (s.kind) {
+    case 'loading': return displayable ? '' : 'Getting the original…'
+    case 'no-storage': return "The original isn't on this device, and no storage is connected to get it from."
+    case 'not-found': return "The original isn't in storage yet. It appears once the device that added it has synced."
+    case 'error': return `Couldn't get the original: ${s.message}`
+    default: return ''
+  }
 }
 
 /**
@@ -40,9 +74,11 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
   const i = Math.min(index, images.length - 1)
   const image = images[i]
   const thumb = useThumbUrl(image?.hash)
-  const original = useOriginal(image?.hash ?? '')
+  const { state: original, retry } = useOriginal(image, entry.day)
+  const originalUrl = original.kind === 'ok' ? original.url : null
   const displayable = image ? isDisplayable(image) : false
-  const src = displayable ? (original.url ?? thumb) : null
+  const src = displayable ? (originalUrl ?? thumb) : null
+  const note = originalNote(original, displayable)
 
   const stage = useRef<HTMLDivElement>(null)
   const dialog = useRef<HTMLDivElement>(null)
@@ -177,9 +213,9 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
       <div className="lightbox-bar">
         <span className="count">{images.length > 1 ? `${i + 1} / ${images.length}` : ''}</span>
         <span className="spacer" />
-        {original.url
-          ? <a className="button" href={original.url} download={name}>Save</a>
-          : <button type="button" disabled title="The original isn't on this device yet">Save</button>}
+        {originalUrl
+          ? <a className="button" href={originalUrl} download={name}>Save</a>
+          : <button type="button" disabled title={original.kind === 'loading' ? 'Getting the original…' : "The original isn't available"}>Save</button>}
         <button type="button" className="danger" onClick={removeImage}>Remove</button>
         <button type="button" className="close" onClick={onClose} aria-label="Close (Esc)">×</button>
       </div>
@@ -211,8 +247,12 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
         ) : (
           <div className="lightbox-missing">
             {!displayable
-              ? `This ${image.ext.toUpperCase()} photo can't be shown here.${original.url ? ' Use Save to open it in another app.' : ''}`
-              : original.missing ? "This photo isn't on this device yet." : ''}
+              ? `This ${image.ext.toUpperCase()} photo can't be shown here.${originalUrl ? ' Use Save to open it in another app.' : ''}`
+              : original.kind === 'loading' ? 'Getting the photo…' : "This photo isn't on this device yet."}
+            {note && !(displayable && original.kind === 'loading') && <div className="muted">{note}</div>}
+            {(original.kind === 'error' || original.kind === 'not-found') && (
+              <button type="button" onClick={retry}>Try again</button>
+            )}
           </div>
         )}
         {i > 0 && <button type="button" className="nav prev" onClick={() => go(-1)} aria-label="Previous photo">‹</button>}
@@ -222,7 +262,14 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
       <div className="lightbox-caption">
         <div className="when">{longDayLabel(entry.day)} · {timeLabel(entry.createdAt)}</div>
         {entry.text && <div className="text">{entry.text}</div>}
-        {displayable && !original.url && original.missing && thumb && <div className="muted">Showing the small copy; the original isn't on this device yet.</div>}
+        {displayable && thumb && !originalUrl && (
+          <div className="muted">
+            {original.kind === 'loading' ? 'Showing the small copy while the original downloads…' : `Showing the small copy. ${note}`}
+            {(original.kind === 'error' || original.kind === 'not-found') && (
+              <> <button type="button" className="link" onClick={retry}>Try again</button></>
+            )}
+          </div>
+        )}
       </div>
     </div>,
     document.body,

@@ -10,6 +10,7 @@ async function root() {
 export const browserBackend: StorageBackend<Record<string, never>> = {
   id: 'browser',
   name: 'Files inside this browser',
+  insideBrowser: true,
   description:
     'Keeps a Markdown copy of every day in the browser’s private storage. Works on Android too, but the files are only reachable through Export.',
 

@@ -46,6 +46,11 @@ export interface StorageBackend<Config = unknown> {
   id: string
   name: string
   description: string
+  /**
+   * True when its files live in the same browser storage as the app's database, so they are not a separate copy.
+   * Then photos are never dropped from this device to save space.
+   */
+  insideBrowser?: boolean
   /** null if usable here, otherwise a short reason why not. */
   unsupportedReason(): string | null
   /** Interactive first-time setup (runs inside a click handler). */

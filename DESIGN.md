@@ -127,7 +127,10 @@ After the text sync, a **pull pass** (`pullImages`, own try/catch too) gives thi
 live entry uses: it downloads `.thumbs/<hash>.webp` (small, so eagerly; the original's size comes from the image
 line), or, if storage has none but this device has the original, makes it again in the worker and writes it back.
 An image that is nowhere yet (the other device hasn't uploaded it) is reported missing and tried again next run.
-Formats without thumbnails (HEIC, AVIF) are skipped, and originals are never downloaded by sync. A row already on
+Formats without thumbnails (HEIC, AVIF) are skipped, and originals are never downloaded by sync: the photo viewer
+asks for one when it opens (`loadOriginal` in `manager.ts`, `fetchOriginal` in `storage/originals.ts`). It tries the
+entry's year folder, then other years that use it, and only accepts bytes that hash to the file name (a file replaced
+by hand is never taken for the photo). The download is kept, and a missing thumbnail is made from it. A row already on
 screen picks up a thumbnail that arrives later (`useThumbUrl` watches the `thumbs` table; `UrlCache.retry`). A
 quiet sync reads nothing, because only images without a local thumbnail are looked up.
 
@@ -210,8 +213,10 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   files), dropping, or the Photo button; up to 10 per entry, a warning over 100 MB, text still required. In a bubble: one
   photo at its ratio (max 320×260), 2–4 as a grid of squares, 5+ as four with "+N". Clicking opens the **lightbox**:
   original after the thumbnail, ←/→ within the entry, wheel/pinch/double-click zoom, drag to pan, Esc or Back to
-  close (it is a history entry), Save (download original), Remove (takes it off the entry; the file is kept). Formats
-  the browser can't show (HEIC, AVIF) and photos not on this device show placeholders.
+  close (it is a history entry), Save (download original), Remove (takes it off the entry; the file is kept). An
+  original that isn't on this device is downloaded from storage when opened (the thumbnail shows meanwhile); if
+  storage doesn't have it yet, a note says so with "Try again". Formats the browser can't show (HEIC, AVIF) show a
+  placeholder with Save.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it.
@@ -233,5 +238,9 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   app's address changing. This is why file storage matters. On Android, until pCloud or native exists, the only copy
   is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
 - **Photo files are never deleted automatically**: not when an entry is deleted, and not when a photo is removed from
-  an entry. A local original may only be dropped from the browser once a separate storage module (not "Files inside
-  this browser") has confirmed it (`blobs.onRemote`); that cache eviction is phase 2.
+  an entry. Local originals are a bounded cache (about 1 GB, `ORIGINALS_CACHE_BYTES`): beyond it, the least recently
+  viewed are dropped from the browser, but only ones the active storage has confirmed (`blobs.onRemote`), only while
+  that storage is a separate copy (not "Files inside this browser": `StorageBackend.insideBrowser`), and never the
+  photo on screen. Choosing another storage resets every `onRemote`, so nothing is dropped until the new one has the
+  files. A dropped original is downloaded again when opened. Thumbnails are never dropped. Export with photos only
+  includes originals that are on the device at the time (it says how many are left out).

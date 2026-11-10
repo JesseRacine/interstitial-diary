@@ -1,12 +1,15 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
-import { db, getMeta, setMeta } from '../lib/db'
+import { db, evictOriginals, getMeta, saveFetchedOriginal, setMeta, touchOriginal } from '../lib/db'
+import type { ImageRef } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
+import { isDisplayable, typeForExt } from '../lib/images'
 import type { ImageLocal } from './attachments'
 import { backendById } from './backends'
+import { ORIGINALS_CACHE_BYTES, fetchOriginal } from './originals'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
-import type { FileStore, LocalStore, SyncReport, SyncState } from './types'
+import { type FileStore, type LocalStore, type SyncReport, type SyncState, supportsBlobs } from './types'
 
 /** The real LocalStore: the Dexie database. */
 export const dexieLocal: LocalStore = {
@@ -99,6 +102,7 @@ export function syncNow(): Promise<void> {
           imagesPending: (r.images?.pending ?? 0) + (r.pulled?.failed ?? 0),
           imageError: r.images?.errors[0] ?? r.pulled?.errors[0] ?? null,
         })
+        await trimOriginals(id)
       } catch (e) {
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')
         set({ status: lost ? 'needs-permission' : 'error', message: describe(e) })
@@ -108,6 +112,78 @@ export function syncNow(): Promise<void> {
     } while (again)
   })().finally(() => { running = null })
   return running
+}
+
+/** Originals on screen (the photo viewer), never dropped while shown. hash -> number of holders. */
+const held = new Map<string, number>()
+export function holdOriginal(hash: string): () => void {
+  held.set(hash, (held.get(hash) ?? 0) + 1)
+  return () => {
+    const n = (held.get(hash) ?? 1) - 1
+    if (n > 0) held.set(hash, n)
+    else held.delete(hash)
+  }
+}
+
+/**
+ * Keep local originals within the cache limit, but only while the active storage is a separate copy that has
+ * confirmed them (never with "Files inside this browser", never without storage). Never throws.
+ */
+async function trimOriginals(backendId: string, keep: ReadonlySet<string> = new Set()) {
+  if (!store || state.backendId !== backendId || backendById(backendId)?.insideBrowser) return
+  try {
+    await evictOriginals(ORIGINALS_CACHE_BYTES, new Set([...keep, ...held.keys()]))
+  } catch (e) {
+    console.warn('Could not trim cached photos:', e)
+  }
+}
+
+export type OriginalResult =
+  | { kind: 'ok'; blob: Blob }
+  | { kind: 'no-storage' } // no storage connected (or it can't hold images): nowhere to get it from
+  | { kind: 'not-found' } // storage doesn't have it (yet)
+  | { kind: 'error'; message: string }
+
+const loading = new Map<string, Promise<OriginalResult>>()
+
+/**
+ * The full original of a photo, for the viewer: from this device, else downloaded from storage and kept (within the
+ * cache limit). Also makes a missing thumbnail from it. One download per photo at a time.
+ */
+export function loadOriginal(ref: Pick<ImageRef, 'hash' | 'ext'>, day: string): Promise<OriginalResult> {
+  const running = loading.get(ref.hash)
+  if (running) return running
+  const p = (async (): Promise<OriginalResult> => {
+    const local = await db.blobs.get(ref.hash)
+    if (local) {
+      await touchOriginal(ref.hash)
+      return { kind: 'ok', blob: local.blob }
+    }
+    const s = store
+    const id = state.backendId
+    if (!s || !id || !supportsBlobs(s)) return { kind: 'no-storage' }
+    try {
+      let blob = await fetchOriginal(s, ref, [day.slice(0, 4)])
+      if (!blob) {
+        // Also stored in the year folder of any other entry that uses it.
+        const others = await db.entries.filter((e) => !e.deleted && !!e.images?.some((i) => i.hash === ref.hash)).toArray()
+        blob = await fetchOriginal(s, ref, others.map((e) => e.day.slice(0, 4)).filter((y) => y !== day.slice(0, 4)))
+      }
+      if (!blob) return { kind: 'not-found' }
+      const mime = typeForExt(ref.ext)?.mime ?? 'application/octet-stream'
+      const kept = await saveFetchedOriginal(ref.hash, new Blob([blob], { type: mime }), mime)
+      if (isDisplayable(ref) && !(await db.thumbs.get(ref.hash))) {
+        const t = await makeThumbnail(kept)
+        if (t) await db.thumbs.put({ hash: ref.hash, blob: t.thumb, w: t.w, h: t.h })
+      }
+      await trimOriginals(id, new Set([ref.hash]))
+      return { kind: 'ok', blob: kept }
+    } catch (e) {
+      return { kind: 'error', message: describe(e) }
+    }
+  })().finally(() => loading.delete(ref.hash))
+  loading.set(ref.hash, p)
+  return p
 }
 
 async function openSaved(saved: SavedStorage, interactive: boolean) {

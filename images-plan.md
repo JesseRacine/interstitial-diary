@@ -5,7 +5,13 @@ demand + bounded cache, 2.3 "not synced yet" placeholder, 2.4 badge, 2.5 docs. *
 `syncOnce`; a missing thumbnail is downloaded, else rebuilt from a local original (via `ImageLocal.thumbnail`) and
 written back, else reported in `missing` (step 2.3 will use it); a failed read/write counts in `imagesPending`. Rows on
 screen pick up a thumbnail that arrives later (`useThumbUrl` + `UrlCache.retry`). Checked on 127.0.0.1 with "Files
-inside this browser": fetched, rebuilt and written back, and shown in place with no height change.
+inside this browser": fetched, rebuilt and written back, and shown in place with no height change. **2.2 done:**
+the lightbox calls `loadOriginal` (manager): local, else `fetchOriginal` from storage (entry's year first, bytes must
+hash to the name), kept with `onRemote: 1`, plus a thumbnail if missing; states loading / no storage / not in storage
+yet / error, with "Try again". Cache limit about 1 GB (`ORIGINALS_CACHE_BYTES`; the Settings control is phase 3),
+trimmed after every sync and every download, least recently viewed first (`usedAt`), only `onRemote: 1`, never with
+a module marked `insideBrowser`, never the photo on screen (`holdOriginal`). Export still only includes originals on
+the device. Checked on 127.0.0.1: download on open, "not in storage yet", then Try again.
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the
