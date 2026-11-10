@@ -1,6 +1,7 @@
 import { strToU8, zipSync } from 'fflate'
 import { useEffect, useMemo, useState } from 'react'
-import { db } from '../lib/db'
+import { db, setMeta } from '../lib/db'
+import { META_LAST_BACKUP } from '../lib/dataSafety'
 import { type Entry, dayKey } from '../lib/entry'
 import { MAX_ZIP_BYTES, type ZipSink, blobSink, planExport, writeExportZip } from '../lib/exportZip'
 import { formatBytes } from '../lib/images'
@@ -22,6 +23,7 @@ function exportText(entries: Entry[]) {
   const files: Record<string, Uint8Array> = {}
   for (const d of days) files[`InterstitialDiary/${dayFilePath(d)}`] = strToU8(serializeDay(d, entries))
   download(new Blob([zipSync(files) as BlobPart], { type: 'application/zip' }), `interstitial-diary-${today()}.zip`)
+  void setMeta(META_LAST_BACKUP, Date.now()) // for the backup reminder
 }
 
 export function ExportCard({ entries, tagCount }: { entries: Entry[]; tagCount: number }) {
@@ -72,6 +74,7 @@ export function ExportCard({ entries, tagCount }: { entries: Entry[]; tagCount: 
       const r = await writeExportZip(entries, plan, async (h) => (await db.blobs.get(h))?.blob ?? null, sink,
         (done, total) => setProgress(total ? done / total : 1))
       if (sink.result) download(sink.result(), name)
+      void setMeta(META_LAST_BACKUP, Date.now()) // for the backup reminder
       setMessage(`Exported ${plan.days.length} day${plan.days.length === 1 ? '' : 's'} and ${r.photos} photo file${r.photos === 1 ? '' : 's'}.${r.skipped ? ` ${r.skipped} could not be read.` : ''}`)
     } catch (e) {
       setMessage(`Export failed: ${e instanceof Error ? e.message : String(e)}`)

@@ -1,11 +1,12 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { db } from '../lib/db'
-import { browserOnlyMode, browserOnlyWarning } from '../lib/dataSafety'
+import { browserOnlyWarning, showHeaderWarning } from '../lib/dataSafety'
 import { useLive } from '../lib/hooks'
-import { BACKENDS, PLANNED_BACKENDS, backendById } from '../storage/backends'
+import { BACKENDS, PLANNED_BACKENDS } from '../storage/backends'
 import {
   connect, disconnect, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
 } from '../storage/manager'
+import { useBrowserOnlyMode } from './useBrowserOnlyMode'
 
 export function ago(ts: number | null): string {
   if (!ts) return 'never'
@@ -40,17 +41,20 @@ function statusText(s: StorageState): string {
 
 /** Photos this device holds (live, so the warning appears with the first photo). */
 const usePhotoCount = () => useLive(() => db.blobs.count(), [], 0)
+/** Entries (including deleted ones' tombstones, which is fine for "is there anything here"). */
+const useEntryCount = () => useLive(() => db.entries.count(), [], 0)
 
 /**
- * Compact indicator for the header. With no storage chosen it shows nothing, except a warning once there are photos:
- * they are the data most at risk if the browser's data is cleared (the general no-storage warning is in Settings).
+ * Compact indicator for the header. With no storage chosen it warns "Only in this browser" as soon as there is an
+ * entry or a photo (the longer explanation is in Settings).
  */
 export function StorageBadge({ onOpenSettings }: { onOpenSettings: () => void }) {
   const s = useStorage()
   const photos = usePhotoCount()
+  const entries = useEntryCount()
   useTick(30_000)
   if (s.status === 'off') {
-    if (photos === 0) return null
+    if (!showHeaderWarning(s.restored, true, entries, photos)) return null
     const w = browserOnlyWarning('none', photos)
     return <button type="button" className="badge warn" onClick={onOpenSettings} title={w.body}>⚠ {w.short}</button>
   }
@@ -71,7 +75,7 @@ export function StorageCard() {
   const photos = usePhotoCount()
   useTick(30_000)
   const showChoices = s.status === 'off' || choosing
-  const mode = browserOnlyMode(s.backendId, !!(s.backendId && backendById(s.backendId)?.insideBrowser))
+  const mode = useBrowserOnlyMode()
   const warning = mode ? browserOnlyWarning(mode, photos) : null
 
   return (

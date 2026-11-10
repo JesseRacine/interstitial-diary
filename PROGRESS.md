@@ -34,7 +34,9 @@ _Last updated: 2026-11-09_
 
 | afa7135 | PWA 2: installable PWA: manifest + generated icons + "New entry" shortcut, `vite-plugin-pwa` precaching the whole build (image worker included), update banner, theme-color/apple-touch-icon; 6 new tests |
 
-254 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
+| (this commit) | Data safety 3: Settings "Data safety" card (persistent-storage state, last backup, reminder switch), header badge for entries-only users, backup reminder, `restored` startup flag; 18 new tests |
+
+272 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
 
 ## Waiting on the user
 
@@ -57,6 +59,10 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
    hosting (step 4).
 7. **The update banner.** Install, then change something and rebuild: the open app should show "A new version is ready"
    with Reload/Later. (The banner code is untested in the browser: it needs two builds in a row.)
+8. **Data safety on your real setup.** In the installed Edge app, open Settings > Data safety: it should say whether the
+   browser granted persistent storage (installing usually gets it granted). Do one real export (Settings > Your data)
+   and check "Last backup" changes to today. With the folder module connected, no "Only in this browser" badge or
+   backup reminder should appear, not even for a moment after opening the app.
 
 ## Next steps (in order)
 
@@ -82,14 +88,23 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
   verified:** the update banner (waiting list item 7).
 - Still a small polish idea: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.
 
-### 3. Data-safety features
-- Settings shows whether persistent storage was granted (`navigator.storage.persisted()`).
-- A warning when no file storage is set up ("Entries are only in this browser"). **Partly done (images 3.5):** the
-  Settings storage card shows it (also for "Files inside this browser", which isn't a backup), worded for photos when
-  the device holds any; the header badge shows "Photos only in this browser" once there are photos. Still to do: decide
-  whether entries-only users should also get the header badge.
-- On platforms without the folder module (Android), a periodic export/backup reminder until pCloud exists.
-- **Done when:** each state is visible in Settings and tested at phone width.
+### 3. Data-safety features: done (2026-11-10)
+- **Settings > Data safety** (`DataSafetyCard`): whether the browser has granted persistent storage (granted / not
+  granted with an "Ask the browser again" button / can't tell), the date of the last backup (export), and a switch for
+  the backup reminder.
+- **Header badge:** decided: entries-only users get it too. With no storage chosen it shows "⚠ Only in this browser" as
+  soon as there is one entry (or "Photos only in this browser" with photos). It stays quiet until the saved storage has
+  been read at startup (new `restored` flag in the storage state), so folder users no longer see a false flash.
+- **Backup reminder** (`BackupReminder`, above the search bar): for anyone whose entries are only in the browser (no
+  storage, or "Files inside this browser"; this is what Android users are until pCloud exists). First reminder once the
+  oldest entry is 3 days old and there has been no export; afterwards 14 days after the last export. "Back up now" opens
+  Settings, "Later" snoozes 7 days, "Stop reminding me" turns it off (the Settings switch turns it back on). A finished
+  export records the date. Never shown with the folder module.
+- Checked in the Browser pane at 375px (badge, reminder, Later, Stop, stale/recent backup dates, Settings card, Ask
+  again). Logic is in `lib/dataSafety.ts` with 18 new tests. **Not verified:** the real Export buttons recording the
+  date (the pane can't take downloads; the code path is two `setMeta` calls), and a real Android phone.
+- Possible later polish: a "Files inside this browser" user still sees a green "Saved" header badge (the Settings card
+  and the reminder do say it isn't a backup).
 
 ### 4. Hosting (needs the user)
 - **Open decision:** GitHub Pages (recommended: the same GitHub account later covers native builds in Actions and a
@@ -118,7 +133,8 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
 - Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
 - Removing an entry from a file by hand doesn't delete it (by design; see DESIGN.md).
 - The folder module needs Chrome/Edge on desktop and usually needs "Reconnect folder" after a browser restart.
-- On Android there is currently no copy outside the browser (the app warns about this in Settings).
+- On Android there is currently no copy outside the browser (the app warns about this in the header and Settings, and
+  reminds you to export every couple of weeks).
 - No import of existing notes from other apps yet (export only).
 - Export with photos only includes originals currently on the device; on a computer with the folder module, photos
   dropped from the browser cache (over the cache limit, 1 GB by default) are left out of the zip (they are still in the folder).

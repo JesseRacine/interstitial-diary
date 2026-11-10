@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { BackupReminder } from './components/BackupReminder'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
@@ -140,6 +141,8 @@ export default function App() {
         </nav>
         <StorageBadge onOpenSettings={() => { setView('settings'); setQuery('') }} />
       </header>
+
+      <BackupReminder entries={entries} onBackUp={() => { setView('settings'); setQuery('') }} />
 
       <SearchBar query={query} setQuery={changeQuery} inputRef={searchRef} tagStats={tagStats}
         saved={saved} recent={recent} onCommit={commitSearch} />

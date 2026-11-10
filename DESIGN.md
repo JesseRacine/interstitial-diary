@@ -304,6 +304,18 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   photos are only in this browser" with the photo count when the device holds any, suggesting a storage or Export. The
   header badge adds "Photos only in this browser" when storage is off and there are photos. A storage outside the
   browser's data (the folder module) gives no warning.
+- **Header badge:** with no storage chosen, "⚠ Only in this browser" appears as soon as there is an entry or photo
+  (`showHeaderWarning`). It waits for `StorageState.restored` (the saved storage has been read at startup), otherwise
+  folder users would see it flash while the folder is still being opened.
+- **Persistent storage:** the app asks the browser to keep its data (`navigator.storage.persist()`) at startup; Settings >
+  Data safety shows the answer (`persisted()`): protected, not protected (with "Ask the browser again"), or unknown.
+  Browsers decide by themselves (installed apps and regularly used sites usually get it).
+- **Backup reminder** (`BackupReminder`; rule in `backupReminderDue`): only when the data is only in the browser (no
+  storage, or "Files inside this browser"), there are entries, it is switched on, and it isn't snoozed. No backup yet:
+  from 3 days after the oldest entry; after a backup: 14 days after it. A finished export (text or with photos) stores
+  `lastBackupAt` in `meta`; "Later" snoozes 7 days (`backupSnoozedUntil`); "Stop reminding me" sets
+  `backupReminders: false` (switch in Settings). Never shown with a storage outside the browser, where the files are the
+  backup. It is local only (`meta` is not synced).
 - **Photo files are never deleted automatically**: not when an entry is deleted, and not when a photo is removed from
   an entry. Local originals are a bounded cache (1 GB unless changed in Settings: 256 MB to 10 GB or no limit, saved
   as `originalsLimit` in `meta`, read by `trimOriginals` each time; an invalid saved value means the 1 GB default, so

@@ -14,8 +14,8 @@ Read these before changing anything substantial:
   `junior-plan.md` is superseded; ignore it.
 
 **Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3) and the installable PWA are built; 254 tests pass. Next up in PROGRESS.md: data-safety features, hosting,
-pCloud, Tauri. (Edge's Install offer and Lighthouse are still to be confirmed by the user.)
+(phases 1–3), the installable PWA and the data-safety features are built; 272 tests pass. Next up in PROGRESS.md:
+hosting, pCloud, Tauri. (Edge's Install offer and Lighthouse are still to be confirmed by the user.)
 
 ## Where things are
 
@@ -82,7 +82,8 @@ src/
     dom.ts              isTyping (keyboard shortcuts ignore typing)
     journalRows.ts      entries -> flat chat rows (day headers + entries) for the virtualised journal
     photoRows.ts        entries -> day headers + rows of square tiles (and columnsFor(width)) for the Photos view
-    dataSafety.ts       "only in this browser" warning: when it applies and its (photo-aware) wording
+    dataSafety.ts       "only in this browser" warning (when it applies, photo-aware wording), header-badge rule, persistent-
+                        storage wording, backup-reminder rule/text and its `meta` keys (lastBackupAt, backupReminders, backupSnoozedUntil)
     images.ts           pure image helpers: SHA-256 name, type sniffing, paths, thumbnail size, formatBytes
     images.worker.ts    decode + EXIF rotation + WebP thumbnail, off the main thread
     imageClient.ts      main-thread wrapper for the worker (makeThumbnail)
@@ -120,6 +121,9 @@ src/
     Lightbox.tsx        full-size viewer; opened/closed via history in App.tsx
     PhotosView.tsx      Photos tab: virtualised grid of every photo, newest day first; tile -> lightbox
     StorageCard.tsx     storage choice + status badge + "only in this browser" warning
+    useBrowserOnlyMode.ts  hook: is the data only in this browser (null until the saved storage is read: `restored`)
+    DataSafetyCard.tsx  Settings: persistent-storage state, last backup, backup-reminder switch
+    BackupReminder.tsx  the notice above the search bar (Back up now / Later / Stop reminding me)
     PhotoStorageCard.tsx  Settings: photo space used, original-cache limit, "Photos of deleted entries" cleanup
     ExportCard.tsx      export: text zip, or "Include photos"
     UpdatePrompt.tsx    registers the service worker; "new version ready: Reload" / "ready offline" banner

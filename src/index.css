@@ -319,6 +319,8 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .card table td { padding: 0.15rem 1rem 0.15rem 0; }
 .notice { margin: 0 0 0.75rem; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem; }
 .notice.warn { border-left: 3px solid var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
+.notice .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.4rem; }
+.backup-reminder { flex: none; margin-bottom: 0.5rem; }
 .cleanup { margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 .cleanup h4 { margin: 0 0 0.25rem; font-size: 0.95rem; }
 .cleanup .row { margin-top: 0.25rem; }

@@ -61,6 +61,7 @@ export interface StorageState {
   imagesWaiting: number // photos on this device that storage doesn't have yet (live, like `pending`)
   imagesFailed: number // photos the last run couldn't fetch from storage (retried next sync)
   imageError: string | null // last image problem; never turns the status into 'error'
+  restored: boolean // the saved storage (if any) has been read at startup; before that 'off' just means "not known yet"
 }
 
 /** Photos the badge reports as waiting: still to save from here, plus ones that failed to download. */
@@ -68,7 +69,7 @@ export const imagesPending = (s: StorageState) => s.imagesWaiting + s.imagesFail
 
 let state: StorageState = {
   backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0,
-  imagesWaiting: 0, imagesFailed: 0, imageError: null,
+  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false,
 }
 const listeners = new Set<() => void>()
 function set(patch: Partial<StorageState>) {
@@ -313,7 +314,13 @@ export async function initStorage() {
   document.addEventListener('visibilitychange', () => void syncNow()) // flush when hidden, pull when shown
   setInterval(() => void syncNow(), 5 * 60_000) // pick up changes made by other apps
   const saved = await getMeta<SavedStorage | null>('storage', null)
-  if (saved) await openSaved(saved, false)
+  if (saved) {
+    const opening = openSaved(saved, false) // sets backendId before its first await
+    set({ restored: true })
+    await opening
+  } else {
+    set({ restored: true })
+  }
 }
 
 /** Choose a storage module (call from a click handler). */
