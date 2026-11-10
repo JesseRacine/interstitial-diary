@@ -43,7 +43,8 @@ git -c user.email=9375408+JesseRacine@users.noreply.github.com -c user.name=Jess
 ```
 src/
   lib/entry.ts        Entry type, tag parsing, date helpers (all local time)
-  lib/db.ts           Dexie (IndexedDB) schema + add/edit/delete/renameTag
+  lib/db.ts           Dexie (IndexedDB) schema + add/edit/delete/renameTag; tables thumbs/blobs (photos);
+                      cached originals: touchOriginal, saveFetchedOriginal, evictOriginals
   lib/markdown.ts     day file <-> entries (the on-disk format, see DESIGN.md)
   lib/merge.ts        union-by-id merge + tombstones
   lib/images.ts       pure image helpers: SHA-256 name, type sniffing, paths, thumbnail size (tested in Node)
@@ -58,7 +59,8 @@ src/
                       imagesWaiting (the badge's "N photos waiting")
   storage/originals.ts  originals on demand (fetchOriginal, hash-checked) + cache eviction choice (chooseEvictions)
   storage/syncAll.ts  one sync run: pushImages → syncOnce → pullImages (image passes in their own try/catch)
-  storage/manager.ts  runtime: active backend, auto-sync, status for the UI
+  storage/manager.ts  runtime: active backend, auto-sync, status for the UI (incl. photos waiting); loadOriginal
+                      (lightbox download), trimOriginals (~1 GB cache), missingImages ("Not synced yet")
   storage/backends/   one file per storage module + index.ts registry
   storage/memory.ts   in-memory FileStore/LocalStore for tests (and a template)
   components/         React UI (Capture, JournalView, EntryItem, Results, SearchBar, Calendar, Tags, Settings, StorageCard)
@@ -78,6 +80,9 @@ src/
 1. **Sync and merge code can lose people's journal entries.** Any change to `storage/sync.ts`, `lib/merge.ts`,
    `lib/markdown.ts` or `storage/manager.ts` needs a test that fails before and passes after. Run `npm test` before
    every commit. A data-loss bug has already happened once (hand edits overwritten, fixed in 9747fca).
+   The same goes for photos: `storage/attachments.ts`, `storage/syncAll.ts`, `storage/originals.ts` and the blob
+   helpers in `lib/db.ts`. Local originals are only dropped when `onRemote: 1` (storage confirmed every copy) and never
+   with an `insideBrowser` module; image files in storage are never deleted automatically (see DESIGN.md).
 2. **Storage is modular.** New storage (pCloud, GitHub, native folder...) = a new `StorageBackend` in
    `storage/backends/` plus one line in `backends/index.ts`. Do not add backend-specific logic to `sync.ts`.
 3. **The Markdown file format is a public contract.** Users edit these files by hand and older files must keep
@@ -107,6 +112,11 @@ src/
 - **When the Browser pane is hidden, `requestAnimationFrame` never fires**, so a script awaiting it hangs. Use `setTimeout`.
 - **Synthetic `PointerEvent`s** need a real pointer for `setPointerCapture` (it throws otherwise); the lightbox guards it.
 - The folder picker (`showDirectoryPicker`) opens a native dialog that can't be driven from the pane; the user tests that.
+- **Testing photos/sync in the pane** (on `127.0.0.1:5173` only): connect "Files inside this browser" by importing
+  the manager URL from the resource list and calling `connect('browser')`, then **reload** so the app's own copy
+  opens it. Seed rows straight into `db.blobs`/`db.thumbs`/`db.entries` (with `dirty: 1`); note `makeEntry(text,
+  createdAt, id, images)`: the third argument is the id, so give each entry its own. Afterwards `disconnect()`, delete
+  the OPFS files (`navigator.storage.getDirectory()`) and the IndexedDB database.
 - The dev database at `localhost:5173` in the pane contains ~360 generated sample entries (not real data).
 
 ## Working with the user

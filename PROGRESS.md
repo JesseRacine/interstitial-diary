@@ -30,7 +30,7 @@ _Last updated: 2026-11-09_
 
 | 9dadbe1 | Images 2.4: badge shows "N photos waiting" (live); fix: re-attached photo now marked as stored |
 
-| (next) | Images 2.5: docs (DESIGN.md image sync + storage modules), two-device "done when" test; phase 2 done |
+| 5a2c729 | Images 2.5: docs (DESIGN.md image sync + storage modules), two-device "done when" test; phase 2 done |
 
 181 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
