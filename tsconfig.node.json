@@ -19,5 +19,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "pwa-manifest.ts"]
+  "include": ["vite.config.ts", "pwa-manifest.ts", "base-path.ts"]
 }

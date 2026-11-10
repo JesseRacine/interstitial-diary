@@ -42,14 +42,16 @@ _Last updated: 2026-11-09_
 
 | 8ec4067 | Step 4.1b: deleted the superseded `junior-plan.md` |
 
-| (this commit) | Docs: record the new archive (step 4.1 finished) |
+| 88d19ea | Docs: record the new archive (step 4.1 finished) |
+
+| (this commit) | Step 4.2: base path: Vite `base` from the `BASE_PATH` variable (`base-path.ts`, `normaliseBase`, 5 new tests); checked on a build under `/interstitial-diary/`; `dist-sub` git-ignored |
 
 **All hashes above, except f3c682f and the ones after it, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
 old doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
 history is only in the local backup bundle `~/interstitial-diary-pre-rewrite.bundle` (outside the repo, private; it still
 holds the old identity, so never push or share it) and in the older Windows-folder archive of f4ef4d9.
 
-272 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
+277 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
 
 ## Waiting on the user
 
@@ -122,8 +124,8 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
 ### 4. Hosting on GitHub Pages: NEXT (decided 2026-11-10: GitHub Pages, not Cloudflare)
 **Status (2026-11-10): decisions made; checklist sub-step 1 (clean-up) done, including the new dated archive in the
 Windows session folder (`archive-2026-11-10/` + zip, snapshot of 8ec4067; restore tested from the bundle). Still local: no
-remote, nothing pushed. Next: base path (sub-step 2), then GitHub sign-in/repo creation, workflow, push.** Work through the checklist in
-order, one sub-step per turn.
+remote, nothing pushed. Sub-step 2 (base path) done. Next: the deploy workflow (sub-step 3), then `gh` sign-in/repo
+creation and the first push.** Work through the checklist in order, one sub-step per turn.
 
 **Decisions (answered 2026-11-10):** GitHub account `JesseRacine` (numeric id 9375408; looked up from GitHub's public
 profile API); repo `interstitial-diary`, public; address `https://jesseracine.github.io/interstitial-diary/` (so
@@ -177,12 +179,17 @@ repo's local git identity); branch `main`. The superseded `junior-plan.md` was d
      the "Done" table predate the rewrite. Then make a **new dated archive** in the Windows folder (the existing
      `archive/` snapshot is of f4ef4d9 and is read-only; never edit it).
    - Rename `master` to `main` if chosen; add the remote; first push.
-2. **Base path.** Set Vite `base` from an environment variable in the workflow (`/<repo>/`, or `/`), leaving local `dev`
-   and `preview` at `/`. Check with a build under the sub-path (`npm run build` then `npm run preview`): the manifest,
-   service worker scope, icons, the image worker chunk, and the `?view=journal` shortcut. Notes: `index.html` uses
-   `/favicon.svg` and `/apple-touch-icon.png` (Vite rewrites them with `base`); the manifest's `start_url`/`scope`/icons are
-   already relative; the app uses query parameters, not path routes, so no 404 fallback is needed; `src/pwa.test.ts`
-   expects those two `href="/..."` strings in `index.html`.
+2. **Base path: DONE (2026-11-10).** `vite.config.ts` sets `base` from the `BASE_PATH` environment variable through
+   `normaliseBase` (`base-path.ts`, tested in `src/basePath.test.ts`): unset means `/`, so `dev`, `preview` and a plain
+   `npm run build` are unchanged; the deploy workflow will set `BASE_PATH=/interstitial-diary/`. A malformed value (a full
+   URL, a query, `..`) makes the build fail rather than ship a broken site. Checked in the Browser pane on a build under
+   `/interstitial-diary/` served on 127.0.0.1:4174 (new launch config `interstitial-preview-sub`, builds into the
+   git-ignored `dist-sub`): the page, CSS, JS, favicon and apple-touch-icon load from the sub-path; the manifest resolves
+   `start_url`/`scope` to `/interstitial-diary/` and its three icons return 200; the "New entry" shortcut URL resolves to
+   `/interstitial-diary/?view=journal` and focuses the capture box; the service worker scope is `/interstitial-diary/`,
+   12 files precached (the image worker chunk included); with the server stopped the app still reloads from the worker.
+   A plain build still emits root-absolute paths. **Not verified until it is hosted:** the real GitHub Pages address
+   (HTTPS, Pages' own 404 behaviour), and the Android install.
 3. **Deploy workflow** `.github/workflows/deploy.yml`: on push to `main` (and manual): checkout, setup-node (match
    the Node version in WSL: check `node -v`; pin it), `npm ci`, `npm test`, `npm run build` (runs `tsc -b`),
    `actions/configure-pages`, `actions/upload-pages-artifact` (path `dist`), `actions/deploy-pages`; permissions

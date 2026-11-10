@@ -13,9 +13,9 @@ Read these before changing anything substantial:
   built; phase 4 = pCloud). [android-capture-plan.md](android-capture-plan.md): quick capture on Android (not started).
 
 **Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3), the installable PWA and the data-safety features are built; 272 tests pass. **Next: PROGRESS.md step 4,
-hosting on GitHub Pages** (decided; nothing built yet: it starts with four open questions for the user and a pre-publish
-cleanup, all written out there). After that: pCloud, Tauri.
+(phases 1–3), the installable PWA and the data-safety features are built; 277 tests pass. **In progress: PROGRESS.md
+step 4, hosting on GitHub Pages** (decisions made, pre-publish cleanup and the `BASE_PATH` base path done; next the deploy
+workflow, then `gh` sign-in, repo and first push). After that: pCloud, Tauri.
 
 **Public repo (step 4):** this repo is going public on GitHub (hosted on GitHub Pages). Keep it free of personal data:
 no machine paths, personal email addresses, keys or tokens. Commits use the GitHub noreply address (set as the repo's
@@ -52,6 +52,7 @@ wsl -d Ubuntu -- bash -ic "cd ~/projects/interstitial-diary && npm test"
 | Lint | `npm run lint` (currently 5 old warnings, 0 errors; keep it at 0 errors and add no new warnings) |
 | Dev server | use the Browser pane's `preview_start` with name `interstitial-dev` (port 5173) |
 | Production build served (PWA/service worker) | `preview_start` with name `interstitial-preview` (builds, then serves on 4173); the service worker does not run in the dev server |
+| Build for the hosted sub-path | `BASE_PATH=/interstitial-diary/ npx vite build --outDir dist-sub` (what the deploy workflow will do, minus the output folder); `preview_start` with name `interstitial-preview-sub` builds that and serves it on 4174 at `/interstitial-diary/` |
 | Regenerate icons | `npm run icons` (`scripts/make-icons.mjs`, no dependencies) |
 
 Before every commit run tests, `npx tsc -b` and lint. The repo's local git identity is `JesseRacine` with the GitHub
@@ -74,6 +75,7 @@ git commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
 
 ```
 pwa-manifest.ts       web app manifest (tested by src/pwa.test.ts); vite.config.ts wires vite-plugin-pwa (precache, prompt update)
+base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (tested by src/basePath.test.ts); unset = "/"
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
   main.tsx, App.tsx   entry point; views (Journal, Calendar, Photos, Tags, Settings), routing, keyboard shortcuts,

@@ -1,10 +1,15 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { normaliseBase } from './base-path.ts'
 import { manifest } from './pwa-manifest.ts'
+
+// "/" for dev and preview. The GitHub Pages deploy sets BASE_PATH=/interstitial-diary/ (see .github/workflows/deploy.yml).
+const base = normaliseBase(process.env.BASE_PATH)
 
 // https://vite.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
