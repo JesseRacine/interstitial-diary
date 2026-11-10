@@ -1,7 +1,10 @@
 # Plan: images in journal entries
 
 _Status: in progress. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
-2026-11-09; next is step 6 (capture UI). Step 5 notes: instead of only `blobs.onRemote`, pushImages keeps a per-module
+2026-11-09, and step 6 (capture UI) the same day; next is step 7 (thumbnails in bubbles). Step 6 notes: Save waits
+until every photo is stored ("Preparing photos…"); the same photo twice in one draft is dropped with a message; the
+Attach button turns off at 10. Checked on 127.0.0.1 with "Files inside this browser": originals, thumbnails and image
+lines land in storage; 375 px, light and dark. Step 5 notes: instead of only `blobs.onRemote`, pushImages keeps a per-module
 set of confirmed paths (an image can be needed in several year folders, and switching storage must re-check
 everything); `onRemote` is set once all of an original's year copies are written. The order lives in
 `storage/syncAll.ts` so it is testable. A file deleted by hand from storage after being confirmed is not rewritten. Step 4 notes: `attachImage` (lib/attach.ts) is the entry point the capture UI will

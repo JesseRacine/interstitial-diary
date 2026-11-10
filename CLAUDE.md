@@ -60,6 +60,7 @@ src/
   storage/backends/   one file per storage module + index.ts registry
   storage/memory.ts   in-memory FileStore/LocalStore for tests (and a template)
   components/         React UI (Capture, JournalView, EntryItem, Results, SearchBar, Calendar, Tags, Settings, StorageCard)
+  components/useDraftImages.ts  photos attached to the capture draft (paste/drop/pick -> attachImage -> chips)
   lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal
   App.tsx             views, routing, keyboard shortcuts
 ```

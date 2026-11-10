@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes, hashBytes, imagePath, isDisplayable, sniffImageType, thumbPath, thumbSize } from './images'
+import { fitImageLimit, formatBytes, hashBytes, imagePath, isDisplayable, sniffImageType, thumbPath, thumbSize } from './images'
 
 const bytes = (...parts: (number[] | string)[]) => {
   const out: number[] = []
@@ -60,6 +60,18 @@ describe('thumbSize', () => {
   })
   it('handles unknown sizes', () => {
     expect(thumbSize(0, 0)).toEqual({ w: 0, h: 0 })
+  })
+})
+
+describe('fitImageLimit', () => {
+  it('takes everything while there is room', () => {
+    expect(fitImageLimit(0, 3)).toEqual({ take: 3, message: null })
+    expect(fitImageLimit(7, 3)).toEqual({ take: 3, message: null })
+  })
+  it('takes what fits up to 10 and says how many were left out', () => {
+    expect(fitImageLimit(8, 3)).toEqual({ take: 2, message: 'An entry can have up to 10 photos, so 1 was left out.' })
+    expect(fitImageLimit(10, 2)).toEqual({ take: 0, message: 'An entry can have up to 10 photos, so 2 were left out.' })
+    expect(fitImageLimit(0, 12).take).toBe(10)
   })
 })
 

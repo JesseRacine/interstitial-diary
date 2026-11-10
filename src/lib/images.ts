@@ -76,6 +76,20 @@ export function thumbSize(w: number, h: number): { w: number; h: number } {
   return { w: Math.max(1, Math.round(w * scale)), h: Math.max(1, Math.round(h * scale)) }
 }
 
+/**
+ * How many of `incoming` new files fit next to `current` images on one entry, and what to tell the user about the rest.
+ */
+export function fitImageLimit(current: number, incoming: number): { take: number; message: string | null } {
+  const room = Math.max(0, MAX_IMAGES_PER_ENTRY - current)
+  const take = Math.min(room, incoming)
+  if (take === incoming) return { take, message: null }
+  const skipped = incoming - take
+  return {
+    take,
+    message: `An entry can have up to ${MAX_IMAGES_PER_ENTRY} photos, so ${skipped} ${skipped === 1 ? 'was' : 'were'} left out.`,
+  }
+}
+
 export function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`
