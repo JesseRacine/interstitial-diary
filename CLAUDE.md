@@ -58,6 +58,8 @@ src/
   storage/attachments.ts  image passes: pushImages (originals + thumbnails to storage), pullImages (thumbnails back),
                       imagesWaiting (the badge's "N photos waiting")
   storage/originals.ts  originals on demand (fetchOriginal, hash-checked) + cache eviction choice (chooseEvictions)
+  storage/cleanup.ts  "remove photos of deleted entries": unusedImages / planCleanup / removeUnusedImages (the only
+                      deletion of image files; user-confirmed; see DESIGN.md)
   storage/syncAll.ts  one sync run: pushImages → syncOnce → pullImages (image passes in their own try/catch)
   storage/manager.ts  runtime: active backend, auto-sync, status for the UI (incl. photos waiting); loadOriginal
                       (lightbox download), trimOriginals (~1 GB cache), missingImages ("Not synced yet")
@@ -86,7 +88,8 @@ src/
    every commit. A data-loss bug has already happened once (hand edits overwritten, fixed in 9747fca).
    The same goes for photos: `storage/attachments.ts`, `storage/syncAll.ts`, `storage/originals.ts` and the blob
    helpers in `lib/db.ts`. Local originals are only dropped when `onRemote: 1` (storage confirmed every copy) and never
-   with an `insideBrowser` module; image files in storage are never deleted automatically (see DESIGN.md).
+   with an `insideBrowser` module; image files in storage are never deleted automatically. The only deletion is the user-confirmed cleanup of photos of
+   deleted entries (`storage/cleanup.ts`, rules in DESIGN.md); keep every rule and test there when changing it.
 2. **Storage is modular.** New storage (pCloud, GitHub, native folder...) = a new `StorageBackend` in
    `storage/backends/` plus one line in `backends/index.ts`. Do not add backend-specific logic to `sync.ts`.
 3. **The Markdown file format is a public contract.** Users edit these files by hand and older files must keep

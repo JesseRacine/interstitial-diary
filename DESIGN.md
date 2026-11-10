@@ -120,7 +120,8 @@ If anything throws, nothing is marked synced and the next run retries.
 
 A run is **push images → text sync → pull images**. Both image passes are backend-agnostic like `sync.ts`, run only
 if the module has the blob methods, and sit in their own try/catch: an image problem never blocks or fails the text
-sync. It is counted, shown, and retried next run. Image files are never deleted automatically, not even when the
+sync. It is counted, shown, and retried next run. Image files are never deleted automatically (the one exception is the
+user-confirmed cleanup in Settings, see "Platform plan and data safety"), not even when the
 entry using them is deleted, and `list()` never returns them (it runs every sync).
 
 1. **Push** (`pushImages`, before the text so originals land before the day files that refer to them): every
@@ -169,6 +170,7 @@ interface FileStore {           // what a module implements
   readBlob?(path): Promise<Blob | null>
   writeBlob?(path, blob): Promise<void>               // never overwrites: same size = no-op, else BlobCollisionError
   hasBlob?(path): Promise<{ size } | null>
+  removeBlob?(path): Promise<void>                    // missing file = no error; only the user-confirmed photo cleanup calls it
 }
 interface StorageBackend<Config> { // how the app offers and reopens it
   id, name, description
@@ -287,3 +289,17 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   photo on screen. Choosing another storage resets every `onRemote`, so nothing is dropped until the new one has the
   files. A dropped original is downloaded again when opened. Thumbnails are never dropped. Export with photos only
   includes originals that are on the device at the time (it says how many are left out).
+- **Removing photos of deleted entries** (Settings, "Photos of deleted entries"; `storage/cleanup.ts`) is the only way
+  photo files are deleted, and only when the user asks and confirms (the dialog gives the count and size and says it
+  can't be undone). Rules: a photo is a candidate only if a **deleted entry this device still knows** used it and **no
+  live entry uses it** in any year (so an image another device uploaded whose entry hasn't arrived here is never named,
+  let alone touched); only the paths those entries imply are removed (`<year>/images/<hash>.<ext>` for their years and
+  `.thumbs/<hash>.webp`), after the name is checked against the parser's patterns (and `fs-store` refuses any other
+  path). It syncs first and stops if that sync can't complete, so entries from other devices are included; then it runs
+  while no sync can (`exclusive` in `manager.ts`), recomputes from the entries as they are then, and only removes
+  photos the user was shown that are still unused. The copy on this device goes in one database transaction that
+  re-checks the live entries (`removeLocalImagesUnlessUsed`), so a photo saved to an entry meanwhile survives. If a
+  file in storage can't be removed, this device's copy is kept and the problem is shown. Removed paths are taken out of
+  the per-storage `images:<id>` list, so the same photo attached again later is written to storage again. Text, tombstones
+  and the deleted entries themselves are never changed. A storage without `removeBlob` is left alone (only this device
+  is cleaned). Other devices keep what they already downloaded.

@@ -139,6 +139,27 @@ export async function evictOriginals(limit: number, keep: ReadonlySet<string> = 
   })
 }
 
+/** Sizes of this device's copies of a photo (0 when absent). */
+export async function localImageSizes(hash: string): Promise<{ original: number; thumb: number }> {
+  return { original: (await db.blobs.get(hash))?.size ?? 0, thumb: (await db.thumbs.get(hash))?.blob.size ?? 0 }
+}
+
+/**
+ * Remove these photos' original and thumbnail from this device, but NOT any that a live entry uses. The check and the
+ * delete are one transaction, so an entry saved a moment ago (even with a photo attached just now) can't lose its
+ * photo. Only for the user-confirmed cleanup of photos of deleted entries. Returns the hashes removed.
+ */
+export async function removeLocalImagesUnlessUsed(hashes: string[]): Promise<string[]> {
+  return db.transaction('rw', db.entries, db.blobs, db.thumbs, async () => {
+    const live = new Set<string>()
+    await db.entries.each((e) => { if (!e.deleted) for (const i of e.images ?? []) live.add(i.hash) })
+    const drop = hashes.filter((h) => !live.has(h))
+    await db.blobs.bulkDelete(drop)
+    await db.thumbs.bulkDelete(drop)
+    return drop
+  })
+}
+
 const ORIGINALS_LIMIT_KEY = 'originalsLimit'
 
 /** The saved cache limit in bytes (0 = no limit); the default if nothing valid is saved. */

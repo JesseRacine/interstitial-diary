@@ -314,6 +314,11 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; margin-bottom: 0.75rem; }
 .card p { margin: 0.25rem 0 0.6rem; }
 .card table td { padding: 0.15rem 1rem 0.15rem 0; }
+.cleanup { margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+.cleanup h4 { margin: 0 0 0.25rem; font-size: 0.95rem; }
+.cleanup .row { margin-top: 0.25rem; }
+.cleanup button.remove { border-color: var(--danger); color: var(--danger); }
+.cleanup button.remove:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); }
 .card table.usage { margin-bottom: 0.6rem; }
 .card table.usage td:first-child { white-space: nowrap; }
 .card table.usage td:last-child { padding-right: 0; }

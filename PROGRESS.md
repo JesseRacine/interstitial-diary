@@ -34,9 +34,10 @@ _Last updated: 2026-11-09_
 
 | aba1edd | Images 3.1: `has:image` / `-has:image` search filter, "With photos" chip, help row, DESIGN.md |
 | 97b5ff1 | Images 3.2: Photos view (virtualised thumbnail grid by day, tile opens the lightbox, day heading opens the journal) |
-| (3.3, hash to add) | Images 3.3: "Photos on this device" card in Settings (space used, browser estimate, adjustable original-cache limit) |
+| 5e3ccbe | Images 3.3: "Photos on this device" card in Settings (space used, browser estimate, adjustable original-cache limit) |
+| (3.4, hash to add) | Images 3.4: "Remove photos of deleted entries" (confirmed, sync-first cleanup; `storage/cleanup.ts`, `removeBlob` on stores) |
 
-214 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+241 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
@@ -55,10 +56,11 @@ file in Notepad.
   cache), "Not synced yet" for photos found nowhere, "N photos waiting" in the badge, failures retried next sync.
   Checked in the browser step by step and by a two-device test. **Still to confirm by the user:** a real second
   device; that needs hosting or a shared folder (e.g. pCloud Drive) between two browsers.
-- **Phase 3 in progress** (see the plan): **3.1 `has:image` search, 3.2 Photos view and 3.3 photo storage in Settings done
-  (2026-11-09)**. Still to do: 3.4 removing images of deleted entries, 3.5 data-safety wording. **Still to confirm by the
-  user:** the cache limit with the real Windows folder (lower it, and see originals leave the browser only once saved to
-  the folder; the folder picker can't be driven from the pane). Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
+- **Phase 3 in progress** (see the plan): **3.1 `has:image` search, 3.2 Photos view, 3.3 photo storage in Settings and 3.4
+  removing photos of deleted entries done (2026-11-09)**. Still to do: 3.5 data-safety wording. **Still to confirm by
+  the user:** with the real Windows folder, (a) the cache limit (lower it, and see originals leave the browser only once
+  saved to the folder) and (b) "Photos of deleted entries" (delete an entry that has a photo, then run it and see the
+  files leave `<folder>\<year>\images\` and `.thumbs\`); the folder picker can't be driven from the pane. Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
 
 ### 2. Make it an installable PWA
 - Add `vite-plugin-pwa` (already a dev dependency) to `vite.config.ts`: manifest (name, short_name "Interstitial",

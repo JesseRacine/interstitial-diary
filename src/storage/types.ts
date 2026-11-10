@@ -25,11 +25,19 @@ export interface FileStore {
   readBlob?(path: string): Promise<Blob | null>
   writeBlob?(path: string, blob: Blob): Promise<void>
   hasBlob?(path: string): Promise<{ size: number } | null>
+  /**
+   * Delete one image file; a missing file is not an error. Only ever called by the user-confirmed "remove photos of
+   * deleted entries" cleanup (storage/cleanup.ts), never by sync. Optional: without it the cleanup leaves storage alone.
+   */
+  removeBlob?(path: string): Promise<void>
 }
 
 export type BlobStore = FileStore & Required<Pick<FileStore, 'readBlob' | 'writeBlob' | 'hasBlob'>>
 
 export const supportsBlobs = (s: FileStore): s is BlobStore => !!(s.readBlob && s.writeBlob && s.hasBlob)
+
+export type RemovableBlobStore = BlobStore & Required<Pick<FileStore, 'removeBlob'>>
+export const supportsBlobRemoval = (s: FileStore): s is RemovableBlobStore => supportsBlobs(s) && !!s.removeBlob
 
 export class BlobCollisionError extends Error {
   constructor(path: string, existing: number, incoming: number) {

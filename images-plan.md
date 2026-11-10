@@ -48,7 +48,21 @@ never with `insideBrowser`, never the photo on screen). `limitMode` (pure, teste
 rows: numbers, saving and reloading the setting, the "no storage" and "Files inside this browser" texts, and that with
 the browser module and a 256 MB limit nothing was dropped from 1.34 GB; 375 px dark. The "applies" text and a real
 eviction need a separate-copy storage (the folder picker), so that part is covered by unit tests only (13 new).
-Next: 3.4 (remove images of deleted entries).
+**3.4 done:** "Photos of deleted entries" in the Settings photo card
+(`DeletedEntryPhotos`) → `planImageCleanup` (count and sizes, changes nothing) → a confirmation that says it can't be
+undone → `removeImagesOfDeletedEntries`. All logic is in `storage/cleanup.ts` (backend-agnostic, tested with memory
+stores): candidates are photos a deleted entry known here used and no live entry uses; only the paths those entries imply
+(own years + `.thumbs`) are removed, names checked first, and `fs-store.removeBlob` refuses anything outside the image
+folders; the manager syncs first (and refuses if it can't), runs the job exclusively (no sync meanwhile), recomputes from
+current entries and only removes photos the user was shown; the local copy goes in one transaction that re-checks live
+entries (`removeLocalImagesUnlessUsed`); a failed storage removal keeps the local copy and is reported; removed paths
+leave the per-storage confirmed list (a test shows that without this a photo attached again would never be re-uploaded).
+Mutation-checked: removing the live-entry check or the confirmed-list update makes 7 of the 23 cleanup tests fail. Checked
+in the browser on 127.0.0.1 with "Files inside this browser": 3 entries deleted through the app, the plan showed exactly
+the 2 photos nothing live uses (the one shared with a live entry and an unreferenced file were left alone), Cancel changed
+nothing, Remove deleted the 2 originals + 2 thumbnails from storage and the device, day file and tombstones untouched, a
+second look found nothing; 375 px. The "sync failed, so refuse" path and the real folder are not exercised in the pane.
+Next: 3.5 (data-safety wording).
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the

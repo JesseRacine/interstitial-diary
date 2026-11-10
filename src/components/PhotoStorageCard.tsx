@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { getOriginalsLimit, photoUsage, setOriginalsLimit } from '../lib/db'
 import { useLive } from '../lib/hooks'
 import { formatBytes } from '../lib/images'
-import { applyOriginalsLimit, useOriginalsLimitMode, useStorage } from '../storage/manager'
+import type { CleanupResult } from '../storage/cleanup'
+import {
+  type ImageCleanupPlan, applyOriginalsLimit, planImageCleanup, removeImagesOfDeletedEntries, useOriginalsLimitMode, useStorage,
+} from '../storage/manager'
 import { ORIGINALS_CACHE_BYTES, ORIGINALS_LIMIT_CHOICES, limitBytes } from '../storage/originals'
 
 /** What the browser says this site uses, and how much it allows (an estimate; not every browser has it). */
@@ -22,6 +25,109 @@ function useBrowserEstimate(refreshWhen: unknown) {
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+
+type Cleanup =
+  | { step: 'idle' }
+  | { step: 'checking' }
+  | { step: 'plan'; plan: ImageCleanupPlan }
+  | { step: 'removing'; plan: ImageCleanupPlan }
+  | { step: 'done'; result: CleanupResult }
+  | { step: 'error'; message: string }
+
+/**
+ * Photos only deleted entries used. Deleting an entry never deletes its photo files; this is the one place that does,
+ * after a check and a confirmation that says it can't be undone (rules in storage/cleanup.ts).
+ */
+function DeletedEntryPhotos() {
+  const [c, setC] = useState<Cleanup>({ step: 'idle' })
+  const busy = c.step === 'checking' || c.step === 'removing'
+
+  const look = async () => {
+    setC({ step: 'checking' })
+    try {
+      setC({ step: 'plan', plan: await planImageCleanup() })
+    } catch (e) {
+      setC({ step: 'error', message: e instanceof Error ? e.message : String(e) })
+    }
+  }
+  const remove = async (plan: ImageCleanupPlan) => {
+    setC({ step: 'removing', plan })
+    try {
+      setC({ step: 'done', result: await removeImagesOfDeletedEntries(plan.hashes) })
+    } catch (e) {
+      setC({ step: 'error', message: e instanceof Error ? e.message : String(e) })
+    }
+  }
+  const close = () => setC({ step: 'idle' })
+
+  const plan = c.step === 'plan' || c.step === 'removing' ? c.plan : null
+  const where = plan?.storageLabel ?? 'storage'
+
+  return (
+    <div className="cleanup">
+      <h4>Photos of deleted entries</h4>
+      {c.step === 'idle' && (
+        <>
+          <p className="muted">
+            Deleting an entry keeps its photo files, in case you want them. Photos that only deleted entries use can be removed
+            to free space.
+          </p>
+          <button type="button" onClick={() => void look()}>Look for photos to remove</button>
+        </>
+      )}
+      {c.step === 'checking' && <p className="muted" role="status">Checking… (saving to storage first, so the latest entries are included)</p>}
+
+      {plan && plan.hashes.length === 0 && (
+        <>
+          <p>Nothing to remove: every photo is used by an entry you still have.</p>
+          <button type="button" onClick={close}>OK</button>
+        </>
+      )}
+      {plan && plan.hashes.length > 0 && (
+        <div role="alertdialog" aria-label="Confirm removing photos">
+          <p>
+            <strong>{plural(plan.hashes.length, 'photo is', 'photos are')}</strong> only used by entries you deleted. Removing{' '}
+            {plan.hashes.length === 1 ? 'it' : 'them'} frees about <strong>{formatBytes(plan.storageBytes + plan.localBytes)}</strong>
+            {plan.storageBytes > 0 && plan.localBytes > 0 && <>: {formatBytes(plan.storageBytes)} in {where} and {formatBytes(plan.localBytes)} on this device</>}
+            {plan.storageBytes > 0 && plan.localBytes === 0 && <> in {where}</>}
+            {plan.storageBytes === 0 && plan.localBytes > 0 && <> on this device</>}.
+          </p>
+          <p className="error">This can’t be undone. The photo files are deleted for good.</p>
+          {!plan.storageRemovable && <p className="muted">{where} can’t delete files, so only this device is cleaned.</p>}
+          <p className="muted">Other devices keep whatever they already have. Let them finish syncing first.</p>
+          <div className="row">
+            <button type="button" className="remove" disabled={busy} onClick={() => void remove(plan)}>
+              {c.step === 'removing' ? 'Removing…' : `Remove ${plural(plan.hashes.length, 'photo', 'photos')}`}
+            </button>
+            <button type="button" disabled={busy} onClick={close}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {c.step === 'done' && (
+        <>
+          <p role="status">
+            {c.result.removed > 0
+              ? <>Removed {plural(c.result.removed, 'photo', 'photos')}, freeing about {formatBytes(c.result.freedBytes)}.</>
+              : <>No photos were removed.</>}
+          </p>
+          {c.result.errors.length > 0 && (
+            <p className="error">
+              Some files couldn’t be removed and were left as they were ({c.result.errors[0]}). You can try again.
+            </p>
+          )}
+          <button type="button" onClick={close}>OK</button>
+        </>
+      )}
+      {c.step === 'error' && (
+        <>
+          <p className="error">{c.message}</p>
+          <button type="button" onClick={close}>OK</button>
+        </>
+      )}
+    </div>
+  )
+}
 
 /**
  * Settings: how much space photos take on this device, and how much of it full-size photos may use. Only photos that
@@ -106,6 +212,8 @@ export function PhotoStorageCard() {
           storage yet. They stay until they have.
         </p>
       )}
+
+      <DeletedEntryPhotos />
     </div>
   )
 }

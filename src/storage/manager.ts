@@ -1,12 +1,15 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
-import { db, evictOriginalsToLimit, getMeta, saveFetchedOriginal, setMeta, touchOriginal } from '../lib/db'
+import {
+  db, evictOriginalsToLimit, getMeta, localImageSizes, removeLocalImagesUnlessUsed, saveFetchedOriginal, setMeta, touchOriginal,
+} from '../lib/db'
 import type { ImageRef } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
 import { KeySet } from '../lib/keySet'
 import { isDisplayable, typeForExt } from '../lib/images'
 import { type ImageLocal, imagesWaiting } from './attachments'
 import { backendById } from './backends'
+import { type CleanupLocal, type CleanupPlan, type CleanupResult, planCleanup, removeUnusedImages } from './cleanup'
 import { fetchOriginal, limitMode } from './originals'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
@@ -31,6 +34,13 @@ export const dexieImages: ImageLocal = {
   unsaved: () => db.blobs.where('onRemote').equals(0).primaryKeys(),
   saveThumb: async (hash, blob, w, h) => { await db.thumbs.put({ hash, blob, w, h }) },
   thumbnail: makeThumbnail,
+}
+
+/** The photo cleanup's view of the Dexie database. */
+const dexieCleanup: CleanupLocal = {
+  snapshot: () => db.entries.toArray(),
+  localSizes: localImageSizes,
+  removeLocal: removeLocalImagesUnlessUsed,
 }
 
 interface SavedStorage {
@@ -130,6 +140,60 @@ export function syncNow(): Promise<void> {
     } while (again)
   })().finally(() => { running = null })
   return running
+}
+
+/**
+ * Run a job while no sync can run (a sync asked for meanwhile waits, and `running` is the job). Used by the photo
+ * cleanup, which edits the per-storage list of confirmed image paths that a sync also reads and writes.
+ */
+async function exclusive<T>(job: () => Promise<T>): Promise<T> {
+  while (running) await running
+  const p = job()
+  const mine: Promise<void> = p.then(() => {}, () => {}).finally(() => { if (running === mine) running = null })
+  running = mine
+  return p
+}
+
+/**
+ * Before deciding which photos are unused, bring the entries up to date: another device may have started using a photo
+ * (its entry arrives in this sync). Without that, or with a storage that can't be reached, nothing is decided.
+ */
+async function bringEntriesUpToDate(): Promise<void> {
+  if (!state.backendId) return // no storage: nothing to sync with
+  if (!store) throw new Error(`Allow access to ${state.label ?? 'your storage'} first, so photos can be checked against the latest entries.`)
+  await syncNow()
+  if (state.status !== 'ok') {
+    throw new Error(`Saving to ${state.label ?? 'storage'} didn't work, so photos can't be checked safely yet${state.message ? `: ${state.message}` : ''}.`)
+  }
+}
+
+export type ImageCleanupPlan = CleanupPlan & { storageLabel: string | null }
+
+/**
+ * Photos used only by entries you deleted, and how much space removing them frees (storage and this device). Syncs
+ * first. Changes nothing; `removeImagesOfDeletedEntries` does the removing, for the photos the user approved.
+ */
+export async function planImageCleanup(): Promise<ImageCleanupPlan> {
+  await bringEntriesUpToDate()
+  return exclusive(async () => ({ ...(await planCleanup(dexieCleanup, store)), storageLabel: state.backendId ? state.label : null }))
+}
+
+/**
+ * Remove the approved photos (hashes from `planImageCleanup`) from storage and from this device: only ones still used
+ * by no live entry now (see storage/cleanup.ts). Syncs first and runs while no sync can, because it edits the list of
+ * image paths known to be in storage. Can't be undone.
+ */
+export async function removeImagesOfDeletedEntries(approved: string[]): Promise<CleanupResult> {
+  await bringEntriesUpToDate()
+  const result = await exclusive(async () => {
+    const id = state.backendId
+    const confirmed = new Set(id ? await getMeta<string[]>(imagesKey(id), []) : [])
+    const r = await removeUnusedImages(dexieCleanup, store, new Set(approved), confirmed)
+    if (id) await setMeta(imagesKey(id), [...r.confirmed])
+    return r
+  })
+  void syncNow() // anything a sync asked for while this ran, and any photo that turned out to be in use again
+  return result
 }
 
 /** Originals on screen (the photo viewer), never dropped while shown. hash -> number of holders. */

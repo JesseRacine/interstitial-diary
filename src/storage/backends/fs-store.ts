@@ -77,6 +77,16 @@ export function directoryStore(root: FileSystemDirectoryHandle): FileStore {
       const f = await getFile(path)
       return f ? { size: f.size } : null
     },
+    async removeBlob(path) {
+      // Only ever the image folders; a typo can never reach a day file or the tombstones.
+      if (!/^(\d{4}\/images|\.thumbs)\/[0-9a-f]{8,64}\.[a-z0-9]{1,5}$/.test(path)) throw new Error(`Not an image path: ${path}`)
+      try {
+        const [dir, name] = await dirFor(path, false)
+        await dir.removeEntry(name)
+      } catch (e) {
+        if (!isNotFound(e)) throw e
+      }
+    },
     async writeBlob(path, blob) {
       const existing = await getFile(path)
       if (existing) {

@@ -176,6 +176,51 @@ describe('cached originals', () => {
     expect((await m.db.blobs.toCollection().primaryKeys()).sort()).toEqual(['c', 'e'])
   })
 
+  describe('removing the photos of deleted entries from this device', () => {
+    const photoRef = (hash: string): ImageRef => ({ hash, ext: 'jpg', w: 4, h: 3 })
+    const seedPhoto = async (hash: string) => {
+      await m.db.blobs.put(row(hash, 10, 1, 1))
+      await m.db.thumbs.put({ hash, blob: new Blob([new Uint8Array(3)]), w: 4, h: 3 })
+    }
+    beforeEach(async () => { await m.db.entries.clear(); await m.db.thumbs.clear() })
+
+    it('reports the sizes of this device\'s copies, 0 when absent', async () => {
+      await seedPhoto('p1')
+      expect(await m.localImageSizes('p1')).toEqual({ original: 10, thumb: 3 })
+      expect(await m.localImageSizes('nope')).toEqual({ original: 0, thumb: 0 })
+    })
+
+    it('removes the original and the thumbnail of photos no live entry uses', async () => {
+      await seedPhoto('gone')
+      const e = await m.addEntry('had a photo', [photoRef('gone')])
+      await m.deleteEntry(e!.id)
+      expect(await m.removeLocalImagesUnlessUsed(['gone'])).toEqual(['gone'])
+      expect(await m.db.blobs.get('gone')).toBeUndefined()
+      expect(await m.db.thumbs.get('gone')).toBeUndefined()
+      expect(await m.db.entries.get(e!.id)).toMatchObject({ deleted: 1 }) // the entry itself is untouched
+    })
+
+    it('never removes a photo that a live entry uses, even one that a deleted entry also used', async () => {
+      await seedPhoto('shared')
+      await seedPhoto('other')
+      const gone = await m.addEntry('old', [photoRef('shared')])
+      await m.deleteEntry(gone!.id)
+      await m.addEntry('new entry, same photo', [photoRef('shared')])
+      expect(await m.removeLocalImagesUnlessUsed(['shared', 'other'])).toEqual(['other'])
+      expect(await m.db.blobs.get('shared')).toBeDefined()
+      expect(await m.db.thumbs.get('shared')).toBeDefined()
+    })
+
+    it('is all or nothing per call: nothing changes if the transaction fails', async () => {
+      await seedPhoto('keep')
+      const real = m.db.thumbs.bulkDelete.bind(m.db.thumbs)
+      m.db.thumbs.bulkDelete = (() => Promise.reject(new Error('boom'))) as unknown as typeof m.db.thumbs.bulkDelete
+      await expect(m.removeLocalImagesUnlessUsed(['keep'])).rejects.toThrow('boom')
+      m.db.thumbs.bulkDelete = real
+      expect(await m.db.blobs.get('keep')).toBeDefined() // the original was not removed on its own
+    })
+  })
+
   it('photoUsage adds up originals, those storage has not confirmed, and thumbnails', async () => {
     await m.db.blobs.clear()
     await m.db.thumbs.clear()
