@@ -24,9 +24,11 @@ _Last updated: 2026-11-09_
 
 | 937a468 | Images 2.1: `pullImages` after the text sync: thumbnails to other devices, rebuild missing ones |
 
-| (next) | Images 2.2: originals downloaded when opened; bounded original cache (only safe copies dropped) |
+| 6e8117c | Images 2.2: originals downloaded when opened; bounded original cache (only safe copies dropped) |
 
-176 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+| (next) | Images 2.3: "Not synced yet" placeholder for photos the last sync found nowhere |
+
+177 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
@@ -41,8 +43,8 @@ file in Notepad.
   `<folder>\2026\images\` and `<folder>\.thumbs\` get the files after the next save; and try one real export with
   photos through the Save dialog.
 - **Phase 2 in progress:** 2.1 `pullImages` done (thumbnails to other devices, rebuild missing thumbnails); 2.2
-  done (originals downloaded when opened, bounded cache). Next: 2.3 "not synced yet" placeholder, 2.4 badge shows
-  images pending, 2.5 docs.
+  done (originals downloaded when opened, bounded cache); 2.3 done ("Not synced yet" placeholder). Next: 2.4 badge
+  shows images pending, 2.5 docs.
 - **Done when:** the plan's phase 2 "done when" check passes.
 
 ### 2. Make it an installable PWA

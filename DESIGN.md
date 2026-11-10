@@ -126,7 +126,9 @@ image files (it runs every sync).
 After the text sync, a **pull pass** (`pullImages`, own try/catch too) gives this device a thumbnail for every image a
 live entry uses: it downloads `.thumbs/<hash>.webp` (small, so eagerly; the original's size comes from the image
 line), or, if storage has none but this device has the original, makes it again in the worker and writes it back.
-An image that is nowhere yet (the other device hasn't uploaded it) is reported missing and tried again next run.
+An image that is nowhere yet (the other device hasn't uploaded it) is reported missing and tried again next run;
+the journal shows its box as **"Not synced yet"** (dashed edge) until it arrives (`missingImages` in `manager.ts`, a
+`KeySet` recomputed every sync, so only rows whose answer changes re-render). A failed read is not "missing".
 Formats without thumbnails (HEIC, AVIF) are skipped, and originals are never downloaded by sync: the photo viewer
 asks for one when it opens (`loadOriginal` in `manager.ts`, `fetchOriginal` in `storage/originals.ts`). It tries the
 entry's year folder, then other years that use it, and only accepts bytes that hash to the file name (a file replaced

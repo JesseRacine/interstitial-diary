@@ -64,7 +64,8 @@ src/
   components/useDraftImages.ts  photos on a draft (new or edited entry): paste/drop/pick -> attachImage; useImageInput
   components/DraftImages.tsx  chips + "Photo" button shared by Capture and EntryItem's edit mode
   components/EntryImages.tsx  photos in a bubble (layout from lib/imageLayout.ts, sized before decode)
-  components/Thumb.tsx + useThumbUrl.ts  thumbnails via one shared ref-counted URL cache (lib/urlCache.ts)
+  components/Thumb.tsx + useThumbUrl.ts  thumbnails via one shared ref-counted URL cache (lib/urlCache.ts);
+                      "Not synced yet" from manager's missingImages (lib/keySet.ts)
   components/Lightbox.tsx  full-size viewer (zoom maths in lib/zoom.ts); opened/closed via history in App.tsx
   components/ExportCard.tsx  export: text zip, or "Include photos" (lib/exportZip.ts: streamed, photos stored, <4 GB, per year)
   lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal

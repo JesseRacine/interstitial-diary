@@ -241,7 +241,8 @@ describe('pulling thumbnails from storage', () => {
 
   it('an image that is nowhere yet is reported missing, then picked up on a later sync', async () => {
     const store = memoryStore()
-    const one = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])]) // only the reference, e.g. images still uploading
+    // only the references (twice), e.g. images still uploading
+    const one = device([makeEntry('photo', at(2026, 8, 9), 'x', [A]), makeEntry('again', at(2026, 8, 10), 'y', [A])])
     await one.sync(store)
     const two = device([])
     const r1 = await two.sync(store)
@@ -285,6 +286,7 @@ describe('pulling thumbnails from storage', () => {
     const r1 = await two.sync(store)
     expect(two.local.entries.has('x')).toBe(true) // text got through
     expect(r1.pulled).toMatchObject({ fetched: 0, failed: 1, errors: ['network down'] })
+    expect(r1.pulled?.missing).toEqual([]) // unknown is not "not synced yet"
 
     store.readBlob = read
     const r2 = await two.sync(store)

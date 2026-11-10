@@ -3,6 +3,7 @@ import { useSyncExternalStore } from 'react'
 import { db, evictOriginals, getMeta, saveFetchedOriginal, setMeta, touchOriginal } from '../lib/db'
 import type { ImageRef } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
+import { KeySet } from '../lib/keySet'
 import { isDisplayable, typeForExt } from '../lib/images'
 import type { ImageLocal } from './attachments'
 import { backendById } from './backends'
@@ -65,6 +66,17 @@ export function useStorage(): StorageState {
   return useSyncExternalStore(subscribe, () => state)
 }
 
+/**
+ * Photos that the last sync found nowhere: no thumbnail in storage and no original on this device (usually the
+ * device that added them hasn't synced yet). Shown as "Not synced yet". Recomputed on every sync.
+ */
+export const missingImages = new KeySet()
+
+/** Whether this photo is known to be missing everywhere (re-renders only when that answer changes). */
+export function useImageMissing(hash: string): boolean {
+  return useSyncExternalStore(missingImages.subscribe, () => missingImages.has(hash))
+}
+
 let store: FileStore | null = null
 let running: Promise<void> | null = null
 let again = false
@@ -102,6 +114,7 @@ export function syncNow(): Promise<void> {
           imagesPending: (r.images?.pending ?? 0) + (r.pulled?.failed ?? 0),
           imageError: r.images?.errors[0] ?? r.pulled?.errors[0] ?? null,
         })
+        missingImages.replace(r.pulled?.missing ?? [])
         await trimOriginals(id)
       } catch (e) {
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')
@@ -228,6 +241,7 @@ export async function connect(backendId: string) {
     await setMeta(imagesKey(backendId), []) // ...and check every image again
     await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
     store = s
+    missingImages.replace([]) // that answer was about the old storage
     set({ backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null, imagesPending: 0, imageError: null })
     await syncNow()
   } catch (e) {
@@ -245,6 +259,7 @@ export async function reconnect() {
 export async function disconnect() {
   store = null
   clearTimeout(timer)
+  missingImages.replace([])
   await db.meta.delete('storage')
   set({ backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, imagesPending: 0, imageError: null })
 }

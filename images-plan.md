@@ -11,7 +11,11 @@ hash to the name), kept with `onRemote: 1`, plus a thumbnail if missing; states 
 yet / error, with "Try again". Cache limit about 1 GB (`ORIGINALS_CACHE_BYTES`; the Settings control is phase 3),
 trimmed after every sync and every download, least recently viewed first (`usedAt`), only `onRemote: 1`, never with
 a module marked `insideBrowser`, never the photo on screen (`holdOriginal`). Export still only includes originals on
-the device. Checked on 127.0.0.1: download on open, "not in storage yet", then Try again.
+the device. Checked on 127.0.0.1: download on open, "not in storage yet", then Try again. **2.3 done:** the pull
+report's `missing` feeds `missingImages` (a `KeySet` in manager, cleared on connect/disconnect); `Thumb` shows "Not
+synced yet" with a dashed edge for those, an empty box while loading, the format name for HEIC/AVIF. Only images with
+no thumbnail in storage and no local original count (a failed read doesn't). Checked on 127.0.0.1: placeholder, then
+the thumbnail in place after the next sync (same height), light and dark.
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the
