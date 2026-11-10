@@ -45,13 +45,14 @@ function Histogram({ hits, onPick }: { hits: Hit[]; onPick: (token: string) => v
   )
 }
 
-export function Results({ query, setQuery, entries, index, onOpenDay, onTag }: {
+export function Results({ query, setQuery, entries, index, onOpenDay, onTag, onOpenImage }: {
   query: string
   setQuery: (q: string) => void
   entries: Entry[]
   index: SearchIndex
   onOpenDay: (e: Entry) => void
   onTag: (tag: string) => void
+  onOpenImage: (e: Entry, index: number) => void
 }) {
   const [sort, setSort] = useState<SortMode>('relevance')
   const [limit, setLimit] = useState(PAGE)
@@ -79,7 +80,7 @@ export function Results({ query, setQuery, entries, index, onOpenDay, onTag }: {
       ) : (
         <div className="timeline">
           {hits.slice(0, limit).map((h) => (
-            <EntryItem key={h.entry.id} entry={h.entry} terms={h.terms} showDate onTag={onTag} onOpenDay={onOpenDay} />
+            <EntryItem key={h.entry.id} entry={h.entry} terms={h.terms} showDate onTag={onTag} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
           ))}
           {hits.length > limit && (
             <button type="button" className="more" onClick={() => setLimit(limit + PAGE)}>Show more ({hits.length - limit} left)</button>

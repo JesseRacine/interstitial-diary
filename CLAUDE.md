@@ -64,6 +64,7 @@ src/
   components/DraftImages.tsx  chips + "Photo" button shared by Capture and EntryItem's edit mode
   components/EntryImages.tsx  photos in a bubble (layout from lib/imageLayout.ts, sized before decode)
   components/Thumb.tsx + useThumbUrl.ts  thumbnails via one shared ref-counted URL cache (lib/urlCache.ts)
+  components/Lightbox.tsx  full-size viewer (zoom maths in lib/zoom.ts); opened/closed via history in App.tsx
   lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal
   App.tsx             views, routing, keyboard shortcuts
 ```
@@ -99,6 +100,8 @@ src/
 - **Never seed fake entries into `localhost:5173`**: that origin may have a storage backend, which would sync them into real files.
   For performance tests (e.g. 7,300 entries) use `http://127.0.0.1:5173`: a different origin, so its own empty database and no sync.
   Delete the database afterwards (`indexedDB.deleteDatabase("interstitial-diary")`).
+- **When the Browser pane is hidden, `requestAnimationFrame` never fires**, so a script awaiting it hangs. Use `setTimeout`.
+- **Synthetic `PointerEvent`s** need a real pointer for `setPointerCapture` (it throws otherwise); the lightbox guards it.
 - The folder picker (`showDirectoryPicker`) opens a native dialog that can't be driven from the pane; the user tests that.
 - The dev database at `localhost:5173` in the pane contains ~360 generated sample entries (not real data).
 

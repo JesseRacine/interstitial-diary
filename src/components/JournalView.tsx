@@ -12,7 +12,7 @@ export interface Jump { day: string; id: string | null; n: number }
 /** Gaps shorter than this are not worth a divider. */
 const GAP_DIVIDER_MINUTES = 60
 
-export function JournalView({ entries, layout, setLayout, jump, bottomTick, onTag, backQuery, onBack }: {
+export function JournalView({ entries, layout, setLayout, jump, bottomTick, onTag, backQuery, onBack, onOpenImage }: {
   entries: Entry[]
   layout: JournalLayout
   setLayout: (l: JournalLayout) => void
@@ -23,6 +23,7 @@ export function JournalView({ entries, layout, setLayout, jump, bottomTick, onTa
   onTag: (tag: string) => void
   backQuery: string | null
   onBack: () => void
+  onOpenImage: (e: Entry, index: number) => void
 }) {
   const { rows, days } = useMemo(() => buildRows(entries), [entries])
   const ref = useRef<VirtuosoHandle>(null)
@@ -135,11 +136,11 @@ export function JournalView({ entries, layout, setLayout, jump, bottomTick, onTa
           {row.gapMinutes !== null && row.gapMinutes >= GAP_DIVIDER_MINUTES && (
             <div className="gap-divider"><span>{formatGap(row.gapMinutes)}</span></div>
           )}
-          <EntryItem entry={row.entry} bubble highlighted={row.entry.id === flashId} onTag={onTag} />
+          <EntryItem entry={row.entry} bubble highlighted={row.entry.id === flashId} onTag={onTag} onOpenImage={onOpenImage} />
         </div>
       </div>
     )
-  }, [flashId, onTag])
+  }, [flashId, onTag, onOpenImage])
 
   return (
     <section className={`journal-view ${layout}`}>

@@ -1,7 +1,11 @@
 # Plan: images in journal entries
 
 _Status: in progress. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
-2026-11-09, and steps 6 (capture UI) and 7 (bubbles) the same day; next is step 8 (lightbox). Step 7 notes: one
+2026-11-09, and steps 6 (capture UI), 7 (bubbles) and 8 (lightbox) the same day; next is step 9 (export with photos). Step 8
+notes: the viewer is always dark; "Remove" takes the photo off the entry but keeps the file (as the plan's rule says);
+history is pushed when opening (App), so Esc/×/tap-outside all close through `history.back()`; keys are taken in the
+capture phase so ←/→/t/n never reach the journal; a HEIC shows a message with Save; an original that isn't on the
+device shows the thumbnail with a note and Save disabled. Step 7 notes: one
 photo fits 320×260 (small ones not enlarged), unknown size = 160 px square; grid tiles are 120 px. Thumbnails share a
 ref-counted URL cache (150 idle URLs kept); a missing thumbnail isn't cached, so one that syncs in later shows up.
 Editing saves text and photos with one `updateEntry`. `EntryImages` takes `onOpen`, which step 8 wires to the lightbox.

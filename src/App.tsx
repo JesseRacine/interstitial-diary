@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
+import { Lightbox } from './components/Lightbox'
 import { Results } from './components/Results'
 import { SearchBar } from './components/SearchBar'
 import { SettingsView, type Theme } from './components/SettingsView'
@@ -39,6 +40,7 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [backQuery, setBackQuery] = useState<string | null>(null)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
+  const [photo, setPhoto] = useState<{ entryId: string; index: number } | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const captureRef = useRef<HTMLTextAreaElement>(null)
 
@@ -87,6 +89,23 @@ export default function App() {
     setBackQuery(null)
   }
 
+  // The photo viewer is a history entry, so the browser's / Android's back button closes it.
+  const openPhoto = useCallback((e: Entry, index: number) => {
+    history.pushState({ photo: true }, '')
+    setPhoto({ entryId: e.id, index })
+  }, [])
+  const closePhoto = useCallback(() => {
+    if (history.state?.photo) history.back() // popstate below clears it
+    else setPhoto(null)
+  }, [])
+  useEffect(() => {
+    const onPop = () => setPhoto(null)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  // Not shown if the entry was deleted (e.g. by a sync) while open; the viewer closes itself when its last photo is removed.
+  const photoEntry = photo ? entries.find((e) => e.id === photo.entryId && e.images?.length) : undefined
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -125,11 +144,12 @@ export default function App() {
 
       <main>
         {searching ? (
-          <Results query={query} setQuery={changeQuery} entries={entries} index={index} onOpenDay={openFromResults} onTag={searchTag} />
+          <Results query={query} setQuery={changeQuery} entries={entries} index={index} onOpenDay={openFromResults} onTag={searchTag}
+            onOpenImage={openPhoto} />
         ) : view === 'journal' ? (
           <>
             <JournalView entries={entries} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
-              onTag={searchTag} backQuery={backQuery} onBack={backToResults} />
+              onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
             <Capture tagStats={tagStats} inputRef={captureRef} onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
@@ -140,6 +160,9 @@ export default function App() {
           <SettingsView entries={entries} theme={theme} setTheme={setTheme} tagCount={tagStats.length} />
         )}
       </main>
+      {photo && photoEntry && (
+        <Lightbox entry={photoEntry} index={photo.index} onIndex={(index) => setPhoto({ ...photo, index })} onClose={closePhoto} />
+      )}
     </div>
   )
 }
