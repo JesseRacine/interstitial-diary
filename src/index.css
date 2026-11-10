@@ -262,6 +262,18 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .journal-view.stream .day-head::before { order: -1; }
 .journal-view.stream .day-head .count { display: none; }
 
+/* Photos view: a virtualised grid of square tiles. Tile size comes from the grid width alone, so rows never jump. */
+.photos-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.photos-view .day-nav { flex: none; }
+.photos-box { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.photos-scroll { flex: 1 1 0; height: auto !important; min-height: 0; overscroll-behavior: contain; }
+.photo-day { display: flex; align-items: baseline; gap: 0.6rem; padding: 1rem 0 0.4rem; }
+.photo-day .link { color: var(--text); font-weight: 600; text-decoration: none; }
+.photo-day .link:hover { text-decoration: underline; }
+.photo-day .count { font-size: 0.8rem; }
+.photo-row { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 4px; padding-bottom: 4px; }
+.photo-row .photo-tile { width: 100%; aspect-ratio: 1; }
+
 /* Results */
 .results-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
 .results-head select { padding: 0.2rem 0.4rem; }
@@ -321,6 +333,8 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 
 @media (max-width: 520px) {
   .top { gap: 0.5rem; }
+  .top nav { gap: 0.1rem; } /* five tabs have to fit without scrolling */
+  .top nav button { padding: 0.35rem 0.5rem; font-size: 0.95rem; }
   .capture-head .muted { display: none; }
   .entry-meta { flex-wrap: wrap; }
   .bubble { max-width: 100%; }

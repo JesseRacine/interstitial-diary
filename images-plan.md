@@ -29,7 +29,15 @@ progress (started 2026-11-09). 3.1 done:** `has:image` (also `has:photo`, `has:i
 have photos, `-has:image` keeps entries without (an empty `images` list counts as none); `ParsedQuery.hasImages`, a
 "With photos" quick chip, the SYNTAX help row and DESIGN.md. Only `has:` can be negated; `-on:x` etc. stay excluded
 words. An unknown `has:` value is a "Didn't understand" error. Checked on 127.0.0.1: results, `-has:image #work`, the
-error, the chip and the help row. Next: 3.2 (Photos view).
+error, the chip and the help row. **3.2 done:** a **Photos** tab (between Calendar and Tags): `lib/photoRows.ts` (pure,
+tested) flattens live entries into day-header rows and rows of `columns` square tiles, newest first; `columnsFor(width)`
+gives 3 columns on a 375 px phone and 6 at full width; `PhotosView` renders them with `react-virtuoso` (the app uses the
+`fill` layout for it, like the journal). Tile sizes come from the grid width only, so rows never change height; every
+row was 119 px in a 2,420-photo check and at most ~60 tiles were in the DOM. A tile opens the existing lightbox (via
+`openPhoto`, so Esc/Back close it and the scroll position is kept); a day heading opens that day in the journal. Five
+tabs no longer fit a 375 px phone, so the nav's padding is tighter there. Empty state: "No photos yet…". Checked on
+127.0.0.1 with 800 seeded entries / 2,420 photos (some without thumbnails): 6 columns at desktop, 3 at 375 px, dark and
+light, viewer open/close, heading jump; the seeded rows were deleted afterwards. Next: 3.3 (storage in Settings).
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the

@@ -230,7 +230,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## UI
 
-- **Header:** app name, views (Journal, Calendar, Tags, Settings), storage status badge.
+- **Header:** app name, views (Journal, Calendar, Photos, Tags, Settings), storage status badge.
 - **Search bar** (always visible): tag autocomplete, chips, saved (★) and recent searches, `?` syntax help.
 - **Journal:** a chat. One continuous scroll through all days, oldest at the top and newest at the bottom, with the
   capture bar pinned at the bottom. Entries are left-aligned bubbles (time underneath; Edit/Delete on hover, always
@@ -246,6 +246,13 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   original that isn't on this device is downloaded from storage when opened (the thumbnail shows meanwhile); if
   storage doesn't have it yet, a note says so with "Try again". Formats the browser can't show (HEIC, AVIF) show a
   placeholder with Save.
+- **Photos view** (header tab between Calendar and Tags): every photo of every live entry as a grid of square
+  thumbnails, newest day first (newest entry first within a day, an entry's photos in their own order), under a heading
+  per day with its photo count. Virtualised like the journal (`lib/photoRows.ts` turns entries into day and tile rows;
+  `components/PhotosView.tsx`). The number of columns comes from the width (tiles of at least 104 px, never fewer than 2:
+  3 on a 375 px phone, 6 at full width). Tiles are squares sized from the grid width alone, so a row's height never
+  depends on what has loaded. Clicking a tile opens the lightbox on that entry's photos; clicking a day's heading opens
+  that day in the journal. A photo without a thumbnail shows the same placeholders as in a bubble.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it.

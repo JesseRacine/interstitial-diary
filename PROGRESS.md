@@ -32,9 +32,10 @@ _Last updated: 2026-11-09_
 
 | 5a2c729 | Images 2.5: docs (DESIGN.md image sync + storage modules), two-device "done when" test; phase 2 done |
 
-| (3.1, hash to add) | Images 3.1: `has:image` / `-has:image` search filter, "With photos" chip, help row, DESIGN.md |
+| aba1edd | Images 3.1: `has:image` / `-has:image` search filter, "With photos" chip, help row, DESIGN.md |
+| (3.2, hash to add) | Images 3.2: Photos view (virtualised thumbnail grid by day, tile opens the lightbox, day heading opens the journal) |
 
-189 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+201 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
@@ -53,7 +54,7 @@ file in Notepad.
   cache), "Not synced yet" for photos found nowhere, "N photos waiting" in the badge, failures retried next sync.
   Checked in the browser step by step and by a two-device test. **Still to confirm by the user:** a real second
   device; that needs hosting or a shared folder (e.g. pCloud Drive) between two browsers.
-- **Phase 3 in progress** (see the plan): **3.1 `has:image` search done (2026-11-09)**. Still to do: 3.2 a Photos view,
+- **Phase 3 in progress** (see the plan): **3.1 `has:image` search and 3.2 Photos view done (2026-11-09)**. Still to do:
   3.3 image storage in Settings, 3.4 removing images of deleted entries, 3.5 data-safety wording. Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
 
 ### 2. Make it an installable PWA

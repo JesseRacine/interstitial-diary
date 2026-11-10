@@ -72,6 +72,8 @@ src/
   components/Lightbox.tsx  full-size viewer (zoom maths in lib/zoom.ts); opened/closed via history in App.tsx
   components/ExportCard.tsx  export: text zip, or "Include photos" (lib/exportZip.ts: streamed, photos stored, <4 GB, per year)
   lib/journalRows.ts  entries -> flat chat rows (day headers + entries) for the virtualised journal
+  lib/photoRows.ts    entries -> day headers + rows of square tiles (and columnsFor(width)) for the Photos view
+  components/PhotosView.tsx  Photos tab: virtualised grid of every photo, newest day first; tile -> lightbox
   App.tsx             views, routing, keyboard shortcuts
 ```
 

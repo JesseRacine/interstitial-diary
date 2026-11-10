@@ -3,6 +3,7 @@ import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
 import { Lightbox } from './components/Lightbox'
+import { PhotosView } from './components/PhotosView'
 import { Results } from './components/Results'
 import { SearchBar } from './components/SearchBar'
 import { SettingsView, type Theme } from './components/SettingsView'
@@ -15,8 +16,8 @@ import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
 import { buildIndex, computeTagStats } from './search/engine'
 
-type View = 'journal' | 'calendar' | 'tags' | 'settings'
-const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['tags', 'Tags'], ['settings', 'Settings']]
+type View = 'journal' | 'calendar' | 'photos' | 'tags' | 'settings'
+const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['photos', 'Photos'], ['tags', 'Tags'], ['settings', 'Settings']]
 
 function loadTheme(): Theme {
   try { return (localStorage.getItem('theme') as Theme | null) ?? 'system' } catch { return 'system' }
@@ -125,7 +126,7 @@ export default function App() {
   const searching = query.trim() !== ''
 
   return (
-    <div className={`app${view === 'journal' && !searching ? ' fill' : ''}`}>
+    <div className={`app${(view === 'journal' || view === 'photos') && !searching ? ' fill' : ''}`}>
       <header className="top">
         <h1>Interstitial</h1>
         <nav>
@@ -154,6 +155,8 @@ export default function App() {
           </>
         ) : view === 'calendar' ? (
           <CalendarView entries={entries} onOpenDay={(d) => openDay(d)} />
+        ) : view === 'photos' ? (
+          <PhotosView entries={entries} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
           <TagsView tagStats={tagStats} onSearch={searchTag} />
         ) : (
