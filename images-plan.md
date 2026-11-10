@@ -1,103 +1,17 @@
 # Plan: images in journal entries
 
-_Status: **phase 1 done (2026-11-09)**; **phase 2 done (2026-11-09)**, in steps 2.1 `pullImages`, 2.2 originals on
-demand + bounded cache, 2.3 "not synced yet" placeholder, 2.4 badge, 2.5 docs. **2.1 done:** `pullImages` runs after
-`syncOnce`; a missing thumbnail is downloaded, else rebuilt from a local original (via `ImageLocal.thumbnail`) and
-written back, else reported in `missing` (step 2.3 will use it); a failed read counts in the badge. Rows on
-screen pick up a thumbnail that arrives later (`useThumbUrl` + `UrlCache.retry`). Checked on 127.0.0.1 with "Files
-inside this browser": fetched, rebuilt and written back, and shown in place with no height change. **2.2 done:**
-the lightbox calls `loadOriginal` (manager): local, else `fetchOriginal` from storage (entry's year first, bytes must
-hash to the name), kept with `onRemote: 1`, plus a thumbnail if missing; states loading / no storage / not in storage
-yet / error, with "Try again". Cache limit about 1 GB (`ORIGINALS_CACHE_BYTES`; the Settings control is phase 3),
-trimmed after every sync and every download, least recently viewed first (`usedAt`), only `onRemote: 1`, never with
-a module marked `insideBrowser`, never the photo on screen (`holdOriginal`). Export still only includes originals on
-the device. Checked on 127.0.0.1: download on open, "not in storage yet", then Try again. **2.3 done:** the pull
-report's `missing` feeds `missingImages` (a `KeySet` in manager, cleared on connect/disconnect); `Thumb` shows "Not
-synced yet" with a dashed edge for those, an empty box while loading, the format name for HEIC/AVIF. Only images with
-no thumbnail in storage and no local original count (a failed read doesn't). Checked on 127.0.0.1: placeholder, then
-the thumbnail in place after the next sync (same height), light and dark. **2.4 done:** the badge's "N photos waiting"
-is `imagesWaiting` (live: local originals with `onRemote: 0` that a live entry uses) plus pull failures
-(`imagesFailed`); push write failures are already in the live count. Found and fixed on the way: a photo attached
-again after its files were confirmed was never marked `onRemote` (so it would wait forever); `pushImages` now also
-checks `ImageLocal.unsaved()`. Settings shows how many photos from another device haven't arrived yet. Checked on
-127.0.0.1: "1 change waiting · 1 photo waiting", then "Saved just now"; an unused photo isn't counted; 375 px dark.
-**2.5 done:** DESIGN.md "Images in a sync run" (push → text → pull, originals on demand, what the user sees) and the
-storage-module section (blob methods, `insideBrowser`, pCloud image calls). The "done when" check is one two-device
-test in `attachments.test.ts` (upload fails then recovers; "missing", then a failed read, then the thumbnail within one
-sync; the original fetched and hash-checked); each part was also checked in the browser in 2.1–2.4. **Phase 3 in
-progress (started 2026-11-09). 3.1 done:** `has:image` (also `has:photo`, `has:images`, `has:photos`) keeps entries that
-have photos, `-has:image` keeps entries without (an empty `images` list counts as none); `ParsedQuery.hasImages`, a
-"With photos" quick chip, the SYNTAX help row and DESIGN.md. Only `has:` can be negated; `-on:x` etc. stay excluded
-words. An unknown `has:` value is a "Didn't understand" error. Checked on 127.0.0.1: results, `-has:image #work`, the
-error, the chip and the help row. **3.2 done:** a **Photos** tab (between Calendar and Tags): `lib/photoRows.ts` (pure,
-tested) flattens live entries into day-header rows and rows of `columns` square tiles, newest first; `columnsFor(width)`
-gives 3 columns on a 375 px phone and 6 at full width; `PhotosView` renders them with `react-virtuoso` (the app uses the
-`fill` layout for it, like the journal). Tile sizes come from the grid width only, so rows never change height; every
-row was 119 px in a 2,420-photo check and at most ~60 tiles were in the DOM. A tile opens the existing lightbox (via
-`openPhoto`, so Esc/Back close it and the scroll position is kept); a day heading opens that day in the journal. Five
-tabs no longer fit a 375 px phone, so the nav's padding is tighter there. Empty state: "No photos yet…". Checked on
-127.0.0.1 with 800 seeded entries / 2,420 photos (some without thumbnails): 6 columns at desktop, 3 at 375 px, dark and
-light, viewer open/close, heading jump; the seeded rows were deleted afterwards. **3.3 done:** a "Photos on this device" card in Settings
-(`PhotoStorageCard`): full-size photos (count, size, and how many storage doesn't have yet), thumbnails, the browser's
-`storage.estimate()` and a picker for the original-cache limit (256 MB, 512 MB, 1 GB default, 2 GB, 5 GB, 10 GB, no
-limit). The limit is saved as `originalsLimit` in `meta` (`getOriginalsLimit`/`setOriginalsLimit`; anything that isn't
-one of the choices reads as the 1 GB default; 0 = no limit = `Infinity`); `trimOriginals` in the manager now calls
-`evictOriginalsToLimit`, and lowering the limit trims at once (`applyOriginalsLimit`, same rule: only `onRemote: 1`,
-never with `insideBrowser`, never the photo on screen). `limitMode` (pure, tested) says when the limit does nothing
-(no storage / inside browser / permission paused) and the card says so in words. Checked on 127.0.0.1 with seeded
-rows: numbers, saving and reloading the setting, the "no storage" and "Files inside this browser" texts, and that with
-the browser module and a 256 MB limit nothing was dropped from 1.34 GB; 375 px dark. The "applies" text and a real
-eviction need a separate-copy storage (the folder picker), so that part is covered by unit tests only (13 new).
-**3.4 done:** "Photos of deleted entries" in the Settings photo card
-(`DeletedEntryPhotos`) → `planImageCleanup` (count and sizes, changes nothing) → a confirmation that says it can't be
-undone → `removeImagesOfDeletedEntries`. All logic is in `storage/cleanup.ts` (backend-agnostic, tested with memory
-stores): candidates are photos a deleted entry known here used and no live entry uses; only the paths those entries imply
-(own years + `.thumbs`) are removed, names checked first, and `fs-store.removeBlob` refuses anything outside the image
-folders; the manager syncs first (and refuses if it can't), runs the job exclusively (no sync meanwhile), recomputes from
-current entries and only removes photos the user was shown; the local copy goes in one transaction that re-checks live
-entries (`removeLocalImagesUnlessUsed`); a failed storage removal keeps the local copy and is reported; removed paths
-leave the per-storage confirmed list (a test shows that without this a photo attached again would never be re-uploaded).
-Mutation-checked: removing the live-entry check or the confirmed-list update makes 7 of the 23 cleanup tests fail. Checked
-in the browser on 127.0.0.1 with "Files inside this browser": 3 entries deleted through the app, the plan showed exactly
-the 2 photos nothing live uses (the one shared with a live entry and an unreferenced file were left alone), Cancel changed
-nothing, Remove deleted the 2 originals + 2 thumbnails from storage and the device, day file and tombstones untouched, a
-second look found nothing; 375 px. The "sync failed, so refuse" path and the real folder are not exercised in the pane.
-**3.5 done (phase 3 done):** there was no "only in this browser" warning yet, so this adds it with the photo wording the plan
-asks for. `lib/dataSafety.ts` (pure, tested): `browserOnlyMode` (no storage, or "Files inside this browser", which lives
-in the same browser data and is not a backup; a folder is a real copy) and `browserOnlyWarning(mode, photos)` ("Entries
-are only in this browser" / "Entries and photos are only in this browser", with the photo count, Export suggested). Shown
-as a notice in the Settings storage card, and as a "⚠ Photos only in this browser" header badge when storage is off and
-the device holds photos (nothing new in the header for entries-only users; that is PROGRESS step 3). Checked on
-127.0.0.1: no photos (no badge, entries wording), photos (badge + photo wording, singular too, live), inside-browser
-storage (normal "Saved" badge, "not a backup" wording); 375 px dark, light. Phase 4 (pCloud) is next, with the pCloud module.
-Still to confirm by the user: originals in the real Windows
-folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
-2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the
-phase 1 "done when" checks. Step 9 notes: "Include photos" makes ONE zip with the day files and the originals (same
-layout as the storage folder), not a second photos-only zip, so it is a complete backup on its own. Chrome/Edge desktop
-stream it into the file chosen in a save dialog; elsewhere (Android) it is collected into a Blob and downloaded.
-fflate doesn't write ZIP64, so a zip is capped just under 4 GB; over that, export one year at a time (offered
-automatically). Export file names now use the local date. Step 8
-notes: the viewer is always dark; "Remove" takes the photo off the entry but keeps the file (as the plan's rule says);
-history is pushed when opening (App), so Esc/×/tap-outside all close through `history.back()`; keys are taken in the
-capture phase so ←/→/t/n never reach the journal; a HEIC shows a message with Save; an original that isn't on the
-device shows the thumbnail with a note and Save disabled. Step 7 notes: one
-photo fits 320×260 (small ones not enlarged), unknown size = 160 px square; grid tiles are 120 px. Thumbnails share a
-ref-counted URL cache (150 idle URLs kept); a missing thumbnail isn't cached, so one that syncs in later shows up.
-Editing saves text and photos with one `updateEntry`. `EntryImages` takes `onOpen`, which step 8 wires to the lightbox.
-2-year check done (7,306 entries, 1,049 with photos): no row height changed after thumbnails loaded, in Days and Stream;
-6–11 rows in the DOM. Step 6 notes: Save waits
-until every photo is stored ("Preparing photos…"); the same photo twice in one draft is dropped with a message; the
-Attach button turns off at 10. Checked on 127.0.0.1 with "Files inside this browser": originals, thumbnails and image
-lines land in storage; 375 px, light and dark. Step 5 notes: instead of only `blobs.onRemote`, pushImages keeps a per-module
-set of confirmed paths (an image can be needed in several year folders, and switching storage must re-check
-everything); `onRemote` is set once all of an original's year copies are written. The order lives in
-`storage/syncAll.ts` so it is testable. A file deleted by hand from storage after being confirmed is not rewritten. Step 4 notes: `attachImage` (lib/attach.ts) is the entry point the capture UI will
-call; `ThumbRow.w/h` hold the original's size; AVIF is stored but not shown, like HEIC; very tall thumbnails are capped
-at 1024 px high. Checked in Edge: worker decode, EXIF orientation 6, originals byte for byte.
-Decided in step 2: a text line that looks like an image line is escaped with `\`; an entry whose text was removed by
-hand keeps its images with empty text. Written 2026-11-08. Replaces [junior-plan.md](junior-plan.md) (see "Review of the
-junior plan" at the end for what changed and why). Scheduled as PROGRESS step 1 (next up)._
+**Status (2026-11-09): phases 1, 2 and 3 are built and committed; phase 4 (pCloud) comes with the pCloud module
+([PROGRESS.md](PROGRESS.md) step 5).** The "Build log" near the end records what each step decided and how it was checked;
+DESIGN.md describes the result. Still to confirm by the user on the real Windows folder / a second device: see
+PROGRESS.md "Waiting on the user". Written 2026-11-08; replaces [junior-plan.md](junior-plan.md) (see "Review of the
+junior plan" at the end for what changed and why).
+
+| Phase | Steps | State |
+|---|---|---|
+| 1: attach, show, store | 1.1 data model, 1.2 Markdown, 1.3 sync comparisons, 1.4 image pipeline, 1.5 binary storage + `pushImages`, 1.6 capture UI, 1.7 bubbles, 1.8 lightbox, 1.9 export, 1.10 docs | done |
+| 2: images on other devices | 2.1 `pullImages`, 2.2 originals on demand + cache, 2.3 "Not synced yet", 2.4 badge, 2.5 docs | done |
+| 3: search, browse, housekeeping | 3.1 `has:image`, 3.2 Photos view, 3.3 storage in Settings, 3.4 cleanup of deleted entries' photos, 3.5 data-safety wording | done |
+| 4: pCloud | the pCloud module implements the blob methods | not started |
 
 Goal: attach photos to entries, show thumbnails in the chat, open them full size, and keep the originals in the
 storage folder, without hurting scroll performance or risking journal data.
@@ -116,8 +30,9 @@ Before you start, read `CLAUDE.md` (rules and commands), `DESIGN.md` (data model
 | Thumbnails | About 512 px wide, WebP, about 25 KB, made in a Web Worker. |
 | Formats shown | JPEG, PNG, WebP, GIF (GIF thumbnails are still frames). Anything else (e.g. HEIC) is stored, but shows a placeholder and a download link. |
 | Folder writes | **From phase 1:** every original is written to the active storage module. The Markdown never points at a file that was never written. |
-| Export | The text-only zip stays the default. "Include photos" streams a separate, uncompressed zip and shows its size first. |
-| Deleting files | Never automatic. The only cleanup removes images used solely by deleted entries, after a confirmation. |
+| Export | The text-only zip stays the default. "Include photos" streams ONE uncompressed zip (day files + originals, the storage-folder layout, so it is a complete backup) and shows its size first. *(Built as one zip, not the separate photos zip first planned.)* |
+| Deleting files | Never automatic. The only cleanup removes images used solely by deleted entries, after a check and a confirmation that says it can't be undone (built in 3.4; rules in DESIGN.md). |
+| Cache limit | Local originals are a bounded cache, 1 GB by default; changeable in Settings (3.3). Only confirmed copies are dropped. |
 
 ## Constraints in the current code
 
@@ -254,7 +169,7 @@ after an entry is deleted; nothing evicted without `onRemote: 1`; a hash collisi
 
 ## Build order
 
-### Phase 1: attach, show and store images (written to the folder)
+### Phase 1: attach, show and store images (written to the folder) — DONE
 
 1. **Data model.** `ImageRef`, `Entry.images`, `CoreFields`/`withDerived`, Dexie v2 with `thumbs` and `blobs`,
    `addEntry`/`setEntryImages`. Tests.
@@ -273,26 +188,27 @@ after an entry is deleted; nothing evicted without `onRemote: 1`; a hash collisi
    move within the entry, wheel/pinch zoom, drag to pan; `history.pushState` so Android back closes it; takes over the keys
    while open (doesn't trigger the journal's `←`/`→`/`t`); caption with date and text; Save and Remove-image buttons; a
    missing file shows a placeholder, never an error.
-9. **Export.** The text zip unchanged. "Include photos" builds a second zip with fflate's streaming `Zip` at level 0
-   (JPEGs don't compress), showing the total size first; originals under `<year>/images/`, no `.thumbs/`.
+9. **Export.** The text zip unchanged. "Include photos" builds ONE zip (day files plus originals; see the Decisions
+   table) with fflate's streaming `Zip` at level 0 (JPEGs don't compress), showing the total size first; originals under
+   `<year>/images/`, no `.thumbs/`.
 10. **Docs.** DESIGN.md (data model, file format, `FileStore` interface, sync order), CLAUDE.md code map, PROGRESS.md.
 
 **Phase 1 done when:** a photo can be pasted, dragged or picked; its original appears in the storage folder; the thumbnail
 doesn't shift the list; it opens full size; it survives a reload; the 2-year check scrolls smoothly in Days and Stream;
 375 px, light and dark mode work; `npm test`, `npx tsc -b` and `npm run lint` pass.
 
-### Phase 2: images on other devices
+### Phase 2: images on other devices — DONE
 
 - `pullImages` (thumbnails eagerly, rebuild missing thumbnails).
 - Originals downloaded on demand in the lightbox, plus a bounded local cache that follows the eviction rule above.
 - "Not synced yet" placeholder for referenced images that aren't available anywhere yet.
-- Storage badge shows "N images pending".
+- Storage badge shows "N photos waiting".
 - Docs: DESIGN.md sync rules and storage-module sections.
 
 **Phase 2 done when:** a photo added on one device shows as a thumbnail on another within one sync cycle, the original
 downloads when opened, and failures recover on the next sync. Tests pass.
 
-### Phase 3: search, browse and housekeeping
+### Phase 3: search, browse and housekeeping — DONE
 
 1. **`has:image`** filter. Rule 6: `search/query.ts`, the `SYNTAX` table in `components/SearchBar.tsx` and DESIGN.md
    together, with parser tests.
@@ -303,10 +219,11 @@ downloads when opened, and failures recover on the next sync. Tests pass.
    yet) are never touched. Confirmation shows the count and size and says it can't be undone.
 5. **Data-safety wording:** with no file storage set up, the warning says photos are only in this browser.
 
-### Phase 4: pCloud
+### Phase 4: pCloud — NOT STARTED
 
-The pCloud module (PROGRESS step 5) implements `readBlob`/`writeBlob`/`hasBlob` with its HTTP API
-(`uploadfile`, `getfilelink`/`file_open`, `stat`). Nothing else should need to change.
+The pCloud module (PROGRESS step 5) implements `readBlob`/`writeBlob`/`hasBlob` and `removeBlob` (needed by the photo
+cleanup) with its HTTP API (`uploadfile`, `getfilelink`/`file_open`, `stat`, `deletefile`). Nothing else should need to
+change.
 
 ## Testing
 
@@ -331,6 +248,93 @@ The pCloud module (PROGRESS step 5) implements `readBlob`/`writeBlob`/`hasBlob` 
 ## Out of scope
 
 Video and other file types, HEIC conversion, editing/cropping, OCR, a "downscale" setting.
+
+---
+
+## Build log (what each step decided, and how it was checked)
+
+All 2026-11-09. "Checked" means in the Browser pane on `127.0.0.1` (never `localhost`, see CLAUDE.md) unless stated.
+
+### Phase 1: attach, show, store
+- **1.1–1.3 (data model, Markdown, sync comparisons):** a text line that looks like an image line is escaped with `\`;
+  an entry whose text was removed by hand keeps its images with empty text.
+- **1.4 (pipeline):** `attachImage` (`lib/attach.ts`) is the entry point for the capture UI; `ThumbRow.w/h` hold the
+  original's size; AVIF is stored but not shown, like HEIC; very tall thumbnails are capped at 1024 px. Checked in Edge:
+  worker decode, EXIF orientation 6, originals byte for byte.
+- **1.5 (binary storage):** instead of only `blobs.onRemote`, `pushImages` keeps a per-module set of confirmed paths (an
+  image can be needed in several year folders, and switching storage must re-check everything); `onRemote` is set once
+  all of an original's year copies are written. The order (push, text sync, pull) lives in `storage/syncAll.ts` so it is
+  testable. A file deleted by hand from storage after being confirmed is not rewritten.
+- **1.6 (capture UI):** Save waits until every photo is stored ("Preparing photos…"); the same photo twice in one draft
+  is dropped with a message; the Attach button turns off at 10. Checked with "Files inside this browser": originals,
+  thumbnails and image lines land in storage; 375 px, light and dark.
+- **1.7 (bubbles):** one photo fits 320×260 (small ones not enlarged), unknown size = 160 px square; grid tiles are
+  120 px. Thumbnails share a ref-counted URL cache (150 idle URLs kept); a missing thumbnail isn't cached, so one that
+  syncs in later shows up. Editing saves text and photos with one `updateEntry`. 2-year check (7,306 entries, 1,049 with
+  photos): no row height changed after thumbnails loaded, in Days and Stream; 6–11 rows in the DOM.
+- **1.8 (lightbox):** the viewer is always dark; "Remove" takes the photo off the entry but keeps the file; history is
+  pushed when opening (App), so Esc/×/tap-outside all close through `history.back()`; keys are taken in the capture
+  phase so ←/→/t/n never reach the journal; a HEIC shows a message with Save; an original that isn't on the device shows
+  the thumbnail with a note and Save disabled.
+- **1.9 (export):** "Include photos" makes ONE zip with the day files and the originals (same layout as the storage
+  folder), not a second photos-only zip, so it is a complete backup on its own. Chrome/Edge desktop stream it into the
+  file chosen in a save dialog; elsewhere (Android) it is collected into a Blob and downloaded. fflate doesn't write
+  ZIP64, so a zip is capped just under 4 GB; over that, export one year at a time (offered automatically). Export file
+  names use the local date.
+
+### Phase 2: images on other devices
+- **2.1:** `pullImages` runs after `syncOnce`; a missing thumbnail is downloaded, else rebuilt from a local original (via
+  `ImageLocal.thumbnail`) and written back, else reported in `missing`; a failed read counts in the badge. Rows on screen
+  pick up a thumbnail that arrives later (`useThumbUrl` + `UrlCache.retry`). Checked: fetched, rebuilt and written back,
+  shown in place with no height change.
+- **2.2:** the lightbox calls `loadOriginal` (manager): local, else `fetchOriginal` from storage (entry's year first, bytes
+  must hash to the name), kept with `onRemote: 1`, plus a thumbnail if missing; states loading / no storage / not in
+  storage yet / error, with "Try again". The cache is trimmed after every sync and every download, least recently viewed
+  first (`usedAt`), only `onRemote: 1`, never with an `insideBrowser` module, never the photo on screen (`holdOriginal`).
+  Checked: download on open, "not in storage yet", then Try again.
+- **2.3:** the pull report's `missing` feeds `missingImages` (a `KeySet` in the manager, cleared on connect/disconnect);
+  `Thumb` shows "Not synced yet" with a dashed edge for those, an empty box while loading, the format name for HEIC/AVIF.
+  Only images with no thumbnail in storage and no local original count (a failed read doesn't). Checked: placeholder,
+  then the thumbnail in place after the next sync (same height), light and dark.
+- **2.4:** the badge's "N photos waiting" is `imagesWaiting` (live: local originals with `onRemote: 0` that a live entry
+  uses) plus pull failures (`imagesFailed`). Bug found and fixed on the way: a photo attached again after its files were
+  confirmed was never marked `onRemote` (so it would wait forever); `pushImages` now also checks `ImageLocal.unsaved()`.
+  Settings shows how many photos from another device haven't arrived yet.
+- **2.5:** DESIGN.md "Images in a sync run" and the storage-module section. The "done when" check is one two-device test
+  in `attachments.test.ts` (upload fails then recovers; "missing", then a failed read, then the thumbnail within one
+  sync; the original fetched and hash-checked).
+
+### Phase 3: search, browse, housekeeping
+- **3.1 `has:image`:** also `has:photo`/`has:images`/`has:photos`; `-has:image` keeps entries without (an empty `images`
+  list counts as none). `ParsedQuery.hasImages`, a "With photos" chip, the SYNTAX help row, DESIGN.md. Only `has:` can be
+  negated; `-on:x` etc. stay excluded words. An unknown `has:` value is a "Didn't understand" error.
+- **3.2 Photos view:** a **Photos** tab (between Calendar and Tags). `lib/photoRows.ts` (pure, tested) flattens live
+  entries into day-header rows and rows of `columns` square tiles, newest first; `columnsFor(width)` gives 3 columns on a
+  375 px phone and 6 at full width; `PhotosView` uses `react-virtuoso` (the app uses the `fill` layout for it, like the
+  journal). Tile sizes come from the grid width only: every row was 119 px in a 2,420-photo check, at most ~60 tiles in
+  the DOM. A tile opens the existing lightbox (via `openPhoto`, so Esc/Back close it and the scroll position is kept);
+  a day heading opens that day in the journal. Five tabs no longer fit 375 px, so the nav's padding is tighter there.
+- **3.3 storage in Settings:** the "Photos on this device" card (`PhotoStorageCard`): full-size photos (count, size, how
+  many storage doesn't have yet), thumbnails, `storage.estimate()`, and a picker for the original-cache limit (256 MB,
+  512 MB, 1 GB default, 2 GB, 5 GB, 10 GB, no limit). Saved as `originalsLimit` in `meta`; anything that isn't one of the
+  choices reads as the 1 GB default; 0 = no limit = `Infinity`. `trimOriginals` calls `evictOriginalsToLimit`, and
+  lowering the limit trims at once (`applyOriginalsLimit`; same rule as always). `limitMode` (pure) says when the limit
+  does nothing (no storage / inside browser / permission paused). A real eviction needs a separate-copy storage, so it is
+  covered by unit tests only.
+- **3.4 cleanup:** "Photos of deleted entries" (`DeletedEntryPhotos`) → `planImageCleanup` (count and sizes, changes
+  nothing) → a confirmation that says it can't be undone → `removeImagesOfDeletedEntries`. All logic is in
+  `storage/cleanup.ts` (rules in DESIGN.md and CLAUDE.md rule 2). Mutation-checked: removing the live-entry check or the
+  confirmed-list update makes 7 of the 23 cleanup tests fail. Checked with "Files inside this browser": 3 entries deleted
+  through the app, the plan showed exactly the 2 photos nothing live uses (a photo shared with a live entry and an
+  unreferenced file were left alone), Cancel changed nothing, Remove deleted the 2 originals + 2 thumbnails from storage
+  and the device with day file and tombstones untouched, and a second look found nothing. Not exercised in the pane: the
+  "sync failed, so refuse" path and the real folder.
+- **3.5 data-safety wording:** there was no "only in this browser" warning yet, so this adds it. `lib/dataSafety.ts`
+  (pure, tested): `browserOnlyMode` (no storage, or "Files inside this browser", which is not a backup) and
+  `browserOnlyWarning(mode, photos)`. Shown as a notice in the Settings storage card, and as a "⚠ Photos only in this
+  browser" header badge when storage is off and the device holds photos (nothing new in the header for entries-only
+  users; that is PROGRESS step 3). Checked: no photos / photos (singular too, live) / inside-browser storage; 375 px dark,
+  light.
 
 ---
 

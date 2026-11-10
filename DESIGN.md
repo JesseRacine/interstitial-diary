@@ -29,6 +29,10 @@
   type sniffed from its bytes, and saved at once to Dexie: the original byte for byte in `blobs`, a ~512 px WebP
   thumbnail in `thumbs` (made in a Web Worker, `lib/images.worker.ts`, with EXIF rotation). Entries only hold small
   `ImageRef`s. Thumbnails reach the UI through one ref-counted cache of object URLs (`lib/urlCache.ts`).
+- **The Photos view** is virtualised the same way (`lib/photoRows.ts`): day headers and rows of square tiles whose size
+  comes from the grid width alone, so its rows never change height either.
+- **The storage manager** (`storage/manager.ts`) is the one runtime singleton: it holds the active module, runs syncs
+  one at a time, exposes status to the UI, and trims the original cache. See "When sync runs" for how jobs are ordered.
 - **Search** builds a MiniSearch index over all live entries in memory (rebuilt when entries change). This is fine
   for tens of thousands of entries; move to incremental `add/replace/discard` if it ever gets slow.
 - **Storage modules** move files; the **sync engine** does all merging. One module is active at a time.
@@ -156,7 +160,10 @@ are a bounded cache: see "Platform plan and data safety".
   The last image error is shown in Settings ("will retry").
 
 **When sync runs** (`storage/manager.ts`): on startup, ~1.5 s after local changes, when the page is hidden or
-shown again, every 5 minutes, and on "Save now".
+shown again, every 5 minutes, and on "Save now". Only one sync runs at a time; a request made while one runs sets a
+flag and the run repeats once. After every successful sync (and every original download) the manager trims the original
+cache (`trimOriginals`). Jobs that edit the per-storage `images:<id>` list, such as the photo cleanup, run through
+`exclusive`: they wait for a running sync, and any sync requested meanwhile waits for them, then the manager syncs again.
 
 ## Storage modules
 
@@ -184,7 +191,8 @@ interface StorageBackend<Config> { // how the app offers and reopens it
 Paths use `/`. `config` must survive IndexedDB structured cloning (a directory handle is fine; a class instance is not).
 
 **Images need the three blob methods.** `readBlob`/`writeBlob` move bytes as they are (no text decoding), `hasBlob`
-answers with the size only (cheap: no download). A module without them syncs text only: image lines still sync, the
+answers with the size only (cheap: no download). `removeBlob` is a fourth, optional method used only by the
+user-confirmed photo cleanup; a module without it is left alone by the cleanup (only this device is cleaned). A module without them syncs text only: image lines still sync, the
 photos themselves stay on the device that added them. Set `insideBrowser` when the files are wiped together with the
 browser's data (OPFS): then a stored file is not a separate copy, so the app keeps every local original.
 
@@ -272,8 +280,9 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## Platform plan and data safety
 
-- **Now:** PWA. It installs from Edge/Chrome with its own window and icon and works offline. Install on Android needs
-  HTTPS hosting.
+- **Now:** a web app that runs in the browser (dev server on `localhost`); data lives in the browser and, optionally, a
+  storage module. **Next (PROGRESS steps 2 and 4):** make it an installable PWA (own window and icon, works offline,
+  precaching the image worker) and host it over HTTPS, which Android install needs.
 - **Later:** Tauri wraps the same build into a Windows `.exe` and Android `.apk`, built in GitHub Actions so nothing
   extra is installed locally. Native-only features (tray, global hotkey, Android folders) go in as small
   platform-specific pieces or storage modules.
