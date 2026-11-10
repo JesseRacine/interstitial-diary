@@ -1,6 +1,7 @@
 # Plan: images in journal entries
 
-_Status: in progress. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
+_Status: **phase 1 done (2026-11-09)**; phase 2 next. Still to confirm by the user: originals in the real Windows
+folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the
 phase 1 "done when" checks. Step 9 notes: "Include photos" makes ONE zip with the day files and the originals (same
 layout as the storage folder), not a second photos-only zip, so it is a complete backup on its own. Chrome/Edge desktop

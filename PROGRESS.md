@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-08_
+_Last updated: 2026-11-09_
 
 ## Done
 
@@ -12,17 +12,33 @@ _Last updated: 2026-11-08_
 | 9747fca | Fix: edits made to existing entries directly in the files were overwritten; now they win |
 | 05c214a | Chat-style journal: one scrolling chat with the capture bar pinned at the bottom; left-aligned bubbles; two layouts (`Days` = a box per day, `Stream` = one continuous chat), remembered in localStorage; virtualised with `react-virtuoso` so two years (7,300 entries) scroll smoothly (~24 rows in the DOM); jump from calendar/search/date picker; `lib/journalRows.ts` + tests |
 
-73 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+| 5d66390 | Images 1.1: `ImageRef` data model, `withDerived` keeps images, Dexie v2 (`thumbs`, `blobs`) |
+| 725ab6e | Images 1.2: image lines in day files (backward compatible; hand-written ids unchanged) |
+| 82ecaa0 | Images 1.3: sync treats image lines changed by hand as edits |
+| d934111 | Images 1.4: hashing, type sniffing, thumbnail worker (EXIF rotation), `attachImage` |
+| 8bbe2d7 | Images 1.5: blob methods on `FileStore`; `pushImages` writes originals + thumbnails before day files |
+| c7f17cf | Images 1.6: attach photos in the capture box (paste, drop, pick) |
+| f1dcd22 | Images 1.7: photos in bubbles, sized before decode; add/remove while editing |
+| 0cb6125 | Images 1.8: lightbox (zoom, pan, keys, back button, save, remove) |
+| 924391e | Images 1.9: export with photos (streamed zip, per year over 4 GB); then 1.10: docs, phase 1 done |
+
+154 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
 
-### 1. Images in entries
-- Photos attached to entries, thumbnails in the chat, a lightbox, originals written to the storage folder; then sync to
-  other devices, `has:image`, a Photos view. Fully planned in [images-plan.md](images-plan.md) (four phases, with tests
-  for every sync/format change). Replaces the earlier junior-plan.md, which had data-loss gaps.
-- Start with phase 1, step 1 (data model).
-- **Done when:** the plan's phase 1 and phase 2 "done when" checks pass.
+### 1. Images in entries (phase 1 done; phase 2 next)
+- Planned in [images-plan.md](images-plan.md) (four phases, with tests for every sync/format change); its status line
+  records what each step decided.
+- **Phase 1 (done 2026-11-09):** attach, show, open full size, export, and write originals to the storage folder.
+  Checked on `127.0.0.1` with "Files inside this browser" (originals, thumbnails and image lines land in storage), the
+  2-year check (no row jumps in Days or Stream), 375 px, light and dark.
+  **Still to confirm by the user:** with the real Windows folder, attach a photo on `localhost:5173` and check that
+  `<folder>\2026\images\` and `<folder>\.thumbs\` get the files after the next save; and try one real export with
+  photos through the Save dialog.
+- **Phase 2 next:** `pullImages` (thumbnails to other devices, rebuild missing thumbnails), originals on demand in the
+  lightbox with a bounded cache, "not synced yet" placeholder, badge shows images pending.
+- **Done when:** the plan's phase 2 "done when" check passes.
 
 ### 2. Make it an installable PWA
 - Add `vite-plugin-pwa` (already a dev dependency) to `vite.config.ts`: manifest (name, short_name "Interstitial",
@@ -30,6 +46,7 @@ file in Notepad.
   the journal with the capture box focused.
 - App icons (192, 512, maskable) in `public/`, replacing the Vite favicon.
 - Service worker: precache the app shell so it works offline; prompt-to-reload when a new version is available.
+  It must also precache the image worker chunk (`assets/images.worker-*.js`), or photos can't be attached offline.
 - **Done when:** Edge offers "Install", the installed app opens in its own window offline, and Lighthouse PWA checks pass.
 
 ### 3. Data-safety features
@@ -66,6 +83,10 @@ file in Notepad.
 - The folder module needs Chrome/Edge on desktop and usually needs "Reconnect folder" after a browser restart.
 - On Android there is currently no copy outside the browser.
 - No import of existing notes from other apps yet (export only).
+- Photos don't reach other devices yet (images phase 2): a second device sees the photo lines but shows placeholders.
+- A photo file deleted by hand from the storage folder after it was saved there is not written back.
+- An unsaved edit's photo references can be lost like its text (see the first point), but the photo bytes are already
+  saved in the browser and are never lost.
 
 ## Ideas backlog
 - Restyle search results to match the chat look (they still use cards).

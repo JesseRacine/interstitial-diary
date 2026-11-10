@@ -24,6 +24,11 @@
 - **The journal is virtualised** (`react-virtuoso`): all entries are flattened into rows (a header per day plus its entries,
   `lib/journalRows.ts`) and only the rows on screen exist in the DOM, so two years of entries (about 7,300) scroll
   smoothly. Anything that changes a row's height after it renders (e.g. images) must reserve its space up front.
+  Photos do: every box is sized from the stored `w`/`h` (`lib/imageLayout.ts`) before the thumbnail decodes.
+- **Photos** (`lib/images.ts`, `lib/attach.ts`): an attached file is hashed (SHA-256, first 16 hex = its name), its
+  type sniffed from its bytes, and saved at once to Dexie: the original byte for byte in `blobs`, a ~512 px WebP
+  thumbnail in `thumbs` (made in a Web Worker, `lib/images.worker.ts`, with EXIF rotation). Entries only hold small
+  `ImageRef`s. Thumbnails reach the UI through one ref-counted cache of object URLs (`lib/urlCache.ts`).
 - **Search** builds a MiniSearch index over all live entries in memory (rebuilt when entries change). This is fine
   for tens of thousands of entries; move to incremental `add/replace/discard` if it ever gets slow.
 - **Storage modules** move files; the **sync engine** does all merging. One module is active at a time.
@@ -193,11 +198,19 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   Two layouts, chosen with the **Days / Stream** toggle and remembered: *Days* puts each day in its own box with a date
   header and entry count; *Stream* is one unbroken chat with a thin date divider between days. The header shows the day
   currently at the top; the arrows, date picker and **Latest** button jump between days. Saving an entry scrolls to it.
+- **Photos:** attach in the capture box (or while editing) by pasting (only taken over when the clipboard holds
+  files), dropping, or the Photo button; up to 10 per entry, a warning over 100 MB, text still required. In a bubble: one
+  photo at its ratio (max 320×260), 2–4 as a grid of squares, 5+ as four with "+N". Clicking opens the **lightbox**:
+  original after the thumbnail, ←/→ within the entry, wheel/pinch/double-click zoom, drag to pan, Esc or Back to
+  close (it is a history entry), Save (download original), Remove (takes it off the entry; the file is kept). Formats
+  the browser can't show (HEIC, AVIF) and photos not on this device show placeholders.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it.
 - **Tags:** count and last-used date per tag; rename/merge.
-- **Settings:** storage, theme, export (zip of Markdown), shortcuts.
+- **Settings:** storage, theme, export, shortcuts. Export is a zip of the Markdown files; with **Include photos** it
+  also holds the originals in the storage-folder layout, streamed (photos stored uncompressed), size shown first,
+  one year at a time when over the 4 GB a plain zip can hold.
 - **Shortcuts:** `n` new entry, `/` or Ctrl+K search, ←/→ previous/next day with entries, `t` jump to the latest entry, Esc clears search.
 
 ## Platform plan and data safety
@@ -210,4 +223,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 - **Browser data can be wiped** by: clearing site data, uninstalling with "clear data" ticked, Android "Clear storage"
   for Chrome, eviction under low disk (unless persistent storage was granted; the app requests it at startup), or the
   app's address changing. This is why file storage matters. On Android, until pCloud or native exists, the only copy
-  is inside the browser.
+  is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
+- **Photo files are never deleted automatically**: not when an entry is deleted, and not when a photo is removed from
+  an entry. A local original may only be dropped from the browser once a separate storage module (not "Files inside
+  this browser") has confirmed it (`blobs.onRemote`); that cache eviction is phase 2.

@@ -38,6 +38,7 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
             <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next day</td></tr>
             <tr><td><kbd>t</kbd></td><td>Jump to today</td></tr>
             <tr><td><kbd>Esc</kbd></td><td>Clear search</td></tr>
+            <tr><td>Photo viewer</td><td><kbd>←</kbd> <kbd>→</kbd> other photos · <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> zoom · <kbd>Esc</kbd> close</td></tr>
           </tbody>
         </table>
       </div>
