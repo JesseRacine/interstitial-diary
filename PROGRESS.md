@@ -40,7 +40,9 @@ _Last updated: 2026-11-09_
 
 | d1594c0 | Step 4.1: pre-publish cleanup: personal paths/email removed from the docs; whole history rewritten to the GitHub noreply identity (and old doc versions scrubbed); branch renamed `master` to `main` |
 
-| (this commit) | Step 4.1b: deleted the superseded `junior-plan.md` |
+| 8ec4067 | Step 4.1b: deleted the superseded `junior-plan.md` |
+
+| (this commit) | Docs: record the new archive (step 4.1 finished) |
 
 **All hashes above, except f3c682f and the ones after it, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
 old doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -118,8 +120,9 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
   and the reminder do say it isn't a backup).
 
 ### 4. Hosting on GitHub Pages: NEXT (decided 2026-11-10: GitHub Pages, not Cloudflare)
-**Status (2026-11-10): decisions made; checklist sub-step 1 (clean-up) done except the new archive, the remote and the first
-push. Next: base path (sub-step 2), then GitHub sign-in/repo creation, workflow, push.** Work through the checklist in
+**Status (2026-11-10): decisions made; checklist sub-step 1 (clean-up) done, including the new dated archive in the
+Windows session folder (`archive-2026-11-10/` + zip, snapshot of 8ec4067; restore tested from the bundle). Still local: no
+remote, nothing pushed. Next: base path (sub-step 2), then GitHub sign-in/repo creation, workflow, push.** Work through the checklist in
 order, one sub-step per turn.
 
 **Decisions (answered 2026-11-10):** GitHub account `JesseRacine` (numeric id 9375408; looked up from GitHub's public
