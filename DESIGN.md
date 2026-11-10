@@ -58,7 +58,8 @@ tag renames and parsing would drop it. Dexie v2 adds `thumbs` (rebuildable thumb
 (`C#` and `a#b` are not tags). Stored lowercase; trailing `-`/`/` stripped.
 
 Other local data lives in the Dexie `meta` table: `savedSearches`, `recentSearches`, `storage` (active backend id +
-config, e.g. a folder handle), `sync:<backendId>` (file revisions from the last sync). The theme and the journal layout (`journalLayout`: `cards` or `stream`) are in `localStorage`.
+config, e.g. a folder handle), `sync:<backendId>` (file revisions from the last sync), `images:<backendId>` (image
+paths confirmed in that storage). `blobs` rows also carry `usedAt` (last opened, for the original cache). The theme and the journal layout (`journalLayout`: `cards` or `stream`) are in `localStorage`.
 
 ## File format (public contract)
 
@@ -115,33 +116,43 @@ If anything throws, nothing is marked synced and the next run retries.
   on every device. Deletions go through the app (tombstones).
 - If the same entry is edited in a file *and* in the app before a sync runs, the app's version wins.
 
-**Images** (`storage/attachments.ts`, `storage/syncAll.ts`): each run first pushes images, in their own try/catch,
-then runs the text sync above. So originals land before the day files that refer to them, and an image failure
-never blocks or fails text sync (it retries next run). An original is written to
-every `<year>/images/` folder whose live entries use it, plus `.thumbs/<hash>.webp`. Paths confirmed in storage are
-remembered per module (`images:<backendId>` in `meta`), so a quiet sync touches no image files. An original is marked
-`onRemote: 1` once every year copy it needs is confirmed, including a local copy whose files were confirmed earlier
-(a photo attached again after the cache dropped it: `ImageLocal.unsaved`). Choosing a new storage resets that list and
-every `blobs.onRemote`. Image files are never deleted automatically. `list()` never returns image files (it runs every
-sync).
+### Images in a sync run (`storage/syncAll.ts`, `storage/attachments.ts`)
 
-The **status badge** adds "· N photos waiting": photos on this device that storage doesn't have yet and a live entry
-uses (`imagesWaiting`, a live count like the text's "changes waiting", so it shows before the next sync and drops to 0
-after a good one; photos of deleted entries or discarded drafts never count), plus photos the last pull failed to
-fetch. Settings also says how many photos from another device haven't arrived yet (the "Not synced yet" ones).
+A run is **push images → text sync → pull images**. Both image passes are backend-agnostic like `sync.ts`, run only
+if the module has the blob methods, and sit in their own try/catch: an image problem never blocks or fails the text
+sync. It is counted, shown, and retried next run. Image files are never deleted automatically, not even when the
+entry using them is deleted, and `list()` never returns them (it runs every sync).
 
-After the text sync, a **pull pass** (`pullImages`, own try/catch too) gives this device a thumbnail for every image a
-live entry uses: it downloads `.thumbs/<hash>.webp` (small, so eagerly; the original's size comes from the image
-line), or, if storage has none but this device has the original, makes it again in the worker and writes it back.
-An image that is nowhere yet (the other device hasn't uploaded it) is reported missing and tried again next run;
-the journal shows its box as **"Not synced yet"** (dashed edge) until it arrives (`missingImages` in `manager.ts`, a
-`KeySet` recomputed every sync, so only rows whose answer changes re-render). A failed read is not "missing".
-Formats without thumbnails (HEIC, AVIF) are skipped, and originals are never downloaded by sync: the photo viewer
-asks for one when it opens (`loadOriginal` in `manager.ts`, `fetchOriginal` in `storage/originals.ts`). It tries the
-entry's year folder, then other years that use it, and only accepts bytes that hash to the file name (a file replaced
-by hand is never taken for the photo). The download is kept, and a missing thumbnail is made from it. A row already on
-screen picks up a thumbnail that arrives later (`useThumbUrl` watches the `thumbs` table; `UrlCache.retry`). A
-quiet sync reads nothing, because only images without a local thumbnail are looked up.
+1. **Push** (`pushImages`, before the text so originals land before the day files that refer to them): every
+   original this device holds is written to each `<year>/images/` folder whose live entries use it, plus
+   `.thumbs/<hash>.webp`. `writeBlob` never overwrites: the same size is accepted, a different file with that name is
+   an error. Paths confirmed in storage are remembered per module (`images:<backendId>` in `meta`), so a quiet sync
+   touches no image files. An original is marked `onRemote: 1` once every year copy it needs is confirmed, including
+   a local copy whose files were confirmed earlier (a photo attached again after the cache dropped it:
+   `ImageLocal.unsaved`). Choosing a new storage resets that list and every `blobs.onRemote`.
+2. **Text sync** (the rules above).
+3. **Pull** (`pullImages`): every image a live entry uses gets a thumbnail on this device. It downloads
+   `.thumbs/<hash>.webp` (small, so eagerly; the original's size comes from the image line); if storage has none but
+   this device has the original, it makes one in the worker and writes it back. An image that is nowhere yet (the
+   other device hasn't uploaded it) is reported **missing** and looked for again next run. A failed read is counted as
+   failed, not missing. Formats without thumbnails (HEIC, AVIF) are skipped. A quiet sync reads nothing: only images
+   without a local thumbnail are looked up.
+
+**Originals are never downloaded by sync.** The photo viewer asks for one when it opens (`loadOriginal` in
+`manager.ts`, `fetchOriginal` in `storage/originals.ts`). It tries the entry's year folder, then other years that use
+it, and only accepts bytes that hash to the file name (a file replaced by hand is never taken for the photo). The
+download is kept (`onRemote: 1`, so it may be dropped again) and a missing thumbnail is made from it. Local originals
+are a bounded cache: see "Platform plan and data safety".
+
+**What the user sees:**
+- A row on screen picks up a thumbnail that arrives later, at the same height (`useThumbUrl` watches the `thumbs`
+  table; `UrlCache.retry`).
+- A missing image's box says **"Not synced yet"** (dashed edge) until it arrives (`missingImages` in `manager.ts`, a
+  `KeySet` recomputed every sync, so only rows whose answer changes re-render). Settings gives the count.
+- The status badge adds **"· N photos waiting"**: photos on this device that storage doesn't have yet and a live entry
+  uses (`imagesWaiting`, a live count like "changes waiting", so it shows before the next sync and drops to 0 after a
+  good one; photos of deleted entries or discarded drafts never count), plus photos the last pull failed to fetch.
+  The last image error is shown in Settings ("will retry").
 
 **When sync runs** (`storage/manager.ts`): on startup, ~1.5 s after local changes, when the page is hidden or
 shown again, every 5 minutes, and on "Save now".
@@ -164,22 +175,28 @@ interface StorageBackend<Config> { // how the app offers and reopens it
   unsupportedReason(): string | null
   setup(): Promise<{ config, store, label }>          // interactive, runs in a click handler
   open(config, interactive): Promise<OpenResult>       // reopen from saved config; may need permission
+  insideBrowser?: boolean  // its files live in this browser's own data: local originals are never dropped for it
 }
 ```
 
 Paths use `/`. `config` must survive IndexedDB structured cloning (a directory handle is fine; a class instance is not).
 
+**Images need the three blob methods.** `readBlob`/`writeBlob` move bytes as they are (no text decoding), `hasBlob`
+answers with the size only (cheap: no download). A module without them syncs text only: image lines still sync, the
+photos themselves stay on the device that added them. Set `insideBrowser` when the files are wiped together with the
+browser's data (OPFS): then a stored file is not a separate copy, so the app keeps every local original.
+
 | Module | Status | Notes |
 |---|---|---|
-| `folder`: Folder on this computer | done | File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
-| `browser`: Files inside this browser | done | OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
+| `folder`: Folder on this computer | done | Text and images. File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
+| `browser`: Files inside this browser | done | Text and images; `insideBrowser`. OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
 | `pcloud` | planned | See below. |
 | `github` | idea | Files in a private repo via the GitHub contents API. |
 | native folder (Tauri) | idea | Real folders on Android once there's a native build. |
 
 **Adding a module:** implement `StorageBackend` in `storage/backends/<name>.ts`, register it in `backends/index.ts`
 (and remove it from `PLANNED_BACKENDS`), then test it against the sync engine the same way `sync.test.ts` uses
-`memoryStore`. Nothing else should need to change.
+`memoryStore` (and, with blob methods, the way `attachments.test.ts` does). Nothing else should need to change.
 
 **pCloud notes** (from a CORS check on 2026-11-08):
 - Use the **HTTP API** (`api.pcloud.com` US / `eapi.pcloud.com` EU). It returns `Access-Control-Allow-Origin: *`.
@@ -189,6 +206,8 @@ Paths use `/`. `config` must survive IndexedDB structured cloning (a directory h
   means the app needs its hosted address first.
 - Useful calls: `listfolder` (recursive, gives `hash`/`modified` for `rev`), `getfilelink` or `file_open/file_read`,
   `uploadfile`, `deletefile`, `createfolderifnotexists`.
+- For images: `uploadfile` takes the bytes as they are; `getfilelink` downloads them; `stat` (size) serves `hasBlob`.
+  Fetch the `.thumbs/` folder's listing once per sync rather than one `stat` per photo if many are looked up.
 
 ## Search
 

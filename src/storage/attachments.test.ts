@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { type Entry, type ImageRef, makeEntry } from '../lib/entry'
 import type { ImageLocal } from './attachments'
 import { imagesWaiting, pushImages } from './attachments'
+import { hashBytes } from '../lib/images'
 import { memoryLocal, memoryStore } from './memory'
+import { fetchOriginal } from './originals'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
 import type { FileStore, SyncState } from './types'
@@ -222,6 +224,45 @@ describe('photos waiting to be saved', () => {
     expect(imagesWaiting([live, again, gone], new Set([A.hash, B.hash, C.hash, 'dddddddddddddddd']))).toBe(2)
     expect(imagesWaiting([live, again], new Set([B.hash]))).toBe(1)
     expect(imagesWaiting([live], new Set())).toBe(0)
+  })
+})
+
+describe('phase 2 "done when": a photo on two devices', () => {
+  it('reaches the other device as a thumbnail in one sync, opens full size, and failures recover next sync', async () => {
+    const raw = new Uint8Array(64).fill(42)
+    const P: ImageRef = { hash: await hashBytes(raw), ext: 'jpg', w: 1200, h: 900 }
+    const original = new Blob([raw])
+    const thumb = bytes(5)
+    const store = memoryStore()
+    const realWrite = store.writeBlob.bind(store)
+    const realRead = store.readBlob.bind(store)
+
+    // Device one adds the photo; its first upload fails, the text still syncs.
+    const one = device([makeEntry('a photo', at(2026, 8, 9), 'p1', [P])], { [P.hash]: original }, { [P.hash]: thumb })
+    store.writeBlob = async () => { throw new Error('offline') }
+    expect((await one.sync(store)).images?.pending).toBe(2)
+    expect(imagesWaiting(await one.local.snapshot(), new Set(await one.images.unsaved()))).toBe(1)
+
+    // Device two sees the entry before the photo: "Not synced yet".
+    const two = device([])
+    expect((await two.sync(store)).pulled?.missing).toEqual([P.hash])
+
+    // Device one recovers on its next sync.
+    store.writeBlob = realWrite
+    expect((await one.sync(store)).images).toEqual({ written: 2, pending: 0, errors: [] })
+    expect(imagesWaiting(await one.local.snapshot(), new Set(await one.images.unsaved()))).toBe(0)
+
+    // Device two: a failed read is retried, then the thumbnail arrives within one sync.
+    store.readBlob = async () => { throw new Error('flaky') }
+    expect((await two.sync(store)).pulled).toMatchObject({ failed: 1, missing: [] })
+    store.readBlob = realRead
+    expect((await two.sync(store)).pulled).toMatchObject({ fetched: 1, failed: 0, missing: [] })
+    expect(two.thumbs[P.hash]).toBe(thumb)
+    expect(two.sizes[P.hash]).toEqual([1200, 900])
+
+    // Opening it downloads the original, checked against its name.
+    expect(await two.images.original(P.hash)).toBeNull()
+    expect(await fetchOriginal(store, P, ['2026'])).toBe(original)
   })
 })
 

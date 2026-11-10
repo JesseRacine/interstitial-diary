@@ -28,14 +28,16 @@ _Last updated: 2026-11-09_
 
 | 811c738 | Images 2.3: "Not synced yet" placeholder for photos the last sync found nowhere |
 
-| (next) | Images 2.4: badge shows "N photos waiting" (live); fix: re-attached photo now marked as stored |
+| 9dadbe1 | Images 2.4: badge shows "N photos waiting" (live); fix: re-attached photo now marked as stored |
 
-180 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
+| (next) | Images 2.5: docs (DESIGN.md image sync + storage modules), two-device "done when" test; phase 2 done |
+
+181 tests pass (`npm test`). The user has tried the folder module with a real Windows folder, including editing a
 file in Notepad.
 
 ## Next steps (in order)
 
-### 1. Images in entries (phase 1 done; phase 2 next)
+### 1. Images in entries (phases 1 and 2 done; phase 3 next)
 - Planned in [images-plan.md](images-plan.md) (four phases, with tests for every sync/format change); its status line
   records what each step decided.
 - **Phase 1 (done 2026-11-09):** attach, show, open full size, export, and write originals to the storage folder.
@@ -44,10 +46,13 @@ file in Notepad.
   **Still to confirm by the user:** with the real Windows folder, attach a photo on `localhost:5173` and check that
   `<folder>\2026\images\` and `<folder>\.thumbs\` get the files after the next save; and try one real export with
   photos through the Save dialog.
-- **Phase 2 in progress:** 2.1 `pullImages` done (thumbnails to other devices, rebuild missing thumbnails); 2.2
-  done (originals downloaded when opened, bounded cache); 2.3 done ("Not synced yet" placeholder); 2.4 done (badge
-  shows photos waiting). Next: 2.5 docs and the phase 2 "done when" check.
-- **Done when:** the plan's phase 2 "done when" check passes.
+- **Phase 2 (done 2026-11-09):** images on other devices. Thumbnails reach another device in the sync that brings
+  the entry (or are rebuilt from a local original), originals download when opened (hash-checked, bounded ~1 GB
+  cache), "Not synced yet" for photos found nowhere, "N photos waiting" in the badge, failures retried next sync.
+  Checked in the browser step by step and by a two-device test. **Still to confirm by the user:** a real second
+  device; that needs hosting or a shared folder (e.g. pCloud Drive) between two browsers.
+- **Phase 3 next** (see the plan): `has:image` search, a Photos view, image storage in Settings, removing images of
+  deleted entries. Phase 4 (images on pCloud) comes with the pCloud module (step 5 below).
 
 ### 2. Make it an installable PWA
 - Add `vite-plugin-pwa` (already a dev dependency) to `vite.config.ts`: manifest (name, short_name "Interstitial",

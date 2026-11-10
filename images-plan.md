@@ -1,6 +1,6 @@
 # Plan: images in journal entries
 
-_Status: **phase 1 done (2026-11-09)**; phase 2 in progress, split into steps 2.1 `pullImages`, 2.2 originals on
+_Status: **phase 1 done (2026-11-09)**; **phase 2 done (2026-11-09)**, in steps 2.1 `pullImages`, 2.2 originals on
 demand + bounded cache, 2.3 "not synced yet" placeholder, 2.4 badge, 2.5 docs. **2.1 done:** `pullImages` runs after
 `syncOnce`; a missing thumbnail is downloaded, else rebuilt from a local original (via `ImageLocal.thumbnail`) and
 written back, else reported in `missing` (step 2.3 will use it); a failed read counts in the badge. Rows on
@@ -21,6 +21,10 @@ is `imagesWaiting` (live: local originals with `onRemote: 0` that a live entry u
 again after its files were confirmed was never marked `onRemote` (so it would wait forever); `pushImages` now also
 checks `ImageLocal.unsaved()`. Settings shows how many photos from another device haven't arrived yet. Checked on
 127.0.0.1: "1 change waiting · 1 photo waiting", then "Saved just now"; an unused photo isn't counted; 375 px dark.
+**2.5 done:** DESIGN.md "Images in a sync run" (push → text → pull, originals on demand, what the user sees) and the
+storage-module section (blob methods, `insideBrowser`, pCloud image calls). The "done when" check is one two-device
+test in `attachments.test.ts` (upload fails then recovers; "missing", then a failed read, then the thumbnail within one
+sync; the original fetched and hash-checked); each part was also checked in the browser in 2.1–2.4. Next: phase 3.
 Still to confirm by the user: originals in the real Windows
 folder, and one real export with photos via the Save dialog. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
 2026-11-09, and steps 6 (capture UI), 7 (bubbles), 8 (lightbox) and 9 (export) the same day; next is step 10 (docs) and the
