@@ -3,8 +3,8 @@
 **Status (2026-11-09): phases 1, 2 and 3 are built and committed; phase 4 (pCloud) comes with the pCloud module
 ([PROGRESS.md](PROGRESS.md) step 5).** The "Build log" near the end records what each step decided and how it was checked;
 DESIGN.md describes the result. Still to confirm by the user on the real Windows folder / a second device: see
-PROGRESS.md "Waiting on the user". Written 2026-11-08; replaces [junior-plan.md](junior-plan.md) (see "Review of the
-junior plan" at the end for what changed and why).
+PROGRESS.md "Waiting on the user". Written 2026-11-08; replaces an earlier junior plan (`junior-plan.md`, deleted before the repo
+went public; see "Review of the junior plan" at the end for what changed and why).
 
 | Phase | Steps | State |
 |---|---|---|

@@ -11,7 +11,6 @@ Read these before changing anything substantial:
   **Update it when you finish a step.**
 - **[images-plan.md](images-plan.md)**: the photo feature's plan, with a build log of every step's decisions (phases 1–3
   built; phase 4 = pCloud). [android-capture-plan.md](android-capture-plan.md): quick capture on Android (not started).
-  `junior-plan.md` is superseded; ignore it.
 
 **Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
 (phases 1–3), the installable PWA and the data-safety features are built; 272 tests pass. **Next: PROGRESS.md step 4,

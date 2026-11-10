@@ -38,9 +38,11 @@ _Last updated: 2026-11-09_
 
 | f3c682f | Docs: handoff for step 4 (GitHub Pages): open decisions, user tasks, pre-publish cleanup, checklist |
 
-| (this commit) | Step 4.1: pre-publish cleanup: personal paths/email removed from the docs; whole history rewritten to the GitHub noreply identity (and old doc versions scrubbed); branch renamed `master` to `main` |
+| d1594c0 | Step 4.1: pre-publish cleanup: personal paths/email removed from the docs; whole history rewritten to the GitHub noreply identity (and old doc versions scrubbed); branch renamed `master` to `main` |
 
-**All hashes above, except the last two, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
+| (this commit) | Step 4.1b: deleted the superseded `junior-plan.md` |
+
+**All hashes above, except f3c682f and the ones after it, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
 old doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
 history is only in the local backup bundle `~/interstitial-diary-pre-rewrite.bundle` (outside the repo, private; it still
 holds the old identity, so never push or share it) and in the older Windows-folder archive of f4ef4d9.
@@ -123,7 +125,7 @@ order, one sub-step per turn.
 **Decisions (answered 2026-11-10):** GitHub account `JesseRacine` (numeric id 9375408; looked up from GitHub's public
 profile API); repo `interstitial-diary`, public; address `https://jesseracine.github.io/interstitial-diary/` (so
 `base: '/interstitial-diary/'`); commits use `JesseRacine <9375408+JesseRacine@users.noreply.github.com>` (set as the
-repo's local git identity); branch `main`. Still to ask: whether to delete the superseded `junior-plan.md`.
+repo's local git identity); branch `main`. The superseded `junior-plan.md` was deleted (it stays in the git history, which holds no personal data).
 
 **What the user has already been told (don't re-explain at length):**
 - The hosted site is **public**; on GitHub's free plan the repo must be public too (Pages from a private repo needs a
@@ -165,7 +167,7 @@ repo's local git identity); branch `main`. Still to ask: whether to delete the s
      `git log --format='%an <%ae>' | sort | uniq -c`. Findings: the repo's `CLAUDE.md` lines 23, 24 and 53 hold the
      WSL/Windows paths, the user's name and their Gmail address (in the commit command). Move the machine-specific
      paths into the Windows session folder's own `CLAUDE.md` (outside the repo) and use the noreply address in the
-     commit command. `junior-plan.md` is superseded: ask whether to delete it.
+     commit command. (`junior-plan.md`: deleted, see above.)
    - If the history is rewritten (decision 3): use `git filter-branch --env-filter` (or `git-filter-repo`, which is not
      installed: ask first), keep the `Co-Authored-By: Claude ... <noreply@anthropic.com>` trailers, check
      `git log --format='%an <%ae>' | sort -u` shows only the noreply address, and note in PROGRESS.md that the hashes in
