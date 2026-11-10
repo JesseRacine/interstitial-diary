@@ -13,8 +13,9 @@ Read these before changing anything substantial:
   built; phase 4 = pCloud). [android-capture-plan.md](android-capture-plan.md): quick capture on Android (not started).
   `junior-plan.md` is superseded; ignore it.
 
-**Status (2026-11-09):** journal, search, calendar, tags, export, two storage modules (folder, browser files), and photos
-(phases 1–3) are built; 248 tests pass. Next up in PROGRESS.md: installable PWA, data-safety features, hosting, pCloud, Tauri.
+**Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
+(phases 1–3) and the installable PWA are built; 254 tests pass. Next up in PROGRESS.md: data-safety features, hosting,
+pCloud, Tauri. (Edge's Install offer and Lighthouse are still to be confirmed by the user.)
 
 ## Where things are
 
@@ -27,7 +28,7 @@ Read these before changing anything substantial:
 - Node (via nvm), npm and git are installed **inside WSL only**. The user wants installs kept in WSL and off Windows.
   **Ask before installing anything on Windows.**
 - Stack: Vite + React 19 + TypeScript, Dexie (IndexedDB), MiniSearch, `react-virtuoso`, `fflate` (zip), Vitest with
-  `fake-indexeddb`, oxlint. `vite-plugin-pwa` is installed but not configured yet.
+  `fake-indexeddb`, oxlint. `vite-plugin-pwa` (configured in `vite.config.ts`; manifest in `pwa-manifest.ts`).
 
 ## Commands
 
@@ -44,6 +45,8 @@ wsl -d Ubuntu -- bash -ic "cd ~/projects/interstitial-diary && npm test"
 | Production build | `npm run build` (runs `tsc -b` first) |
 | Lint | `npm run lint` (currently 5 old warnings, 0 errors; keep it at 0 errors and add no new warnings) |
 | Dev server | use the Browser pane's `preview_start` with name `interstitial-dev` (port 5173) |
+| Production build served (PWA/service worker) | `preview_start` with name `interstitial-preview` (builds, then serves on 4173); the service worker does not run in the dev server |
+| Regenerate icons | `npm run icons` (`scripts/make-icons.mjs`, no dependencies) |
 
 Before every commit run tests, `npx tsc -b` and lint. Commit with the user's identity and the co-author trailer:
 ```
@@ -63,6 +66,8 @@ git -c user.email=9375408+JesseRacine@users.noreply.github.com -c user.name=Jess
 ## Code map
 
 ```
+pwa-manifest.ts       web app manifest (tested by src/pwa.test.ts); vite.config.ts wires vite-plugin-pwa (precache, prompt update)
+scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
   main.tsx, App.tsx   entry point; views (Journal, Calendar, Photos, Tags, Settings), routing, keyboard shortcuts,
                       the photo viewer's history entry
@@ -117,6 +122,7 @@ src/
     StorageCard.tsx     storage choice + status badge + "only in this browser" warning
     PhotoStorageCard.tsx  Settings: photo space used, original-cache limit, "Photos of deleted entries" cleanup
     ExportCard.tsx      export: text zip, or "Include photos"
+    UpdatePrompt.tsx    registers the service worker; "new version ready: Reload" / "ready offline" banner
   index.css             all styles; colours are CSS variables
 ```
 
@@ -167,6 +173,10 @@ src/
 
 - **`$variables` in `wsl ... bash -c "..."` get mangled** when sent from PowerShell. For anything non-trivial, write a
   script file and run `wsl -d Ubuntu -- bash /mnt/c/.../script.sh`.
+- **PWA changes can only be checked on a production build** (`interstitial-preview`, port 4173). To test offline, stop
+  that server (`preview_stop`) and reload the tab: the service worker answers. A stale service worker on a port can
+  serve an old build; unregister it or use a fresh origin. Keep `images.worker-*.js` in the precache (it is, via the
+  `globPatterns` in `vite.config.ts`).
 - **Don't glob the repo root or `node_modules`** (12,000+ files); glob `src/` or list files with `Get-ChildItem -File`.
 - **Port 5173 may already be taken** by another session's dev server (it serves the same repo, so edits show up there).
   If `preview_start` fails with "port in use", open `http://127.0.0.1:5173` with `preview_start {url}` instead.

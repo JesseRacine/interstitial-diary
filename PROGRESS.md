@@ -32,7 +32,9 @@ _Last updated: 2026-11-09_
 | 85df32f | Images 3.5: "only in this browser" warning with photo wording (Settings box, header badge); phase 3 done |
 | f4ef4d9 | Documentation pass: CLAUDE.md rewritten (full code map, rules, testing, gotchas, workflow), PROGRESS/DESIGN/images-plan tidied. Backed up to the Windows project folder (`archive/` + zip, snapshot of this commit) |
 
-248 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
+| (this commit) | PWA 2: installable PWA: manifest + generated icons + "New entry" shortcut, `vite-plugin-pwa` precaching the whole build (image worker included), update banner, theme-color/apple-touch-icon; 6 new tests |
+
+254 tests pass (`npm test`); `npx tsc -b` is clean; lint has 0 errors (5 old warnings, none in recent work).
 
 ## Waiting on the user
 
@@ -48,6 +50,15 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
    `<folder>\<year>\images\` and `.thumbs\`, and that a photo still used by another entry stays.
 5. **A real second device** (needs hosting, or a shared folder such as pCloud Drive between two browsers): a photo added
    on one device shows as a thumbnail on the other within one sync, and its original downloads when opened.
+6. **PWA install in Edge.** Run `npm run build && npm run preview` (or the `interstitial-preview` server), open the
+   address in Edge, check that "Install" is offered (address bar icon or the ⋯ menu > Apps), that the installed window
+   opens, works with the network off, and that the long-press/jump-list "New entry" shortcut opens the journal with the
+   cursor in the capture box. Also run Lighthouse (DevTools > Lighthouse) and note any PWA failures. The pane showed the
+   manifest, service worker, precache and offline reload working, but cannot show the install UI or run Lighthouse.
+   Note: an install from `localhost:<port>` is tied to that address and its own empty data; the real install comes after
+   hosting (step 4).
+7. **The update banner.** Install, then change something and rebuild: the open app should show "A new version is ready"
+   with Reload/Later. (The banner code is untested in the browser: it needs two builds in a row.)
 
 ## Next steps (in order)
 
@@ -62,14 +73,15 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
   cleanup of photos of deleted entries, and the "only in this browser" warning with photo wording.
 - **Phase 4:** images on pCloud. Implement `readBlob`/`writeBlob`/`hasBlob`/`removeBlob` in the pCloud module (step 5).
 
-### 2. Make it an installable PWA
-- Add `vite-plugin-pwa` (already a dev dependency) to `vite.config.ts`: manifest (name, short_name "Interstitial",
-  theme colours from `index.css`, `display: standalone`, `start_url`), and a `shortcuts` entry "New entry" that opens
-  the journal with the capture box focused.
-- App icons (192, 512, maskable) in `public/`, replacing the Vite favicon.
-- Service worker: precache the app shell so it works offline; prompt-to-reload when a new version is available.
-  It must also precache the image worker chunk (`assets/images.worker-*.js`), or photos can't be attached offline.
-- **Done when:** Edge offers "Install", the installed app opens in its own window offline, and Lighthouse PWA checks pass.
+### 2. Installable PWA: built (2026-11-10); install + Lighthouse check waiting on the user (item 6 above)
+- `pwa-manifest.ts` (name, short name "Interstitial", standalone, relative `start_url`/`scope`, icons incl. maskable,
+  "New entry" shortcut = `./?view=journal`), `vite-plugin-pwa` in `vite.config.ts`, `components/UpdatePrompt.tsx`,
+  `scripts/make-icons.mjs` (generated placeholder icons: three journal lines on the accent green; swap the files in
+  `public/` for real artwork any time). Details in DESIGN.md "Platform plan".
+- Checked in the Browser pane on a production build: manifest served, worker active, 12 files precached (the image
+  worker chunk included), app reloads and runs with the server stopped, the shortcut URL focuses the capture box.
+- **Not yet verified:** Edge's Install offer, Lighthouse PWA checks, the update banner (waiting list items 6 and 7).
+- Still a small polish idea: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.
 
 ### 3. Data-safety features
 - Settings shows whether persistent storage was granted (`navigator.storage.persisted()`).

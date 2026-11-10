@@ -10,6 +10,7 @@ import { SettingsView, type Theme } from './components/SettingsView'
 import { StorageBadge } from './components/StorageCard'
 import { initStorage } from './storage/manager'
 import { TagsView } from './components/TagsView'
+import { UpdatePrompt } from './components/UpdatePrompt'
 import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
@@ -166,6 +167,7 @@ export default function App() {
       {photo && photoEntry && (
         <Lightbox entry={photoEntry} index={photo.index} onIndex={(index) => setPhoto({ ...photo, index })} onClose={closePhoto} />
       )}
+      <UpdatePrompt />
     </div>
   )
 }

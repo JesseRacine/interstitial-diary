@@ -280,9 +280,18 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## Platform plan and data safety
 
-- **Now:** a web app that runs in the browser (dev server on `localhost`); data lives in the browser and, optionally, a
-  storage module. **Next (PROGRESS steps 2 and 4):** make it an installable PWA (own window and icon, works offline,
-  precaching the image worker) and host it over HTTPS, which Android install needs.
+- **Now:** an installable PWA (PROGRESS step 2). Data lives in the browser and, optionally, a storage module.
+  - `pwa-manifest.ts` is the web app manifest: standalone display, relative `start_url`/`scope` (so a sub-path host such
+    as GitHub Pages works), 192/512 icons plus a maskable one, and a "New entry" shortcut (`./?view=journal`, which
+    opens the journal; the capture box autofocuses). `scripts/make-icons.mjs` generates the icons and favicon
+    (`npm run icons`); replace the files in `public/` to use other artwork.
+  - `vite-plugin-pwa` (`generateSW`, `registerType: 'prompt'`) precaches the whole build, **including the image worker
+    chunk**, so the app opens and photos can be attached offline. `components/UpdatePrompt.tsx` registers the worker and
+    shows "A new version is ready. Reload": a new version is never applied on its own, so a half-written entry is never
+    lost. It also checks for updates hourly (an installed window can stay open for days).
+  - The service worker only exists in production builds (`npm run build`, `npm run preview`), not in `npm run dev`.
+  - **Next (PROGRESS step 4):** host it over HTTPS (required for installing on Android). Browser data belongs to the
+    exact address, so the final address should be chosen before anyone installs.
 - **Later:** Tauri wraps the same build into a Windows `.exe` and Android `.apk`, built in GitHub Actions so nothing
   extra is installed locally. Native-only features (tray, global hotkey, Android folders) go in as small
   platform-specific pieces or storage modules.
