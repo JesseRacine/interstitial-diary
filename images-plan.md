@@ -1,7 +1,12 @@
 # Plan: images in journal entries
 
 _Status: in progress. Phase 1 steps 1–5 (data model, Markdown, `sync.ts` comparisons, image pipeline, binary storage + `pushImages`) done
-2026-11-09, and step 6 (capture UI) the same day; next is step 7 (thumbnails in bubbles). Step 6 notes: Save waits
+2026-11-09, and steps 6 (capture UI) and 7 (bubbles) the same day; next is step 8 (lightbox). Step 7 notes: one
+photo fits 320×260 (small ones not enlarged), unknown size = 160 px square; grid tiles are 120 px. Thumbnails share a
+ref-counted URL cache (150 idle URLs kept); a missing thumbnail isn't cached, so one that syncs in later shows up.
+Editing saves text and photos with one `updateEntry`. `EntryImages` takes `onOpen`, which step 8 wires to the lightbox.
+2-year check done (7,306 entries, 1,049 with photos): no row height changed after thumbnails loaded, in Days and Stream;
+6–11 rows in the DOM. Step 6 notes: Save waits
 until every photo is stored ("Preparing photos…"); the same photo twice in one draft is dropped with a message; the
 Attach button turns off at 10. Checked on 127.0.0.1 with "Files inside this browser": originals, thumbnails and image
 lines land in storage; 375 px, light and dark. Step 5 notes: instead of only `blobs.onRemote`, pushImages keeps a per-module

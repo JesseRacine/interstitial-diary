@@ -159,7 +159,19 @@ button.attach { display: inline-flex; align-items: center; gap: 0.35rem; margin-
 .draft-images li { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface-2); }
 .draft-images li.working { opacity: 0.6; }
 .draft-images img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.draft-images .placeholder { display: grid; place-items: center; width: 100%; height: 100%; font-size: 0.75rem; color: var(--muted); }
+.edit.dragging { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 6px; }
+
+/* Photos in entries. Boxes are sized from the stored w/h (inline styles), never by the image, so rows never jump. */
+.entry-images { margin-top: 0.4rem; }
+.entry-images.grid { display: grid; gap: 4px; max-width: 100%; }
+.entry-image { position: relative; display: block; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: var(--surface-2); max-width: 100%; cursor: zoom-in; }
+.entry-images.single .entry-image { height: auto; }
+.entry-image img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.15s; }
+.entry-image img.loaded { opacity: 1; }
+.entry-image:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.entry-image .more { position: absolute; inset: 0; display: grid; place-items: center; background: rgb(0 0 0 / 0.5); color: #fff; font-size: 1.4rem; font-weight: 600; }
+.thumb-placeholder { display: grid; place-items: center; width: 100%; height: 100%; font-size: 0.75rem; color: var(--muted); background: var(--surface-2); }
+@media (prefers-reduced-motion: reduce) { .entry-image img { transition: none; } }
 .draft-images .remove { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; padding: 0; border-radius: 999px; line-height: 1; font-size: 0.95rem; background: rgb(0 0 0 / 0.55); color: #fff; border: 0; }
 .draft-images .remove:hover { background: rgb(0 0 0 / 0.75); }
 .capture-notice { margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--danger); }

@@ -97,6 +97,18 @@ describe('db with images', () => {
     expect('images' in (await m.db.entries.get(e!.id))!).toBe(false)
   })
 
+  it('updateEntry saves text and images with one bump, and only when something changed', async () => {
+    const e = await m.addEntry('text', [IMG_A])
+    expect(await m.updateEntry(e!.id, 'text', [IMG_A])).toBe(false)
+    expect((await m.db.entries.get(e!.id))!.updatedAt).toBe(e!.updatedAt)
+    expect(await m.updateEntry(e!.id, 'text', [IMG_A, IMG_B])).toBe(true) // image-only change
+    const got = (await m.db.entries.get(e!.id))!
+    expect(got.images).toEqual([IMG_A, IMG_B])
+    expect(got.updatedAt).toBeGreaterThan(e!.updatedAt)
+    expect(await m.updateEntry(e!.id, '   ', [])).toBe(false) // text is required
+    expect((await m.db.entries.get(e!.id))!.images).toEqual([IMG_A, IMG_B])
+  })
+
   it('stores thumbnails and originals in their own tables', async () => {
     const blob = new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' })
     await m.db.blobs.put({ hash: IMG_A.hash, blob, mime: 'image/jpeg', size: 3, onRemote: 0, addedAt: 1 })

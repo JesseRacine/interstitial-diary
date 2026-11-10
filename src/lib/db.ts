@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { type Entry, type ImageRef, makeEntry, replaceTag, withDerived } from './entry'
+import { type Entry, type ImageRef, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 
 export interface Meta {
   key: string
@@ -64,6 +64,19 @@ export async function updateEntryText(id: string, text: string): Promise<void> {
   const e = await db.entries.get(id)
   if (!e) return
   await db.entries.put(withDerived({ ...e, text: text.trim(), updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
+}
+
+/**
+ * Save an edit of text and images together (one updatedAt bump). Text is required: an empty text leaves the entry as
+ * it was. Returns whether anything changed.
+ */
+export async function updateEntry(id: string, text: string, images: ImageRef[]): Promise<boolean> {
+  const t = text.trim()
+  const e = await db.entries.get(id)
+  if (!e || !t) return false
+  if (t === e.text && sameImages(e, { images })) return false
+  await db.entries.put(withDerived({ ...e, text: t, images, updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
+  return true
 }
 
 /** Replace an entry's images (add, remove or reorder). */
