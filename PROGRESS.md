@@ -47,7 +47,7 @@ quick capture on Android is planned in [android-capture-plan.md](android-capture
 pushing, push (a second deploy); the installed app should show "A new version is ready" with Reload, and Reload shows the
 change. Closes waiting item 7.
 
-## Start over (pushed 2026-11-12; a fix for it is committed, not pushed)
+## Start over (pushed 2026-11-12, fix `0bea543` pushed too; second real try: user "I think it works")
 
 Settings > **Start over** erases the journal here and in the storage; other devices clear their copy at their next
 sync (marker `.meta/reset.json`; rules in DESIGN.md "Start over"). The user chose: other devices clear themselves;
@@ -60,7 +60,8 @@ both devices, then Start over once more (item 11).
 
 ## Waiting on the user
 
-**11. Start over with Dropbox, second try** (after the fix is pushed): open the app on both devices and reload until
+**11. Start over with Dropbox, second try** (fix pushed 2026-11-12; the user said "I think it works", without
+reporting each check below, so not individually confirmed): open the app on both devices and reload until
 both have the newest version, then Start over on one; check `Apps/Interstitial Journal/` holds only `.meta/reset.json`, and the other
 device shows "Journal started over" and is empty after its next sync.
 
