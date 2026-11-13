@@ -197,6 +197,22 @@ export async function photoUsage(): Promise<PhotoUsage> {
   return u
 }
 
+/**
+ * "Start over" on this device: delete every entry (incl. deleted ones' tombstones), every photo original and
+ * thumbnail, and what was remembered about syncing them (`sync:*`, `images:*`). Settings, the chosen storage and the
+ * backup/reminder dates stay. Can't be undone; only storage/manager.ts calls it, after the user confirmed or after
+ * another device started over.
+ */
+export async function eraseLocalJournal(): Promise<void> {
+  await db.transaction('rw', db.entries, db.blobs, db.thumbs, db.meta, async () => {
+    await db.entries.clear()
+    await db.blobs.clear()
+    await db.thumbs.clear()
+    const keys = (await db.meta.toCollection().primaryKeys()).filter((k) => /^(sync|images):/.test(String(k)))
+    await db.meta.bulkDelete(keys)
+  })
+}
+
 export async function getMeta<T>(key: string, fallback: T): Promise<T> {
   const m = await db.meta.get(key)
   return (m?.value as T | undefined) ?? fallback

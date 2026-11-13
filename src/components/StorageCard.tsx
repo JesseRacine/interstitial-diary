@@ -4,7 +4,7 @@ import { browserOnlyWarning, showHeaderWarning } from '../lib/dataSafety'
 import { useLive } from '../lib/hooks'
 import { BACKENDS, PLANNED_BACKENDS, backendById } from '../storage/backends'
 import {
-  connect, disconnect, dismissSignInError, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
+  connect, disconnect, dismissSignInError, dismissStartedOver, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
 } from '../storage/manager'
 
 /** Modules that sign in on another site (Dropbox) get access back by signing in again; a folder by allowing access. */
@@ -56,6 +56,9 @@ export function StorageBadge({ onOpenSettings }: { onOpenSettings: () => void })
   const photos = usePhotoCount()
   const entries = useEntryCount()
   useTick(30_000)
+  if (s.startedOverAt) {
+    return <button type="button" className="badge warn" onClick={onOpenSettings} title="The journal was started over on another device">ⓘ Journal started over</button>
+  }
   if (s.signInError) {
     return <button type="button" className="badge warn" onClick={onOpenSettings} title={s.signInError}>⚠ Sign-in not finished</button>
   }
@@ -92,6 +95,13 @@ export function StorageCard() {
       <p className="muted">
         Entries are always kept in this browser for fast search. A storage also saves them (and their photos) as files you own.
       </p>
+      {s.startedOverAt && (
+        <div className="notice warn" role="alert">
+          <strong>Journal started over.</strong> On {new Date(s.startedOverAt).toLocaleString()} another device erased the
+          journal, so this device’s copy was cleared too.{' '}
+          <button type="button" className="ghost" onClick={dismissStartedOver}>OK</button>
+        </div>
+      )}
       {s.signInError && (
         <div className="notice warn" role="alert">
           <strong>Sign-in not finished.</strong> {s.signInError}{' '}

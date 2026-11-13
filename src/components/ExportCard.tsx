@@ -1,30 +1,10 @@
-import { strToU8, zipSync } from 'fflate'
 import { useEffect, useMemo, useState } from 'react'
 import { db, setMeta } from '../lib/db'
 import { META_LAST_BACKUP } from '../lib/dataSafety'
-import { type Entry, dayKey } from '../lib/entry'
+import type { Entry } from '../lib/entry'
+import { download, exportText, today } from '../lib/exportText'
 import { MAX_ZIP_BYTES, type ZipSink, blobSink, planExport, writeExportZip } from '../lib/exportZip'
 import { formatBytes } from '../lib/images'
-import { dayFilePath, serializeDay } from '../lib/markdown'
-
-const today = () => dayKey(Date.now()) // local date (toISOString would give tomorrow's date in the evening west of UTC)
-
-function download(blob: Blob, name: string) {
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = name
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(a.href), 60_000)
-}
-
-/** Text only: small, so built in memory as before. */
-function exportText(entries: Entry[]) {
-  const days = [...new Set(entries.map((e) => e.day))].sort()
-  const files: Record<string, Uint8Array> = {}
-  for (const d of days) files[`InterstitialDiary/${dayFilePath(d)}`] = strToU8(serializeDay(d, entries))
-  download(new Blob([zipSync(files) as BlobPart], { type: 'application/zip' }), `interstitial-diary-${today()}.zip`)
-  void setMeta(META_LAST_BACKUP, Date.now()) // for the backup reminder
-}
 
 export function ExportCard({ entries, tagCount }: { entries: Entry[]; tagCount: number }) {
   const dayCount = useMemo(() => new Set(entries.map((e) => e.day)).size, [entries])

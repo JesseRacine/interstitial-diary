@@ -2,6 +2,7 @@ import type { Entry } from '../lib/entry'
 import { DataSafetyCard } from './DataSafetyCard'
 import { ExportCard } from './ExportCard'
 import { PhotoStorageCard } from './PhotoStorageCard'
+import { StartOverCard } from './StartOverCard'
 import { StorageCard } from './StorageCard'
 
 export type Theme = 'system' | 'light' | 'dark'
@@ -34,6 +35,8 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
       </div>
 
       <ExportCard entries={entries} tagCount={tagCount} />
+
+      <StartOverCard entries={entries} />
 
       <div className="card">
         <h3>Keyboard shortcuts</h3>

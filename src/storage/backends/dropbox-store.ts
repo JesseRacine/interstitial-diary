@@ -1,4 +1,4 @@
-import { BlobCollisionError, type RemovableBlobStore, type StoredFile } from '../types'
+import { BlobCollisionError, type RemovableBlobStore, type StoredFile, isAppFolder } from '../types'
 import { isDiaryFile, isImagePath } from './fs-store'
 import { type TokenResponse, signedOutError } from './oauth'
 
@@ -213,6 +213,12 @@ export function dropboxStore(opts: DropboxStoreOptions): RemovableBlobStore {
     async removeBlob(path) {
       if (!isImagePath(path)) throw new Error(`Not an image path: ${path}`)
       await del(path)
+    },
+    // Deletes whole folders (one call each; Dropbox deletes their contents). Other files in the app folder stay.
+    async removeAll() {
+      for (const f of await listFolder('')) {
+        if (f['.tag'] === 'folder' && isAppFolder(f.name)) await del(f.name)
+      }
     },
   }
 }

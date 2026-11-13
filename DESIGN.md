@@ -178,6 +178,7 @@ interface FileStore {           // what a module implements
   writeBlob?(path, blob): Promise<void>               // never overwrites: same size = no-op, else BlobCollisionError
   hasBlob?(path): Promise<{ size } | null>
   removeBlob?(path): Promise<void>                    // missing file = no error; only the user-confirmed photo cleanup calls it
+  removeAll?(): Promise<void>                         // delete the year folders, .meta, .thumbs (nothing else); only "Start over"
 }
 interface StorageBackend<Config> { // how the app offers and reopens it
   id, name, description
@@ -206,6 +207,19 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 | `github` | idea | Files in a private repo via the GitHub contents API (a token pasted into the app; free version history). |
 | `onedrive`, `gdrive` | ideas | OneDrive simple upload is 4 MB (photos need upload sessions); Google Drive has fiddly sign-in rules. |
 | native folder (Tauri) | idea | Real folders on Android once there's a native build. |
+
+**Start over** (Settings, added 2026-11-12; `storage/startOver.ts`, `startOver()` in `manager.ts`): erases the whole
+journal on this device and in the connected storage, after the user types START OVER (a text-only backup is offered
+first). Every device would otherwise upload its copy again, so the storage gets a marker, `.meta/reset.json`
+(`{ id, at }`, not a diary file: `list()` never returns it and the sync engine ignores it). Each device remembers per
+module the marker id it has acted on (meta `reset:<id>`, or `none`). At the start of each sync: a marker it hasn't seen
+while it remembered another one (or `none`) → it clears its own copy (`eraseLocalJournal`: entries, photos, `sync:*`,
+`images:*`; settings stay) and shows "Journal started over"; nothing remembered yet (just connected, or upgraded from an
+older version) → it only remembers the marker, so connecting a device still merges its entries. Order on the starting
+device: `removeAll()`, then the marker, then the local erase, so a failure part-way never leaves a marker without the
+storage emptied, and a failure before that changes nothing locally. Limits: anything a device wrote offline after the
+start-over is lost when it clears; a device still running an older version uploads its old copy (open the app on every
+device first); "Folder on this computer" can't reach other copies of that folder's files in other sync apps' history.
 
 **Adding a module:** implement `StorageBackend` in `storage/backends/<name>.ts`, register it in `backends/index.ts`
 (and remove it from `PLANNED_BACKENDS`), then test it against the sync engine the same way `sync.test.ts` uses

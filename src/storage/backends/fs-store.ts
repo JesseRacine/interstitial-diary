@@ -1,4 +1,4 @@
-import { BlobCollisionError, type FileStore, type StoredFile } from '../types'
+import { BlobCollisionError, type FileStore, type StoredFile, isAppFolder } from '../types'
 
 /** Only these files belong to the diary; anything else in the folder is ignored. */
 export const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json'
@@ -88,6 +88,17 @@ export function directoryStore(root: FileSystemDirectoryHandle): FileStore {
         await dir.removeEntry(name)
       } catch (e) {
         if (!isNotFound(e)) throw e
+      }
+    },
+    async removeAll() {
+      const names: string[] = []
+      for await (const h of root.values()) if (h.kind === 'directory' && isAppFolder(h.name)) names.push(h.name)
+      for (const name of names) {
+        try {
+          await root.removeEntry(name, { recursive: true })
+        } catch (e) {
+          if (!isNotFound(e)) throw e
+        }
       }
     },
     async writeBlob(path, blob) {

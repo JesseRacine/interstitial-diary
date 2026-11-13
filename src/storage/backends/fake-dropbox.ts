@@ -90,9 +90,14 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
       }
       case 'files/delete_v2': {
         const f = files.get(key)
-        if (!f) return err409('path_lookup/not_found')
-        files.delete(key)
-        return textJson(200, { metadata: meta(f) })
+        if (f) {
+          files.delete(key)
+          return textJson(200, { metadata: meta(f) })
+        }
+        const inside = [...files.keys()].filter((k) => k.startsWith(`${key}/`)) // a folder: Dropbox deletes it whole
+        if (!inside.length) return err409('path_lookup/not_found')
+        for (const k of inside) files.delete(k)
+        return textJson(200, { metadata: { '.tag': 'folder', name: path.slice(path.lastIndexOf('/') + 1) } })
       }
       case 'files/download': {
         const f = files.get(key)

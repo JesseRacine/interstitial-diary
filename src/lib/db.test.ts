@@ -235,3 +235,27 @@ describe('cached originals', () => {
     await m.db.thumbs.clear()
   })
 })
+
+describe('eraseLocalJournal (start over)', () => {
+  it('removes entries, photos and what was remembered about syncing them, and keeps the settings', async () => {
+    await m.db.entries.put(makeEntry('bye', Date.UTC(2026, 10, 8), 'gone'))
+    await m.db.entries.put({ ...makeEntry('deleted', Date.UTC(2026, 10, 8), 'tomb'), deleted: 1 })
+    await m.db.blobs.put({ hash: 'p', blob: new Blob(['x']), mime: 'image/jpeg', size: 1, onRemote: 1, addedAt: 1 })
+    await m.db.thumbs.put({ hash: 'p', blob: new Blob(['t']), w: 1, h: 1 })
+    for (const [k, v] of Object.entries({
+      'sync:dropbox': { revs: { a: 'r' } }, 'images:dropbox': ['x'], 'sync:folder': { revs: {} },
+      storage: { backendId: 'dropbox', config: {} }, originalsLimit: 5, lastBackupAt: 9, 'reset:dropbox': 'm1',
+    })) await m.setMeta(k, v)
+
+    await m.eraseLocalJournal()
+
+    expect(await m.db.entries.count()).toBe(0)
+    expect(await m.db.blobs.count()).toBe(0)
+    expect(await m.db.thumbs.count()).toBe(0)
+    const keys = (await m.db.meta.toCollection().primaryKeys()).map(String).sort()
+    expect(keys).not.toContain('sync:dropbox')
+    expect(keys).not.toContain('images:dropbox')
+    expect(keys).not.toContain('sync:folder')
+    expect(keys).toEqual(expect.arrayContaining(['lastBackupAt', 'originalsLimit', 'reset:dropbox', 'storage']))
+  })
+})

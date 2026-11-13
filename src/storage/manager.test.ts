@@ -211,6 +211,103 @@ describe('manager: a storage chosen in another tab', () => {
   })
 })
 
+describe('manager: start over', () => {
+  const MARKER = '.meta/reset.json'
+  const entries = () => dbm.db.entries.toArray()
+
+  /** A device already connected to "cloud A1" that has synced before: it remembers `seen` (undefined = old version). */
+  async function connectedDevice(seen: string | undefined, texts: string[]) {
+    await load()
+    await dbm.setMeta('storage', { backendId: 'cloud', config: { account: 'A1' }, connectedAt: 1 })
+    if (seen !== undefined) await dbm.setMeta('reset:cloud', seen)
+    for (const [i, t] of texts.entries()) await dbm.db.entries.put({ ...makeEntry(t, DAY + i, `e${i}`), dirty: 0 })
+    await load()
+  }
+
+  it('erases this device and the storage, leaves a marker, and does not clear itself again', async () => {
+    await connectedDevice('none', ['one', 'two'])
+    await m.initStorage()
+    const store = h.stores['cloud:A1']
+    expect(store.files.has('2026/2026-11-08.md')).toBe(true)
+    store.files.set('notes.md', { content: 'not ours', rev: 'x' })
+
+    await m.startOver()
+    expect(await entries()).toEqual([])
+    expect([...store.files.keys()].sort()).toEqual([MARKER, 'notes.md'])
+    const marker = JSON.parse(store.files.get(MARKER)!.content) as { id: string }
+    expect(await dbm.getMeta('reset:cloud', null)).toBe(marker.id)
+
+    await dbm.db.entries.put(makeEntry('a fresh start', DAY + 9, 'n1'))
+    await m.syncNow()
+    expect(await entries()).toHaveLength(1) // its own new entry is not cleared by its own marker
+    expect(store.files.has('2026/2026-11-08.md')).toBe(true)
+    expect(m.storageState().startedOverAt).toBeNull()
+  })
+
+  it('another device that synced before clears its copy instead of uploading it again, and says so', async () => {
+    await connectedDevice('none', ['old phone entry'])
+    const store = (h.stores['cloud:A1'] ??= (await import('./memory')).memoryStore())
+    store.files.set(MARKER, { content: JSON.stringify({ id: 'm1', at: 1234 }), rev: 'r' })
+    store.files.set('2026/2026-11-09.md', { content: '# Monday, 9 November 2026\n\n## 10:00 <!-- id:new1 created:1794218400000 updated:1794218400000 -->\nwritten after the start over\n', rev: 'r2' })
+
+    await m.initStorage()
+    expect((await entries()).map((e) => e.text)).toEqual(['written after the start over'])
+    expect(store.files.has('2026/2026-11-08.md')).toBe(false) // the old copy was not uploaded
+    expect(m.storageState().startedOverAt).toBe(1234)
+    expect(await dbm.getMeta('reset:cloud', null)).toBe('m1')
+    m.dismissStartedOver()
+    expect(m.storageState().startedOverAt).toBeNull()
+  })
+
+  it('a device connecting to a storage that was started over keeps its entries (and uploads them)', async () => {
+    await load()
+    await dbm.db.entries.put(makeEntry('mine', DAY, 'e1'))
+    await m.initStorage()
+    h.stores['cloud:A1'] = (await import('./memory')).memoryStore({ [MARKER]: JSON.stringify({ id: 'm1', at: 1 }) })
+    await startedSignIn()
+    await load(`${APP}?code=A1&state=s`)
+    await m.initStorage()
+    expect((await entries()).map((e) => e.text)).toEqual(['mine'])
+    expect(h.stores['cloud:A1'].files.has('2026/2026-11-08.md')).toBe(true)
+    expect(await dbm.getMeta('reset:cloud', null)).toBe('m1')
+  })
+
+  it('a device from before this feature (nothing remembered) only notes the marker', async () => {
+    await connectedDevice(undefined, ['kept'])
+    h.stores['cloud:A1'] = (await import('./memory')).memoryStore({ [MARKER]: JSON.stringify({ id: 'm1', at: 1 }) })
+    await m.initStorage()
+    expect((await entries()).map((e) => e.text)).toEqual(['kept'])
+    expect(await dbm.getMeta('reset:cloud', null)).toBe('m1')
+  })
+
+  it('without storage it erases this device only; with storage it needs access first', async () => {
+    await load()
+    await dbm.db.entries.put(makeEntry('local only', DAY, 'e1'))
+    await m.initStorage()
+    await m.startOver()
+    expect(await entries()).toEqual([])
+
+    await dbm.db.delete()
+    await connectedDevice('none', ['kept'])
+    h.openRefuses = true
+    await m.initStorage()
+    await expect(m.startOver()).rejects.toThrow(/Allow access/)
+    expect((await entries()).map((e) => e.text)).toEqual(['kept'])
+  })
+
+  it('a storage that can\'t be emptied leaves everything as it was', async () => {
+    await connectedDevice('none', ['kept'])
+    await m.initStorage()
+    const store = h.stores['cloud:A1']
+    const removeAll = store.removeAll
+    ;(store as { removeAll?: unknown }).removeAll = undefined
+    await expect(m.startOver()).rejects.toThrow(/can’t be emptied/)
+    store.removeAll = removeAll
+    expect((await entries()).map((e) => e.text)).toEqual(['kept'])
+    expect(store.files.has('2026/2026-11-08.md')).toBe(true)
+  })
+})
+
 describe('manager: connect and reconnect', () => {
   it('connect saves the storage with connectedAt, resets its sync state and syncs', async () => {
     await load()

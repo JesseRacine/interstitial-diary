@@ -30,7 +30,16 @@ export interface FileStore {
    * deleted entries" cleanup (storage/cleanup.ts), never by sync. Optional: without it the cleanup leaves storage alone.
    */
   removeBlob?(path: string): Promise<void>
+  /**
+   * Delete everything this app keeps in the storage: the year folders (day files and photos), `.meta` and `.thumbs`.
+   * Anything else in the storage is left alone. Only "Start over" (storage/startOver.ts) calls it, after the user
+   * confirmed. Optional: without it, Start over refuses to run for this storage.
+   */
+  removeAll?(): Promise<void>
 }
+
+/** The folders `removeAll` deletes (top level of the storage). */
+export const isAppFolder = (name: string) => /^\d{4}$/.test(name) || name === '.meta' || name === '.thumbs'
 
 export type BlobStore = FileStore & Required<Pick<FileStore, 'readBlob' | 'writeBlob' | 'hasBlob'>>
 

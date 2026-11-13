@@ -1,5 +1,5 @@
 import type { Entry } from '../lib/entry'
-import { BlobCollisionError, type LocalStore, type RemovableBlobStore } from './types'
+import { BlobCollisionError, type LocalStore, type RemovableBlobStore, isAppFolder } from './types'
 
 /**
  * In-memory FileStore: for tests, and a template for writing new storage modules.
@@ -7,7 +7,10 @@ import { BlobCollisionError, type LocalStore, type RemovableBlobStore } from './
  */
 export function memoryStore(
   initial: Record<string, string> = {},
-): RemovableBlobStore & { files: Map<string, { content: string; rev: string }>; blobs: Map<string, Blob> } {
+): RemovableBlobStore & Required<Pick<RemovableBlobStore, 'removeAll'>> & {
+  files: Map<string, { content: string; rev: string }>
+  blobs: Map<string, Blob>
+} {
   let counter = 0
   const files = new Map<string, { content: string; rev: string }>()
   const blobs = new Map<string, Blob>()
@@ -29,6 +32,11 @@ export function memoryStore(
       return b ? { size: b.size } : null
     },
     async removeBlob(path) { blobs.delete(path) },
+    async removeAll() {
+      for (const map of [files, blobs] as Map<string, unknown>[]) {
+        for (const p of [...map.keys()]) if (isAppFolder(p.split('/')[0])) map.delete(p)
+      }
+    },
     async writeBlob(path, blob) {
       const existing = blobs.get(path)
       if (existing) {

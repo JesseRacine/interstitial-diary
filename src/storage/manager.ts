@@ -1,7 +1,8 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
 import {
-  db, evictOriginalsToLimit, getMeta, localImageSizes, removeLocalImagesUnlessUsed, saveFetchedOriginal, setMeta, touchOriginal,
+  db, eraseLocalJournal, evictOriginalsToLimit, getMeta, localImageSizes, removeLocalImagesUnlessUsed, saveFetchedOriginal,
+  setMeta, touchOriginal,
 } from '../lib/db'
 import type { ImageRef } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
@@ -13,6 +14,7 @@ import { type CleanupLocal, type CleanupPlan, type CleanupResult, planCleanup, r
 import { metaPending } from './oauthPending'
 import { fetchOriginal, limitMode } from './originals'
 import { resumeFromRedirect } from './resume'
+import { eraseStorage, newResetId, readMarker, resetAction, resetKey, seenValue } from './startOver'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
 import { type FileStore, type LocalStore, type SyncReport, type SyncState, supportsBlobs } from './types'
@@ -67,6 +69,7 @@ export interface StorageState {
   imageError: string | null // last image problem; never turns the status into 'error'
   restored: boolean // the saved storage (if any) has been read at startup; before that 'off' just means "not known yet"
   signInError: string | null // a sign-in on another site (Dropbox) that could not be finished; the old storage stays
+  startedOverAt: number | null // another device started the journal over (when), so this device cleared its copy
 }
 
 /** Photos the badge reports as waiting: still to save from here, plus ones that failed to download. */
@@ -74,7 +77,7 @@ export const imagesPending = (s: StorageState) => s.imagesWaiting + s.imagesFail
 
 let state: StorageState = {
   backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0,
-  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false, signInError: null,
+  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false, signInError: null, startedOverAt: null,
 }
 const listeners = new Set<() => void>()
 function set(patch: Partial<StorageState>) {
@@ -129,6 +132,7 @@ export function syncNow(): Promise<void> {
       if (!current) break
       set({ status: 'syncing' })
       try {
+        await followStartOver(id, current) // before reading the sync state: clearing resets it
         const prev = await getMeta<SyncState>(syncKey(id), emptySyncState())
         const confirmed = new Set(await getMeta<string[]>(imagesKey(id), []))
         const r = await syncAll(dexieLocal, dexieImages, current, prev, confirmed)
@@ -150,6 +154,49 @@ export function syncNow(): Promise<void> {
     } while (again)
   })().finally(() => { running = null })
   return running
+}
+
+/**
+ * If another device started the journal over since this device last synced with this storage, clear this device's
+ * copy first (so the next sync doesn't upload it all again). See storage/startOver.ts for the rules.
+ */
+async function followStartOver(id: string, s: FileStore) {
+  const seen = await getMeta<string | undefined>(resetKey(id), undefined)
+  const marker = await readMarker(s)
+  const action = resetAction(seen, marker)
+  if (action === 'clear') {
+    await eraseLocalJournal()
+    missingImages.replace([])
+    set({ startedOverAt: marker!.at, lastReport: null, imagesFailed: 0, imageError: null })
+  }
+  if (action !== 'none') await setMeta(resetKey(id), seenValue(marker))
+}
+
+/**
+ * Start the journal over: erase every entry and photo in the storage (if one is connected) and on this device. Other
+ * devices clear their copy when they next sync with that storage. Runs while no sync can; throws without changing
+ * anything if the storage can't be reached or emptied. Can't be undone (call only after the user confirmed).
+ */
+export async function startOver(): Promise<void> {
+  if (state.backendId && !store) {
+    throw new Error(`Allow access to ${state.label ?? 'your storage'} first, so it can be emptied too.`)
+  }
+  await exclusive(async () => {
+    const id = state.backendId
+    if (id && store) {
+      const marker = await eraseStorage(store, newResetId())
+      await setMeta(resetKey(id), marker.id)
+    }
+    await eraseLocalJournal()
+    missingImages.replace([])
+    set({ lastReport: null, imagesFailed: 0, imageError: null, startedOverAt: null })
+  })
+  void syncNow()
+}
+
+/** Hide the "started over on another device" notice. */
+export function dismissStartedOver() {
+  set({ startedOverAt: null })
 }
 
 /**
@@ -343,6 +390,7 @@ async function adopt(backendId: string, config: unknown, s: FileStore, label: st
   await setMeta('storage', { backendId, config, connectedAt: at } satisfies SavedStorage)
   await setMeta(syncKey(backendId), emptySyncState()) // new location: compare everything afresh
   await setMeta(imagesKey(backendId), []) // ...and check every image again
+  await db.meta.delete(resetKey(backendId)) // a newly connected device keeps its entries: it only notes the marker
   await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
   store = s
   connectedAt = at

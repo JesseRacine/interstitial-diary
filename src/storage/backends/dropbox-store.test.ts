@@ -125,6 +125,22 @@ describe('dropboxStore: photos', () => {
     expect(fake.files.get(`/${IMG}`)!.bytes.length).toBe(12)
   })
 
+  it('removeAll deletes the year folders, .meta and .thumbs, and nothing else', async () => {
+    const { fake, store } = setup()
+    await fake.put('/2026/2026-11-08.md', 'day')
+    await fake.put(`/${IMG}`, bytes(3))
+    await fake.put('/2025/2025-01-01.md', 'old')
+    await fake.put('/.meta/tombstones.json', '{}')
+    await fake.put('/.thumbs/0123456789abcdef.webp', bytes(2))
+    await fake.put('/README.md', 'not ours')
+    await fake.put('/notes/2026-11-08.md', 'not ours either')
+    await store.removeAll!()
+    expect([...fake.files.values()].map((f) => f.display).sort()).toEqual(['/README.md', '/notes/2026-11-08.md'])
+    expect(fake.calls.filter((c) => c.endpoint === 'files/delete_v2').map((c) => c.arg.path).sort())
+      .toEqual(['/.meta', '/.thumbs', '/2025', '/2026']) // one call per folder
+    await expect(store.removeAll!()).resolves.toBeUndefined() // nothing left to delete: fine
+  })
+
   it('removeBlob refuses anything that is not an image path', async () => {
     const { fake, store } = setup()
     await fake.put('/2026/2026-11-08.md', 'keep me')

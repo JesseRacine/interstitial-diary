@@ -10,7 +10,7 @@ them (index at the bottom)._
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
 - **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: live
   since 2026-11-12, working Windows ↔ Android per the user), photos (phases 1–3), installable PWA, data-safety features, hosting.
-  337 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  353 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
@@ -47,7 +47,19 @@ quick capture on Android is planned in [android-capture-plan.md](android-capture
 pushing, push (a second deploy); the installed app should show "A new version is ready" with Reload, and Reload shows the
 change. Closes waiting item 7.
 
+## Start over (built 2026-11-12, not pushed yet)
+
+Settings > **Start over** erases the journal here and in the storage; other devices clear their copy at their next
+sync (marker `.meta/reset.json`; rules in DESIGN.md "Start over"). The user chose: other devices clear themselves;
+confirm by typing START OVER, with a backup offered. Tested (16 new tests, incl. a planted bug caught); tried in the dev
+app without storage (entries erased, no errors). **Not tried with Dropbox or a second device yet** (item 11).
+
 ## Waiting on the user
+
+**11. Start over with Dropbox** (after the push the user approves): open the app on both devices first (so both run the
+new version), then Start over on one; check `Apps/Interstitial Journal/` holds only `.meta/reset.json`, and the other
+device shows "Journal started over" and is empty after its next sync.
+
 
 **10. Dropbox real checks** (asked 2026-11-12; overall "appears to be working" on Windows ↔ Android, 2026-11-12; a
 photo on localhost confirmed; the items below not confirmed one by one). In

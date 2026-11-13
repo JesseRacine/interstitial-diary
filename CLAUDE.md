@@ -18,7 +18,7 @@ Read these before changing anything substantial:
   Android (not started).
 
 **Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
-**Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features and **hosting** are built; 337 tests
+**Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features and **hosting** are built, plus Settings > Start over; 353 tests
 pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`,
 public; the user has installed it). **Dropbox (step 5a)** is live (pushed 2026-11-12) and the user reported it working
 between Windows and Android (details still open: PROGRESS.md item 10). Next: pCloud (on hold: its app approval may be manual) and Tauri. The update-banner test (step 4.6) was
@@ -141,6 +141,7 @@ src/
                         store; oauth.ts = PKCE sign-in for cloud modules; dropbox-store.ts = Dropbox FileStore;
                         fake-dropbox.ts = test-only fake Dropbox API) + index.ts registry
     resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
+    startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
     Capture, JournalView, EntryItem, Results, SearchBar, CalendarView, TagsView, SettingsView, text.tsx (tag highlighting
     + autocomplete)
