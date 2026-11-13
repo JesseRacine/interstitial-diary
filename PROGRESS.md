@@ -25,10 +25,11 @@ them (index at the bottom)._
 
 ## Current plan (agreed 2026-11-13): six improvements, one step per turn, in this order
 
-1. **Enter adds a line on touch screens: built and committed locally 2026-11-13, not pushed** (`enterAction` in `lib/dom.ts`,
+1. **Enter adds a line on touch screens: built, PUSHED and deployed 2026-11-13** (with step 2, `ad749ae`, deploy green; the
+   live bundle was not checked) (`enterAction` in `lib/dom.ts`,
    6 tests; checked in the pane with the phone preset: plain Enter is left to the browser, desktop unchanged). The hint line
    changes on touch. **Not tried on the real phone** (waiting item 14).
-2. **Edit an entry's time and date, any date: built and committed locally 2026-11-13, not pushed.** A "When" field in the
+2. **Edit an entry's time and date, any date: built, PUSHED and deployed 2026-11-13 (`ad749ae`, deploy green).** A "When" field in the
    entry editor (not in the future). A new backup was made first (`archive-2026-11-13/`, commit 03c54dc, restore tested).
    Because a day change leaves a stale copy in the old day's file, the entry carries a local-only `prevDay` that
    `syncOnce` uses to rewrite that file (DESIGN.md "Editing an entry's time"; `lib/retime.ts`). 434 tests (7 new sync tests,
