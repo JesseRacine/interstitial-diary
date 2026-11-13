@@ -28,6 +28,11 @@ How it works and why: DESIGN.md "Dropbox notes"; the build log: [docs/CLOUD-STOR
   Dropbox module on the hosted site), then the real Windows↔Android round trip on the hosted app. Only then is Dropbox
   "verified" and the Android data-safety story changes (DESIGN.md "Platform plan").
 - Testing note: the Claude browser pane can't use Dropbox passkeys; real sign-ins happen in the user's own browser.
+- 2026-11-12: the user added two entries (one with a photo) on localhost with Dropbox; the photo showed "Not synced
+  yet" because the dev server had stopped (session restart), so the open tab couldn't load the image worker and made
+  no thumbnail. After restarting the server, reload + "Save now" rebuilt it from the local original: **the photo shows**.
+  Dev-only (the built app precaches the worker). If a photo says "Not synced yet" on the device that added it, check
+  the dev server first.
 
 **After Dropbox:** pCloud (step 5, on hold: its app approval may need manual approval; notes in the same doc), then native
 apps with Tauri (step 6: Windows `.exe` and Android `.apk` built in GitHub Actions, tray/hotkey, native Android folder;
