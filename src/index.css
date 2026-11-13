@@ -8,6 +8,8 @@
   --accent: #3d6b5e;
   --accent-text: #ffffff;
   --accent-soft: #e2ece8;
+  --person: #8a4f7d;
+  --place: #9a5a1f;
   --danger: #b03a2e;
   --mark: #fbe7a1;
   --heat-0: #ece8e1;
@@ -31,6 +33,8 @@
     --accent: #7fb8a6;
     --accent-text: #10201b;
     --accent-soft: #23332e;
+    --person: #d49ac8;
+    --place: #e0a86c;
     --danger: #e0786c;
     --mark: #5c4b12;
     --heat-0: #262421;
@@ -53,6 +57,8 @@
   --accent: #7fb8a6;
   --accent-text: #10201b;
   --accent-soft: #23332e;
+  --person: #d49ac8;
+  --place: #e0a86c;
   --danger: #e0786c;
   --mark: #5c4b12;
   --heat-0: #262421;
@@ -227,6 +233,8 @@ button.attach { display: inline-flex; align-items: center; gap: 0.35rem; margin-
 .entry-text { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 0.2rem; }
 button.tag { border: 0; padding: 0; background: none; color: var(--accent); font-weight: 500; }
 button.tag:hover { text-decoration: underline; }
+button.tag-person { color: var(--person); }
+button.tag-place { color: var(--place); }
 .edit { margin-top: 0.4rem; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .empty { color: var(--muted); text-align: center; padding: 2rem 0; }

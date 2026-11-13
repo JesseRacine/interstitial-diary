@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { renameTag } from '../lib/db'
 import { dayKey, shortDayLabel } from '../lib/entry'
+import { tagKindOf, tagLabel } from '../lib/tagKinds'
 import type { TagStat } from '../search/engine'
 
 type Sort = 'count' | 'name' | 'recent'
@@ -50,10 +51,11 @@ export function TagsView({ tagStats, onSearch }: { tagStats: TagStat[]; onSearch
           <tbody>
             {list.map((t) => (
               <tr key={t.tag}>
-                <td><button type="button" className="tag" onClick={() => onSearch(t.tag)}>#{t.tag}</button></td>
+                <td><button type="button" className={tagKindOf(t.tag).className} onClick={() => onSearch(t.tag)}>{tagLabel(t.tag)}</button></td>
                 <td>{t.count}</td>
                 <td className="muted">{shortDayLabel(dayKey(t.last))}</td>
-                <td><button type="button" className="ghost" onClick={() => rename(t)}>Rename</button></td>
+                {/* Renaming people and places comes with the Tags view split (step 4); until then only plain tags. */}
+                <td>{tagKindOf(t.tag).prefix === '' && <button type="button" className="ghost" onClick={() => rename(t)}>Rename</button>}</td>
               </tr>
             ))}
           </tbody>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { setMeta } from '../lib/db'
 import type { TagStat } from '../search/engine'
 import { hasToken, toggleToken } from '../search/query'
+import { tagLabel, tagToken } from '../lib/tagKinds'
 import { Suggestions, useTagAutocomplete } from './text'
 
 const QUICK: [label: string, token: string][] = [
@@ -112,7 +113,7 @@ export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, 
             <button key={token} type="button" className={`chip${hasToken(query, token) ? ' on' : ''}`} onClick={() => chip(token)}>{label}</button>
           ))}
           {tagStats.slice(0, 6).map((t) => (
-            <button key={t.tag} type="button" className={`chip tagchip${hasToken(query, `#${t.tag}`) ? ' on' : ''}`} onClick={() => chip(`#${t.tag}`)}>#{t.tag}</button>
+            <button key={t.tag} type="button" className={`chip tagchip${hasToken(query, tagToken(t.tag)) ? ' on' : ''}`} onClick={() => chip(tagToken(t.tag))}>{tagLabel(t.tag)}</button>
           ))}
         </div>
       )}

@@ -24,9 +24,14 @@ them (index at the bottom)._
 `src/lib/tagKinds.ts`). Stored keys: `work`, `@sarah`, `~home` (DESIGN.md "Tags").
 - **Step 1 done (2026-11-12, not pushed):** reading the kinds from text (`extractTags`/`replaceTag` in `entry.ts`),
   `tagKinds.ts`, Dexie v3 tag recalculation, 369 tests. Also fixed an old bug: renaming a tag containing `-` threw.
-- **Next, one per turn:** 2 showing/typing them (`text.tsx`, `Capture.tsx`, CSS), 3 search (`query.ts`, `SearchBar.tsx`,
-  `App.tsx searchTag`), 4 Tags view split + rename per kind, 5 person/place page, 6 docs and push (ask first).
-- Until step 3 ships, `@x`/`~x` entries get tags but searching/clicking them is not wired yet: **don't push before step 3**.
+- **Step 2 done (2026-11-12, not pushed):** people/places show as "👤 Sarah Jones" / "📍 Blue Door" (plum / amber, light
+  and dark; the typed text is the tooltip); `@` and `~` suggestions list only their own kind (`tagSegments` and
+  `tagBeingTyped` in `entry.ts`, `tagLabel` in `tagKinds.ts`); Capture hint; search chips and the Tags view show the
+  right labels; Rename is hidden for people/places until step 4. Checked in the browser (dark + light). 372 tests.
+- **Next, one per turn:** 3 search (`query.ts`, `SearchBar.tsx` help rows, tests; clicking a name already calls
+  `searchTag` with `tagToken`), 4 Tags view split + rename per kind, 5 person/place page, 6 docs and push (ask first).
+- Until step 3 ships, clicking a person/place or typing `@sarah` in search does **not** filter yet (the parser reads it
+  as a plain word): **don't push before step 3**.
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 

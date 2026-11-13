@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type ImageRef, extractTags, makeEntry, replaceTag } from './entry'
+import { type ImageRef, extractTags, makeEntry, replaceTag, tagBeingTyped, tagSegments } from './entry'
 import { parseDay, serializeDay } from './markdown'
 import { merge } from './merge'
 
@@ -33,6 +33,30 @@ describe('tags', () => {
   })
   it('finds a tag at the very start and after a newline or bracket', () => {
     expect(extractTags('@ann\n(~park) [#x]')).toEqual(['@ann', '~park', 'x'])
+  })
+  it('cuts text into plain pieces and tags that join back into the text', () => {
+    const text = "Met @Sarah_Jones at ~Blue_Door - #wip-, mail bob@x.com. #end"
+    const segs = tagSegments(text)
+    expect(segs.map((s) => s.text).join('')).toBe(text)
+    expect(segs.filter((s) => s.key).map((s) => [s.text, s.key])).toEqual([
+      ['@Sarah_Jones', '@sarah_jones'],
+      ['~Blue_Door', '~blue_door'],
+      ['#wip', 'wip'],
+      ['#end', 'end'],
+    ])
+    expect(tagSegments('#wip-, x').map((s) => s.text)).toEqual(['#wip', '-, x'])
+    expect(tagSegments('')).toEqual([])
+    expect(tagSegments('no tags')).toEqual([{ text: 'no tags' }])
+  })
+  it('finds the tag being typed at the caret', () => {
+    expect(tagBeingTyped('lunch with @Sa')).toMatchObject({ partial: 'sa', start: 11, kind: { id: 'person' } })
+    expect(tagBeingTyped('at ~')).toMatchObject({ partial: '', start: 3, kind: { id: 'place' } })
+    expect(tagBeingTyped('#wo')).toMatchObject({ partial: 'wo', start: 0, kind: { id: 'tag' } })
+    expect(tagBeingTyped('-@sa')).toMatchObject({ partial: 'sa', kind: { id: 'person' } })
+    expect(tagBeingTyped('bob@exa')).toBeNull()
+    expect(tagBeingTyped('@@sa')).toBeNull()
+    expect(tagBeingTyped('@sarah and')).toBeNull()
+    expect(tagBeingTyped('plain')).toBeNull()
   })
   it('replaces only the tag of its own kind', () => {
     expect(replaceTag('@sarah #sarah ~sarah @sarahs', '@sarah', '@sara')).toBe('@sara #sarah ~sarah @sarahs')

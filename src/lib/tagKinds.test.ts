@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TAG_KINDS, displayName, kindForSigil, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
+import { TAG_KINDS, displayName, kindForSigil, tagKey, tagKindOf, tagLabel, tagName, tagToken } from './tagKinds'
 
 describe('tag kinds', () => {
   it('tells the kind from the stored key', () => {
@@ -22,6 +22,11 @@ describe('tag kinds', () => {
     expect(displayName('~blue_door')).toBe('Blue Door')
     expect(displayName('@tom')).toBe('Tom')
     expect(displayName('deep_work')).toBe('deep_work')
+  })
+  it('labels tags for lists', () => {
+    expect(tagLabel('work')).toBe('#work')
+    expect(tagLabel('@sarah_jones')).toBe('👤 Sarah Jones')
+    expect(tagLabel('~home')).toBe('📍 Home')
   })
   it('gives every kind its own symbol and prefix', () => {
     expect(new Set(TAG_KINDS.map((k) => k.sigil)).size).toBe(TAG_KINDS.length)

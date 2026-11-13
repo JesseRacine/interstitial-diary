@@ -16,6 +16,7 @@ import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
+import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
 
 type View = 'journal' | 'calendar' | 'photos' | 'tags' | 'settings'
@@ -69,7 +70,7 @@ export default function App() {
     setBackQuery(null)
   }
   const searchTag = (tag: string) => {
-    changeQuery(`#${tag}`)
+    changeQuery(tagToken(tag))
     searchRef.current?.focus()
   }
   const setLayout = (l: JournalLayout) => {

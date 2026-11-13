@@ -44,6 +44,12 @@ export const tagKey = (kind: TagKind, name: string): string => kind.prefix + nam
 /** How the tag is typed in text and in search: `work` gives `#work`, `@sarah` stays `@sarah`. */
 export const tagToken = (key: string): string => tagKindOf(key).sigil + tagName(key)
 
+/** The label of a tag in a list: `#work`, or an icon and a name for people and places ("👤 Sarah Jones"). */
+export function tagLabel(key: string): string {
+  const kind = tagKindOf(key)
+  return kind.pretty ? `${kind.icon} ${displayName(key)}` : tagToken(key)
+}
+
 /** How the tag reads on screen: `@sarah_jones` gives "Sarah Jones"; plain tags are shown as written. */
 export function displayName(key: string): string {
   const name = tagName(key)

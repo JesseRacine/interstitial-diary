@@ -1,5 +1,5 @@
 import { ulid } from 'ulid'
-import { TAG_KINDS, type TagKind, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
+import { TAG_KINDS, type TagKind, kindForSigil, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
 
 /** A photo attached to an entry. Only this small reference lives on the entry; the bytes live elsewhere. */
 export interface ImageRef {
@@ -39,11 +39,9 @@ export function sameImages(a: Pick<Entry, 'images'>, b: Pick<Entry, 'images'>): 
 // '-' is not special outside a character class, and the 'u' flag rejects `\-` there (renaming #deep-focus used to throw).
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
 
-/** Matches a #tag that is not glued to a preceding word (so "C#" or "a#b" aren't tags). Plain tags only. */
-export const TAG_PATTERN = '(?<![\\p{L}\\p{N}_&#])#([\\p{L}\\p{N}_][\\p{L}\\p{N}_\\-/]*)'
-
 /** Characters that may not come right before a tag symbol: a word (so "bob@example.com" is no tag), "&", or any symbol. */
-const NOT_BEFORE = `(?<![\\p{L}\\p{N}_&${TAG_KINDS.map((k) => escapeRe(k.sigil)).join('')}])`
+const SIGILS = TAG_KINDS.map((k) => escapeRe(k.sigil)).join('')
+const NOT_BEFORE = `(?<![\\p{L}\\p{N}_&${SIGILS}])`
 const NAME_REST = '[\\p{L}\\p{N}_\\-/]*'
 const nameStart = (k: TagKind) => (k.letterFirst ? '\\p{L}' : '\\p{L}\\p{N}_')
 
@@ -63,6 +61,39 @@ export function extractTags(text: string): string[] {
     out.add(tagKey(TAG_KINDS[i], cleanName(m[i + 1])))
   }
   return [...out]
+}
+
+export interface TagSegment {
+  text: string // exactly as written
+  key?: string // set when the segment is a tag: its stored key
+}
+
+/**
+ * Cut text into plain pieces and tags, in order, so the pieces join back into the text. A tag's trailing `-` or `/`
+ * is left in the plain text after it, because it is not part of the name (`#wip-` is the tag `wip`).
+ */
+export function tagSegments(text: string): TagSegment[] {
+  const out: TagSegment[] = []
+  let last = 0
+  for (const m of text.matchAll(ANY_TAG_RE)) {
+    const i = m.slice(1).findIndex((g) => g !== undefined)
+    const start = m.index
+    const end = start + m[0].length - (m[0].match(/[-/]+$/)?.[0].length ?? 0)
+    if (start > last) out.push({ text: text.slice(last, start) })
+    out.push({ text: text.slice(start, end), key: tagKey(TAG_KINDS[i], cleanName(m[i + 1])) })
+    last = end
+  }
+  if (last < text.length) out.push({ text: text.slice(last) })
+  return out
+}
+
+const PARTIAL_RE = new RegExp(`${NOT_BEFORE}([${SIGILS}])([\\p{L}\\p{N}_\\-/]*)$`, 'u')
+
+/** The tag being typed at the end of `beforeCaret` (a symbol and what follows it so far), if there is one. */
+export function tagBeingTyped(beforeCaret: string): { kind: TagKind; partial: string; start: number } | null {
+  const m = PARTIAL_RE.exec(beforeCaret)
+  const kind = m && kindForSigil(m[1])
+  return m && kind ? { kind, partial: m[2].toLowerCase(), start: m.index } : null
 }
 
 /**
