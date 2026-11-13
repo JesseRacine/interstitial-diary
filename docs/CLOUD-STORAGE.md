@@ -41,6 +41,13 @@ line in `backends/index.ts`, no changes to `sync.ts` (CLAUDE.md rule 3). It must
   small "pending sign-in" step in `manager.ts`: that file has no direct tests, so keep the logic in tested modules);
   (4) a Settings entry and a "coming later" list update (`PLANNED_BACKENDS` in `backends/index.ts` currently lists pCloud
   and GitHub); (5) DESIGN.md (storage modules table, "Dropbox notes") and PROGRESS.md.
+- **Decided 2026-11-12** (sub-steps 5a.1–5a.5 = the build plan items 1–5): full-page **redirect**, not a popup (a
+  popup's `opener` is unreliable from an installed Android app); the PKCE verifier and `state` wait in the IndexedDB
+  meta table (not sessionStorage), so the return can be finished in whichever tab/app of the origin it lands in; the
+  saved config is `{ refreshToken, accountId }`, the access token stays in memory; a revoked refresh token throws
+  `NotAllowedError`, which `manager.ts` already shows as "needs permission"; `rev` = Dropbox `content_hash`; `list()`
+  lists the root and then each `YYYY` folder and `.meta` non-recursively (never walking images); text writes use upload
+  mode `overwrite`, photos mode `add` without autorename; retry 429/503 with `Retry-After`. 5a.1 (`oauth.ts`) is done.
 - The App key is a public identifier: keep it in one constant. **Never commit the App secret, a refresh token or an access
   token.** Until a real entry travels Windows to Android and back, the module is **not verified**: put that on PROGRESS.md
   "Waiting on the user".
