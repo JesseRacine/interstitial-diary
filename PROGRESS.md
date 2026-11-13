@@ -18,7 +18,17 @@ them (index at the bottom)._
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## NEXT: nothing in progress (as of 2026-11-12); ask the user which of these
+## IN PROGRESS: people and place tags (plan: `~/.claude/plans/we-are-going-to-agile-riddle.md`, 6 steps)
+
+`#tag`, `@person`, `~place` (names with spaces use `_`; `@`/`~` need a letter first; more kinds later = one row in
+`src/lib/tagKinds.ts`). Stored keys: `work`, `@sarah`, `~home` (DESIGN.md "Tags").
+- **Step 1 done (2026-11-12, not pushed):** reading the kinds from text (`extractTags`/`replaceTag` in `entry.ts`),
+  `tagKinds.ts`, Dexie v3 tag recalculation, 369 tests. Also fixed an old bug: renaming a tag containing `-` threw.
+- **Next, one per turn:** 2 showing/typing them (`text.tsx`, `Capture.tsx`, CSS), 3 search (`query.ts`, `SearchBar.tsx`,
+  `App.tsx searchTag`), 4 Tags view split + rename per kind, 5 person/place page, 6 docs and push (ask first).
+- Until step 3 ships, `@x`/`~x` entries get tags but searching/clicking them is not wired yet: **don't push before step 3**.
+
+## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 
 1. **A new dated backup archive** in the Claude session folder (the current one, 2026-11-10, predates hosting, Dropbox
    and Start over; steps in CLAUDE.md "Where things are").

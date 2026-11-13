@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
-import { type Entry, type ImageRef, makeEntry, replaceTag, sameImages, withDerived } from './entry'
+import { type Entry, type ImageRef, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 
 export interface Meta {
   key: string
@@ -46,6 +46,18 @@ class DiaryDB extends Dexie {
       thumbs: 'hash',
       blobs: 'hash, onRemote',
     })
+    // v3: people (@name) and places (~name) are tags too. Recalculate the derived tags of the entries already here.
+    // Only `tags` changes: dirty and updatedAt stay, because the text is the same and nothing needs to sync.
+    this.version(3)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table<Entry, string>('entries')
+          .toCollection()
+          .modify((e) => {
+            e.tags = extractTags(e.text)
+          }),
+      )
   }
 }
 

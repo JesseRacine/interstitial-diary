@@ -13,6 +13,12 @@ beforeAll(async () => {
   const old = new Dexie('interstitial-diary')
   old.version(1).stores({ entries: 'id, createdAt, day, *tags, dirty', meta: 'key' })
   await old.table('entries').add(makeEntry('written before images existed #old', Date.UTC(2026, 0, 1, 9), 'legacy'))
+  // Written before people and places were tags: its stored tags are stale, and it is already synced (dirty 0).
+  await old.table('entries').add({
+    ...makeEntry('met @Sarah_Jones at ~the_cafe #old', Date.UTC(2026, 0, 2, 9), 'legacy-people'),
+    tags: ['old'],
+    dirty: 0,
+  })
   old.close()
   m = await import('./db')
 })
@@ -42,7 +48,7 @@ describe('withDerived', () => {
 
 describe('db with images', () => {
   beforeEach(async () => {
-    await m.db.entries.where('id').notEqual('legacy').delete()
+    await m.db.entries.where('id').noneOf(['legacy', 'legacy-people']).delete()
     await m.db.thumbs.clear()
     await m.db.blobs.clear()
   })
@@ -51,7 +57,24 @@ describe('db with images', () => {
     const legacy = await m.db.entries.get('legacy')
     expect(legacy?.text).toBe('written before images existed #old')
     expect(entryImages(legacy!)).toEqual([])
-    expect(m.db.verno).toBe(2)
+    expect(m.db.verno).toBe(3)
+  })
+
+  it('recalculates tags on upgrade without marking the entry changed, so nothing syncs', async () => {
+    const e = await m.db.entries.get('legacy-people')
+    expect(e?.tags).toEqual(['@sarah_jones', '~the_cafe', 'old'])
+    expect(e?.dirty).toBe(0)
+    expect(e?.updatedAt).toBe(Date.UTC(2026, 0, 2, 9))
+    expect(e?.text).toBe('met @Sarah_Jones at ~the_cafe #old')
+  })
+
+  it('renames people and places, keeping their symbol', async () => {
+    await m.db.entries.put(makeEntry('lunch with @sarah and @sarahs, ~home #sarah', Date.UTC(2026, 0, 3, 9), 'r1'))
+    expect(await m.renameTag('@sarah', '@sara')).toBe(1)
+    expect((await m.db.entries.get('r1'))?.text).toBe('lunch with @sara and @sarahs, ~home #sarah')
+    expect((await m.db.entries.get('r1'))?.tags).toEqual(['@sara', '@sarahs', '~home', 'sarah'])
+    expect(await m.renameTag('~home', '~flat')).toBe(1)
+    expect((await m.db.entries.get('r1'))?.text).toContain('~flat')
   })
 
   it('adds an entry with images; text is still required', async () => {

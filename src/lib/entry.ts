@@ -1,4 +1,5 @@
 import { ulid } from 'ulid'
+import { TAG_KINDS, type TagKind, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
 
 /** A photo attached to an entry. Only this small reference lives on the entry; the bytes live elsewhere. */
 export interface ImageRef {
@@ -13,7 +14,7 @@ export interface Entry {
   createdAt: number // ms epoch
   updatedAt: number // ms epoch, bumped on every edit/delete
   text: string
-  tags: string[] // lowercase, without '#'
+  tags: string[] // stored keys, lowercase: plain tags without '#' (`work`), people/places with their symbol (`@sarah`, `~home`)
   day: string // YYYY-MM-DD, local time
   hour: number // 0-23
   minute: number // minutes since local midnight
@@ -35,24 +36,43 @@ export function sameImages(a: Pick<Entry, 'images'>, b: Pick<Entry, 'images'>): 
   return x.length === y.length && x.every((i, n) => i.hash === y[n].hash && i.ext === y[n].ext && i.w === y[n].w && i.h === y[n].h)
 }
 
-/** Matches a #tag that is not glued to a preceding word (so "C#" or "a#b" aren't tags). */
+// '-' is not special outside a character class, and the 'u' flag rejects `\-` there (renaming #deep-focus used to throw).
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+
+/** Matches a #tag that is not glued to a preceding word (so "C#" or "a#b" aren't tags). Plain tags only. */
 export const TAG_PATTERN = '(?<![\\p{L}\\p{N}_&#])#([\\p{L}\\p{N}_][\\p{L}\\p{N}_\\-/]*)'
-const TAG_RE = new RegExp(TAG_PATTERN, 'gu')
 
-const cleanTag = (t: string) => t.replace(/[-/]+$/, '').toLowerCase()
+/** Characters that may not come right before a tag symbol: a word (so "bob@example.com" is no tag), "&", or any symbol. */
+const NOT_BEFORE = `(?<![\\p{L}\\p{N}_&${TAG_KINDS.map((k) => escapeRe(k.sigil)).join('')}])`
+const NAME_REST = '[\\p{L}\\p{N}_\\-/]*'
+const nameStart = (k: TagKind) => (k.letterFirst ? '\\p{L}' : '\\p{L}\\p{N}_')
 
+/** One alternative per kind, in TAG_KINDS order, each with one capture group holding the name. */
+const ANY_TAG_RE = new RegExp(
+  NOT_BEFORE + '(?:' + TAG_KINDS.map((k) => `${escapeRe(k.sigil)}([${nameStart(k)}]${NAME_REST})`).join('|') + ')',
+  'gu',
+)
+
+const cleanName = (t: string) => t.replace(/[-/]+$/, '').toLowerCase()
+
+/** The stored keys of every tag in text (see tagKinds.ts), in the order they first appear. */
 export function extractTags(text: string): string[] {
   const out = new Set<string>()
-  for (const m of text.matchAll(TAG_RE)) out.add(cleanTag(m[1]))
+  for (const m of text.matchAll(ANY_TAG_RE)) {
+    const i = m.slice(1).findIndex((g) => g !== undefined)
+    out.add(tagKey(TAG_KINDS[i], cleanName(m[i + 1])))
+  }
   return [...out]
 }
 
-const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&')
-
-/** Replace every #from tag in text with #to (case-insensitive, whole tag only). */
+/**
+ * Replace every `from` tag in text with `to` (case-insensitive, whole tag only). Both are stored keys of the same kind:
+ * `work`/`job`, or `@sarah`/`@sara`. A key of another kind for `to` writes that kind's symbol.
+ */
 export function replaceTag(text: string, from: string, to: string): string {
-  const re = new RegExp(`(?<![\\p{L}\\p{N}_&#])#${escapeRe(from)}(?![\\p{L}\\p{N}_\\-/])`, 'giu')
-  return text.replace(re, `#${to}`)
+  const kind = tagKindOf(from)
+  const re = new RegExp(`${NOT_BEFORE}${escapeRe(kind.sigil)}${escapeRe(tagName(from))}(?![\\p{L}\\p{N}_\\-/])`, 'giu')
+  return text.replace(re, () => tagToken(to))
 }
 
 export const pad = (n: number) => String(n).padStart(2, '0')

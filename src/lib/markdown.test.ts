@@ -13,6 +13,32 @@ describe('tags', () => {
   it('replaces whole tags only', () => {
     expect(replaceTag('#work #workout #Work', 'work', 'job')).toBe('#job #workout #job')
   })
+  it('replaces a tag with a hyphen or slash in its name (this used to throw)', () => {
+    expect(replaceTag('#deep-focus #deep-focused #a/b', 'deep-focus', 'focus')).toBe('#focus #deep-focused #a/b')
+    expect(replaceTag('#a/b', 'a/b', 'c')).toBe('#c')
+  })
+
+  it('extracts people and places with their symbol, lowercase, in text order', () => {
+    expect(extractTags('Lunch with @Sarah_Jones at ~Blue_Door #food, then @tom')).toEqual(['@sarah_jones', '~blue_door', 'food', '@tom'])
+    expect(extractTags('@sarah-')).toEqual(['@sarah'])
+  })
+  it('keeps a person and a plain tag of the same name apart', () => {
+    expect(extractTags('#sarah @sarah ~sarah')).toEqual(['sarah', '@sarah', '~sarah'])
+  })
+  it('ignores emails, doubled symbols, strikethrough, numbers and words glued to a symbol', () => {
+    expect(extractTags('mail bob@example.com, @@x, ~~gone~~, ~5 min, @3pm, a~b, x#y, &#39;')).toEqual([])
+  })
+  it('stops a name at punctuation, so possessives work', () => {
+    expect(extractTags("Sarah's idea from @sarah's phone, ~home.")).toEqual(['@sarah', '~home'])
+  })
+  it('finds a tag at the very start and after a newline or bracket', () => {
+    expect(extractTags('@ann\n(~park) [#x]')).toEqual(['@ann', '~park', 'x'])
+  })
+  it('replaces only the tag of its own kind', () => {
+    expect(replaceTag('@sarah #sarah ~sarah @sarahs', '@sarah', '@sara')).toBe('@sara #sarah ~sarah @sarahs')
+    expect(replaceTag('@sarah #sarah ~sarah', 'sarah', 'sara')).toBe('@sarah #sara ~sarah')
+    expect(replaceTag('~the_cafe', '~the_cafe', '~cafe')).toBe('~cafe')
+  })
 })
 
 describe('markdown day files', () => {

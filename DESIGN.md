@@ -45,7 +45,7 @@ Entry {
   createdAt: number   // ms epoch, never changes (so an entry never moves to another day)
   updatedAt: number   // ms epoch, bumped on every edit/delete; the merge "clock"
   text: string        // trimmed
-  tags: string[]      // derived: lowercase, no '#'
+  tags: string[]      // derived: lowercase stored keys (`work`, `@sarah`, `~home`; see "Tags" below)
   day, hour, minute, weekday  // derived from createdAt in LOCAL time
   deleted: 0 | 1      // soft delete (tombstone)
   dirty: 0 | 1        // changed since last successful sync
@@ -58,8 +58,15 @@ ImageRef { hash: string /* 16 hex chars of SHA-256, file name stem */, ext: stri
 tag renames and parsing would drop it. Dexie v2 adds `thumbs` (rebuildable thumbnails) and `blobs` (originals, with
 `onRemote` once the storage module has the file); see [images-plan.md](images-plan.md).
 
-**Tags** match `#` followed by letters/digits/`_`, then letters/digits/`_-/`, when not glued to a preceding word
-(`C#` and `a#b` are not tags). Stored lowercase; trailing `-`/`/` stripped.
+**Tags** come in kinds (list in `src/lib/tagKinds.ts`; a new kind is one row there). Each has its own symbol typed in the
+text: `#work` (tag), `@sarah_jones` (person, shown as "Sarah Jones"), `~home` (place). A symbol starts a tag when it is
+not glued to a preceding word, `&` or another symbol (`C#`, `a#b`, `bob@example.com`, `@@x`, `~~strike~~` are not tags),
+then letters/digits/`_`, then letters/digits/`_-/`. For `@` and `~` the first character must be a **letter** (`~5 min`
+and `@3pm` are not tags). Stored lowercase; trailing `-`/`/` stripped.
+**Stored key** (`Entry.tags`): a plain tag is its bare name (`work`, as before kinds existed), the others keep their
+symbol (`@sarah_jones`, `~home`), so `#sarah`, `@sarah` and `~sarah` are three different tags. Nothing changes in the
+Markdown files: the kind is just the symbol in the text. Dexie v3 recalculates `tags` for the entries already on a
+device without touching `dirty` or `updatedAt`, so the upgrade syncs nothing.
 
 Other local data lives in the Dexie `meta` table: `savedSearches`, `recentSearches`, `storage` (active backend id +
 config, e.g. a folder handle), `sync:<backendId>` (file revisions from the last sync), `images:<backendId>` (image
