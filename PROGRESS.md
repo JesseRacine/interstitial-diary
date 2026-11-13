@@ -21,6 +21,19 @@ them (index at the bottom)._
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
+## Events (`!"Jack's 40th birthday"`): IN PROGRESS, step 1 of 5 built locally 2026-11-13 (not pushed)
+
+Not a tag kind: an event is the unique name of something that happened, so it has its own module and, later, its own
+top-level **Events** view (timeline by date and title). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
+follow whitespace/start/an opening bracket), no autocomplete, nothing new stored (the marker stays in the entry text; the
+list is computed), same title within 7 days = one event, a longer gap = a new event with the same title (no year in
+the title needed).
+- **Step 1 done:** `src/lib/events.ts` (`eventSpans`, `eventSegments`, `blankEvents`, `eventKey`, `parseEventTitle`,
+  `renameEventInText`, `computeEvents`) + `events.test.ts` (20 tests); `extractTags` and `replaceTag` leave event titles
+  alone. 400 tests, `tsc` clean, lint 0 errors (5 old warnings). Nothing visible in the app yet.
+- **Next:** 2 show events as chips in entries (`text.tsx`, CSS, Capture hint); 3 the Events view (`EventsView.tsx`, `App.tsx`);
+  4 rename an event's title; 5 docs (DESIGN.md "Events", HISTORY, LIMITS).
+
 ## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
 
 `#tag`, `@person`, `~place`; names with spaces use `_` (`@sarah_jones` is shown as "Sarah Jones"); `@`/`~` need a letter

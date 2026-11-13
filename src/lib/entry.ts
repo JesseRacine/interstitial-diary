@@ -1,4 +1,5 @@
 import { ulid } from 'ulid'
+import { blankEvents, eventSegments } from './events'
 import { NAME_REST, TAG_KINDS, type TagKind, kindForSigil, nameStart, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
 
 /** A photo attached to an entry. Only this small reference lives on the entry; the bytes live elsewhere. */
@@ -51,10 +52,13 @@ const ANY_TAG_RE = new RegExp(
 
 const cleanName = (t: string) => t.replace(/[-/]+$/, '').toLowerCase()
 
-/** The stored keys of every tag in text (see tagKinds.ts), in the order they first appear. */
+/**
+ * The stored keys of every tag in text (see tagKinds.ts), in the order they first appear. Event titles (`!"Jack's #party"`,
+ * see events.ts) are skipped: a `#word` inside one is part of the title, not a tag.
+ */
 export function extractTags(text: string): string[] {
   const out = new Set<string>()
-  for (const m of text.matchAll(ANY_TAG_RE)) {
+  for (const m of blankEvents(text).matchAll(ANY_TAG_RE)) {
     const i = m.slice(1).findIndex((g) => g !== undefined)
     out.add(tagKey(TAG_KINDS[i], cleanName(m[i + 1])))
   }
@@ -101,7 +105,8 @@ export function tagBeingTyped(beforeCaret: string): { kind: TagKind; partial: st
 export function replaceTag(text: string, from: string, to: string): string {
   const kind = tagKindOf(from)
   const re = new RegExp(`${NOT_BEFORE}${escapeRe(kind.sigil)}${escapeRe(tagName(from))}(?![\\p{L}\\p{N}_\\-/])`, 'giu')
-  return text.replace(re, () => tagToken(to))
+  // Event titles are left alone, like in extractTags.
+  return eventSegments(text).map((seg) => (seg.title === undefined ? seg.text.replace(re, () => tagToken(to)) : seg.text)).join('')
 }
 
 export const pad = (n: number) => String(n).padStart(2, '0')
