@@ -8,7 +8,7 @@ them (index at the bottom)._
 - **Live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo:
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`). Every push to `main` runs the tests and
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
-- **Built:** journal, search, calendar, tags (+ **people and places**, built locally, not yet pushed), export, three
+- **Built:** journal, search, calendar, tags (+ **people and places**, live 2026-11-12), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
   per the user). 380 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
@@ -18,7 +18,7 @@ them (index at the bottom)._
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## People and place tags: all 6 steps built and committed locally (2026-11-12), NOT PUSHED: ask the user first
+## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
 
 `#tag`, `@person`, `~place`; names with spaces use `_` (`@sarah_jones` is shown as "Sarah Jones"); `@`/`~` need a letter
 first; more kinds later = one row in `src/lib/tagKinds.ts`. Stored keys: `work`, `@sarah`, `~home`. Markdown files are
@@ -26,7 +26,7 @@ unchanged; Dexie v3 recalculates tags on each device without marking anything ch
 showing/typing (`text.tsx`), search (`query.ts`), Tags / People / Places switch with per-kind rename (`TagsView.tsx`),
 a page per person/place (`TagPage.tsx`). Details: DESIGN.md "Tags" and its Tags UI bullet; commits `006db68`..`5bad3f0` in
 docs/HISTORY.md. 380 tests, `tsc` clean, lint unchanged; each step was checked in the browser pane (dark, light, 375px).
-**Not verified on the user's real data/devices** (see waiting item 12). Left out on purpose (docs/LIMITS-AND-IDEAS.md):
+**Not verified on the user's real data/devices** (see waiting item 12; installed apps update on reload). Left out on purpose (docs/LIMITS-AND-IDEAS.md):
 "mentioned together with", place suggestion from location, converting an old `#sarah` into `@sarah`.
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
@@ -80,7 +80,7 @@ both devices, then Start over once more (item 11).
 
 ## Waiting on the user
 
-**12. People and places on the real app** (after the user approves a push and both devices have the new version):
+**12. People and places on the real app** (pushed 2026-11-12; reload until both devices have the new version):
 a. Open the app on Windows: the journal, search and Tags view still work, nothing looks lost (the one-time tag
 recalculation ran). Any old text like `@home` or `~word` now shows as a person/place: expected, see limits.
 b. Write `Lunch with @sarah_jones at ~blue_door`: shown as "👤 Sarah Jones", "📍 Blue Door"; `@sa` suggests, search

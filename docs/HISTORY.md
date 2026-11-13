@@ -49,6 +49,7 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | eb800d3 | People and places 3/6: search `@sarah`, `~home`, `-@sarah`, `@a\|@b`, mixed groups; `~5` / `@3pm` stay plain words |
 | e78bbc4 | People and places 4/6: Tags view split into Tags / People / Places; per-kind rename and merge (`parseTagName`) |
 | 5bad3f0 | People and places 5/6: a page per person/place (`TagPage.tsx`: counts, first/last, month bars that filter, entries); `first` in `TagStat`, `hasPage` on `TagKind` |
+| cf88bea | People and places 6/6: final docs. **Pushed 2026-11-12 (deploy #7 green, live bundle checked)** |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

@@ -19,8 +19,8 @@ Read these before changing anything substantial:
 
 **Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
 **Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features, **hosting** and **Settings > Start
-over** are built and live; **people and places** (`@sarah_jones`, `~home`) are built and committed locally but **not
-pushed yet** (PROGRESS.md item 12); 380 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on
+over** are built and live; **people and places** (`@sarah_jones`, `~home`) are built and live (pushed
+2026-11-12; the user's own check is PROGRESS.md item 12); 380 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on
 GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; the user
 has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
