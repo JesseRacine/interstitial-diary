@@ -15,7 +15,7 @@
 
 ```
  UI (React) ──► Dexie / IndexedDB  ◄──►  sync engine  ◄──►  storage module (FileStore)
-                (working copy:            (sync.ts)          folder | browser files | pCloud* | GitHub* ...
+                (working copy:            (sync.ts)          folder | browser files | Dropbox* | pCloud* | GitHub* ...
                  search, offline)                            (* = planned)
 ```
 
@@ -200,20 +200,35 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 |---|---|---|
 | `folder`: Folder on this computer | done | Text and images. File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
 | `browser`: Files inside this browser | done | Text and images; `insideBrowser`. OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
-| `pcloud` | planned | See below. |
-| `github` | idea | Files in a private repo via the GitHub contents API. |
+| `dropbox` | **next** (2026-11-12) | App-folder access, OAuth PKCE with a refresh token; text and images. See "Dropbox notes" below and docs/CLOUD-STORAGE.md. Waiting for the user's App key. |
+| `pcloud` | planned, on hold | pCloud's app registration may need manual approval. See "pCloud notes" below. |
+| `github` | idea | Files in a private repo via the GitHub contents API (a token pasted into the app; free version history). |
+| `onedrive`, `gdrive` | ideas | OneDrive simple upload is 4 MB (photos need upload sessions); Google Drive has fiddly sign-in rules. |
 | native folder (Tauri) | idea | Real folders on Android once there's a native build. |
 
 **Adding a module:** implement `StorageBackend` in `storage/backends/<name>.ts`, register it in `backends/index.ts`
 (and remove it from `PLANNED_BACKENDS`), then test it against the sync engine the same way `sync.test.ts` uses
 `memoryStore` (and, with blob methods, the way `attachments.test.ts` does). Nothing else should need to change.
 
-**pCloud notes** (from a CORS check on 2026-11-08):
+**Dropbox notes** (from Dropbox's docs, 2026-11-12; the full list with what is still unchecked is in docs/CLOUD-STORAGE.md):
+- Sign-in is **OAuth code flow with PKCE** (no client secret in the browser) with `token_access_type=offline`: a short-lived
+  access token plus a refresh token kept in the backend config. The app registers as a **scoped app with App folder
+  access** (the journal lives in `Apps/<app name>/`), scopes `files.metadata.read/write` and `files.content.read/write`,
+  and the redirect URIs are the hosted address plus `http://localhost:5173/` and `http://127.0.0.1:5173/`.
+- Browsers may call it directly: RPC endpoints on `api.dropboxapi.com`, content on `content.dropboxapi.com` (arguments in
+  the `Dropbox-API-Arg` header or an `arg` URL parameter). Paths are case-insensitive. Photos must never be overwritten
+  (`BlobCollisionError`), so uploads of image files use add-mode, text files use overwrite.
+- The App key is public and kept in one constant; the app secret and all tokens are never committed.
+
+**pCloud notes** (from a CORS check on 2026-11-08; sign-in details read in pCloud's docs on 2026-11-12):
 - Use the **HTTP API** (`api.pcloud.com` US / `eapi.pcloud.com` EU). It returns `Access-Control-Allow-Origin: *`.
 - **WebDAV has no CORS headers**, so browsers can't use it.
 - Preflight allows no custom headers, so send the token as the `access_token` parameter, not an `Authorization` header.
-- Auth is OAuth2 (token flow). The app must be registered in pCloud's developer console with a redirect URL, which
-  means the app needs its hosted address first.
+- Auth is OAuth2, **token (implicit) flow** (pCloud's recommendation for pure browser apps): redirect to
+  `https://my.pcloud.com/oauth2/authorize?client_id=...&response_type=token&redirect_uri=...`, and the token comes back in
+  the URL fragment with `locationid` (1 US, 2 EU) and `hostname` (the API host to use). Tokens do not expire. The app must
+  be registered in pCloud's developer console with the redirect URL (the hosted address exists now: the registration, which
+  may need manual approval, is what is pending).
 - Useful calls: `listfolder` (recursive, gives `hash`/`modified` for `rev`), `getfilelink` or `file_open/file_read`,
   `uploadfile`, `deletefile`, `createfolderifnotexists`.
 - For images: `uploadfile` takes the bytes as they are; `getfilelink` downloads them; `stat` (size) serves `hasBlob`.
@@ -280,7 +295,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## Platform plan and data safety
 
-- **Now:** an installable PWA (PROGRESS step 2). Data lives in the browser and, optionally, a storage module.
+- **Now:** an installable PWA (docs/HISTORY.md step 2). Data lives in the browser and, optionally, a storage module.
   - `pwa-manifest.ts` is the web app manifest: standalone display, relative `start_url`/`scope` (so a sub-path host such
     as GitHub Pages works), 192/512 icons plus a maskable one, and a "New entry" shortcut (`./?view=journal`, which
     opens the journal; the capture box autofocuses). `scripts/make-icons.mjs` generates the icons and favicon
@@ -290,7 +305,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
     shows "A new version is ready. Reload": a new version is never applied on its own, so a half-written entry is never
     lost. It also checks for updates hourly (an installed window can stay open for days).
   - The service worker only exists in production builds (`npm run build`, `npm run preview`), not in `npm run dev`.
-  - **Hosted (PROGRESS step 4, live 2026-11-12):** on GitHub Pages over HTTPS (required for installing on Android). The hosted site is public and contains only the app's code: journal data never leaves the user's browser
+  - **Hosted (docs/HISTORY.md step 4, live 2026-11-12):** on GitHub Pages over HTTPS (required for installing on Android). The hosted site is public and contains only the app's code: journal data never leaves the user's browser
     or their own folder. Browser data belongs to the exact address, so the final address is chosen before anyone
     installs. The build is path-independent (relative manifest paths, query-parameter routing), so a sub-path such as
     `/<repo>/` only needs Vite's `base`. `vite.config.ts` reads it from the `BASE_PATH` environment variable
@@ -303,8 +318,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   platform-specific pieces or storage modules.
 - **Browser data can be wiped** by: clearing site data, uninstalling with "clear data" ticked, Android "Clear storage"
   for Chrome, eviction under low disk (unless persistent storage was granted; the app requests it at startup), or the
-  app's address changing. This is why file storage matters. On Android, until pCloud or native exists, the only copy
-  is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
+  app's address changing. This is why file storage matters. On Android, until a cloud module (Dropbox first, then pCloud) or
+  native exists, the only copy is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
 - **The app says so** (`lib/dataSafety.ts`): with no storage chosen, or only "Files inside this browser" (same browser
   data, so not a backup), the Settings storage card shows a warning: "Entries are only in this browser", or "Entries and
   photos are only in this browser" with the photo count when the device holds any, suggesting a storage or Export. The

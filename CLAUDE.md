@@ -7,32 +7,47 @@ apps via Tauri built from the same code.
 Read these before changing anything substantial:
 - **[DESIGN.md](DESIGN.md)**: how it works and why (data model, file format, sync rules, storage modules, search syntax,
   photos, data safety).
-- **[PROGRESS.md](PROGRESS.md)**: what's done, what's next, open decisions, what the user still has to confirm.
-  **Update it when you finish a step.**
+- **[PROGRESS.md](PROGRESS.md)**: **short on purpose; read it at the start of a session**: where things stand, what's
+  next, what the user still has to do or confirm. **Update it when you finish a step, and keep it short.** Detail lives in
+  `docs/`: [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md) (Dropbox/pCloud plans: read when working on storage modules),
+  [docs/HISTORY.md](docs/HISTORY.md) (commit table, how finished steps were done and checked, how to push: look things up
+  there, don't read it whole), [docs/LIMITS-AND-IDEAS.md](docs/LIMITS-AND-IDEAS.md). Don't grow PROGRESS.md again: put new
+  history in HISTORY.md and new plans in their own `docs/` file.
 - **[images-plan.md](images-plan.md)**: the photo feature's plan, with a build log of every step's decisions (phases 1–3
-  built; phase 4 = pCloud). [android-capture-plan.md](android-capture-plan.md): quick capture on Android (not started).
+  built; phase 4 = images on the cloud modules). [android-capture-plan.md](android-capture-plan.md): quick capture on
+  Android (not started).
 
-**Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3), the installable PWA and the data-safety features are built; 282 tests pass. **Live: the app is hosted on GitHub Pages at
-https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; PROGRESS.md step 4:
-done except the user's installs on Edge/Android and the update-banner test with a second deploy). After that: pCloud, Tauri.
+**Status (2026-11-12):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
+(phases 1–3), the installable PWA, the data-safety features and **hosting** are built; 282 tests pass. **Live on GitHub
+Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; the user has
+installed it). **Next: step 5a, the Dropbox storage module** (so Windows and Android can share one journal; plan in
+docs/CLOUD-STORAGE.md), which is waiting for the user to create a Dropbox app and send the **App key** (PROGRESS.md item 10;
+the key-independent code and mocked-`fetch` tests can be built first: ask). After that pCloud (on hold: its app approval
+may be manual) and Tauri. The update-banner test (step 4.6) was skipped on request and is still open.
 
-**This repo is public** (`origin` = https://github.com/JesseRacine/interstitial-diary; every push to `main` deploys the
-site). Keep it free of personal data: no machine paths, personal email addresses, keys or tokens (scan before pushing:
-`git grep -n -I -i -E "gmail|/home/|C:\\\\Users|wsl.localhost" -- . ':!package-lock.json'`). Commits use the GitHub noreply
-address (set as the repo's local git identity). **Ask the user before every push** (it publishes). `gh` is at
-`~/.local/bin/gh` in WSL (not on PATH); push with `git -c "credential.helper=!$HOME/.local/bin/gh auth git-credential"
-push` (the user signed in with `gh auth login`; never handle the token). Rewriting pushed history is no longer safe.
+**This repo is public** (`origin` = https://github.com/JesseRacine/interstitial-diary; every push to `main` runs the tests
+and deploys the site). Keep it free of personal data: no machine paths, personal email addresses, keys or tokens (scan
+before pushing: `git grep -n -I -i -E "@gmail|/home/[a-z]|C:.Users|wsl.localhost" -- . ':!package-lock.json'` should show
+only generic mentions). Commits use the GitHub noreply address (the repo's local git identity). **Ask the user before every
+push** (it publishes and redeploys); `main` may be ahead of `origin/main` with unpushed docs commits (`git status -sb`).
+`gh` is at `~/.local/bin/gh` in WSL (not on PATH); push with `git -c credential.helper= -c "credential.helper=!$HOME/.local/bin/gh
+auth git-credential" push origin main` (the user signed in themself with `gh auth login`; never handle a token or password).
+Rewriting pushed history is no longer safe. For cloud-storage sign-ins (OAuth): the **app key / client id is public**, but
+never commit an app secret, access token or refresh token.
 
 ## Where things are
 
 - **Repo (source of truth):** the WSL Ubuntu home directory, `~/projects/interstitial-diary`. Tools on Windows reach it
   through the `\\wsl.localhost\Ubuntu\...` network path (the exact path is in the Claude session folder's own
   `CLAUDE.md`, which is not part of this repo).
-- **Claude session folder (Windows, outside this repo):** holds `.claude/launch.json` (dev server config), a pointer
-  `CLAUDE.md`, and a **read-only backup** (`archive/` plus a zip of it: source snapshot, full git history as a `.bundle`,
-  Claude's notes). No working code lives there; never edit or build in the snapshot. To refresh it after more work, make a
-  new dated archive.
+- **Claude session folder (Windows, outside this repo):** holds `.claude/launch.json` (dev servers `interstitial-dev`
+  5173, `interstitial-preview` 4173, `interstitial-preview-sub` 4174), a pointer `CLAUDE.md`, and **read-only backups**
+  (the current `archive-2026-11-10/` + zip, and the older `archive/` + zip of f4ef4d9, which still has the old identity in
+  its history: keep it private): source snapshot, full git history as a `.bundle`, Claude's notes. No working code lives
+  there; never edit or build in a snapshot. To refresh the backup after more work, make a new dated archive (`git archive
+  HEAD` for the source, `git bundle create ... --all` for the history: test a clone of the bundle).
+- **Claude's own memory notes** (outside the repo, in the user's Claude profile) are a short summary of this file and
+  PROGRESS.md; if they disagree with the repo, the repo wins.
 - Node (via nvm), npm and git are installed **inside WSL only**. The user wants installs kept in WSL and off Windows.
   **Ask before installing anything on Windows.**
 - Stack: Vite + React 19 + TypeScript, Dexie (IndexedDB), MiniSearch, `react-virtuoso`, `fflate` (zip), Vitest with
@@ -68,7 +83,7 @@ git commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
 - The user goes **one plan step per turn**: implement, add tests, run test/tsc/lint, check it in the browser pane when it
   shows in the UI (on `127.0.0.1`, see Gotchas), commit with the step number in the subject (e.g. `Images 3.2: ...`),
   update the plan's status line and PROGRESS.md, then **ask before the next step**. Don't run ahead.
-- A step's commit hash goes into PROGRESS.md's "Done" table in the *next* commit (you can't know it beforehand).
+- A step's commit hash goes into the commit table in docs/HISTORY.md in the *next* commit (you can't know it beforehand).
 - Anything that needs the real Windows folder (the folder picker can't be driven from the pane) goes on PROGRESS.md's
   "Waiting on the user" list instead of being claimed as verified.
 - Docs are part of the work: when behaviour changes, update DESIGN.md (the contract), this file's code map, and PROGRESS.md.
@@ -189,7 +204,10 @@ src/
 ## Gotchas
 
 - **`$variables` in `wsl ... bash -c "..."` get mangled** when sent from PowerShell. For anything non-trivial, write a
-  script file and run `wsl -d Ubuntu -- bash /mnt/c/.../script.sh`.
+  script file (in the session scratchpad, outside the repo) and run `wsl -d Ubuntu -- bash /mnt/c/.../script.sh`. In a
+  script, `source ~/.nvm/nvm.sh` first so `node`/`npm` work. PowerShell has no `head`: pipe to `Select-Object -First N`.
+- **Test code that touches the hosted site or a service worker on another origin** (e.g. `jesseracine.github.io`): afterwards
+  unregister the worker, delete its caches and any database the visit created, so the pane keeps no stray data.
 - **PWA changes can only be checked on a production build** (`interstitial-preview`, port 4173). To test offline, stop
   that server (`preview_stop`) and reload the tab: the service worker answers. A stale service worker on a port can
   serve an old build; unregister it or use a fresh origin. Keep `images.worker-*.js` in the precache (it is, via the
@@ -226,3 +244,11 @@ src/
 - Explain decisions plainly and recommend one option rather than listing many.
 - They care most about: search/browse quality, not losing data, Windows + Android, and a "real app" feel.
 - Be honest about what was and wasn't verified (tests vs browser pane vs the real folder).
+- They are not a developer by background: avoid jargon (explain a term in plain words the first time), say what they must
+  do themselves in a short numbered list, and recommend one option.
+- Anything outward-facing needs their explicit yes first: **every push**, creating repos or accounts, installing software
+  (WSL only), publishing. Sign-ins and secrets are theirs to handle (`gh auth login`, app secrets, tokens): Claude only
+  ever receives public identifiers such as an app key.
+- Third-party facts (API limits, sign-in flows, versions) are looked up in the vendor's own docs with the Browser pane
+  (navigate, then `get_page_text`/`javascript_tool`; public pages only), not trusted from memory; record what was read and
+  when in PROGRESS.md and mark what is still unchecked.
