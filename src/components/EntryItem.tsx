@@ -3,6 +3,7 @@ import { deleteEntry, updateEntry } from '../lib/db'
 import { type Entry, entryImages, formatGap, shortDayLabel, timeLabel } from '../lib/entry'
 import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
+import { useOpenEvent } from './eventNav'
 import { EntryText } from './text'
 import { useDraftImages, useImageInput } from './useDraftImages'
 
@@ -18,6 +19,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
   onOpenDay?: (e: Entry) => void
   onOpenImage?: (e: Entry, index: number) => void
 }) {
+  const openEvent = useOpenEvent()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(entry.text)
   const photos = useDraftImages(entryImages(entry))
@@ -84,7 +86,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
         </div>
       ) : (
         <>
-          <EntryText text={entry.text} terms={terms} onTag={onTag} />
+          <EntryText text={entry.text} terms={terms} onTag={onTag} onEvent={openEvent ? (title) => openEvent(entry, title) : undefined} />
           <EntryImages images={images} onOpen={onOpenImage ? (i) => onOpenImage(entry, i) : undefined} />
         </>
       )}

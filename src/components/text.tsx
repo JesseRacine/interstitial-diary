@@ -15,9 +15,9 @@ function highlight(s: string, re: RegExp | null): ReactNode {
  * Entry text with clickable tags and highlighted search terms. `onTag` gets the tag's stored key (`work`, `@sarah`).
  * People and places show as an icon and a name ("👤 Sarah Jones"); the text as written is in the tooltip.
  * Events (`!"Jack's party"`, see lib/events.ts) show as "🎉 Jack's party"; they are not tags, so tags inside a title
- * are not clickable. Clicking an event does nothing yet (the Events page comes next).
+ * are not clickable. `onEvent` gets the event's title and opens its page; without it the event is not clickable.
  */
-export function EntryText({ text, terms, onTag }: { text: string; terms?: string[]; onTag?: (key: string) => void }) {
+export function EntryText({ text, terms, onTag, onEvent }: { text: string; terms?: string[]; onTag?: (key: string) => void; onEvent?: (title: string) => void }) {
   const re = useMemo(() => {
     const t = (terms ?? []).filter(Boolean).sort((a, b) => b.length - a.length)
     return t.length ? new RegExp(`(${t.map(escapeRe).join('|')})`, 'giu') : null
@@ -26,10 +26,12 @@ export function EntryText({ text, terms, onTag }: { text: string; terms?: string
     <div className="entry-text">
       {eventSegments(text).map((part, p) => {
         if (part.title !== undefined) {
-          return (
-            <span key={p} className="tag tag-event" title={part.text}>
-              <span aria-hidden="true">{EVENT_ICON}</span> {highlight(part.title, re)}
-            </span>
+          const label = <><span aria-hidden="true">{EVENT_ICON}</span> {highlight(part.title, re)}</>
+          const title = part.title
+          return onEvent ? (
+            <button key={p} type="button" className="tag tag-event" title={part.text} onClick={() => onEvent(title)}>{label}</button>
+          ) : (
+            <span key={p} className="tag tag-event" title={part.text}>{label}</span>
           )
         }
         return tagSegments(part.text).map((seg, i) => {

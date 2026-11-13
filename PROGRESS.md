@@ -21,7 +21,7 @@ them (index at the bottom)._
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## Events (`!"Jack's 40th birthday"`): IN PROGRESS, steps 1-2 of 5 built locally 2026-11-13 (not pushed)
+## Events (`!"Jack's 40th birthday"`): IN PROGRESS, steps 1-3 of 5 built locally 2026-11-13 (not pushed)
 
 Not a tag kind: an event is the unique name of something that happened, so it has its own module and, later, its own
 top-level **Events** view (timeline by date and title). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
@@ -35,8 +35,15 @@ the title needed).
   dark; the marker as written is the tooltip); the entry box hint ends with `!"event"`. The chip is **not clickable yet**
   (step 3 makes it open the event). Checked in the browser pane (dark, light, 375px): `#party` inside a title is not in
   Tags, `he said "stop!" and "go"` stays plain. 400 tests, `tsc` clean, lint 0 errors.
-- **Next:** 3 the Events view (`EventsView.tsx`, `App.tsx`, make the chip open the event); 4 rename an event's title;
-  5 docs (DESIGN.md "Events", HISTORY, LIMITS).
+- **Step 3 done:** new top-level **Events** tab (after Calendar; the phone nav was tightened so six tabs fit at 375px).
+  `EventsView.tsx`: rows by month (date or range, title, entries), filter by title, year select (when more than one
+  year), sort Newest / Oldest / A-Z; a row opens the event page (its entries, oldest first). The list logic is in
+  `src/lib/eventRows.ts` (+ tests). An event chip anywhere (journal, search, tag pages) opens its event through
+  `OpenEventContext` (`components/eventNav.ts`, provided in `App.tsx`, read by `EntryItem`). Checked in the browser pane
+  with seeded entries (list, range, same birthday a year apart = two events, chip from the journal opens the right one, filter,
+  year, 375px). 407 tests, `tsc` clean, lint 0 errors. The journal list was blank on first load in the emulated phone
+  view until scrolled (not looked into; JournalView untouched, probably old).
+- **Next:** 4 rename an event's title; 5 docs (DESIGN.md "Events", HISTORY, LIMITS).
 
 ## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
 

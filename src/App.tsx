@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BackupReminder } from './components/BackupReminder'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
+import { OpenEventContext } from './components/eventNav'
+import { EventsView } from './components/EventsView'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
 import { Lightbox } from './components/Lightbox'
 import { PhotosView } from './components/PhotosView'
@@ -16,11 +18,12 @@ import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
+import { computeEvents, eventKey } from './lib/events'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
 
-type View = 'journal' | 'calendar' | 'photos' | 'tags' | 'settings'
-const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['photos', 'Photos'], ['tags', 'Tags'], ['settings', 'Settings']]
+type View = 'journal' | 'calendar' | 'events' | 'photos' | 'tags' | 'settings'
+const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['events', 'Events'], ['photos', 'Photos'], ['tags', 'Tags'], ['settings', 'Settings']]
 
 function loadTheme(): Theme {
   try { return (localStorage.getItem('theme') as Theme | null) ?? 'system' } catch { return 'system' }
@@ -36,8 +39,10 @@ export default function App() {
   const recent = useLive<string[]>(() => getMeta('recentSearches', []), [], [])
   const index = useMemo(() => buildIndex(entries), [entries])
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
+  const events = useMemo(() => computeEvents(entries), [entries])
 
   const [view, setView] = useState<View>(() => (new URLSearchParams(location.search).get('view') as View | null) ?? 'journal')
+  const [eventId, setEventId] = useState<string | null>(null) // the event whose page is open in the Events view
   const [jump, setJump] = useState<Jump | null>(null)
   const [bottomTick, setBottomTick] = useState(0)
   const [layout, setLayoutState] = useState<JournalLayout>(loadLayout)
@@ -77,6 +82,16 @@ export default function App() {
     setLayoutState(l)
     try { localStorage.setItem('journalLayout', l) } catch { /* private mode */ }
   }
+  /** Open the page of the event that `title` names in this entry (the one whose entries include it). */
+  const openEvent = useCallback((entry: Entry, title: string) => {
+    const key = eventKey(title)
+    const found = events.find((ev) => ev.key === key && ev.entryIds.includes(entry.id))
+    if (!found) return
+    setEventId(found.id)
+    setView('events')
+    setQuery('')
+    setBackQuery(null)
+  }, [events])
   const openDay = (d: string, id: string | null = null) => {
     setJump((j) => ({ day: d, id, n: (j?.n ?? 0) + 1 }))
     setView('journal')
@@ -129,13 +144,14 @@ export default function App() {
   const searching = query.trim() !== ''
 
   return (
+    <OpenEventContext.Provider value={openEvent}>
     <div className={`app${(view === 'journal' || view === 'photos') && !searching ? ' fill' : ''}`}>
       <header className="top">
         <h1>Interstitial</h1>
         <nav>
           {VIEWS.map(([v, label]) => (
             <button key={v} type="button" className={view === v && !searching ? 'on' : ''}
-              onClick={() => { setView(v); setQuery(''); setBackQuery(null) }}>
+              onClick={() => { setView(v); setQuery(''); setBackQuery(null); setEventId(null) }}>
               {label}
             </button>
           ))}
@@ -160,6 +176,9 @@ export default function App() {
           </>
         ) : view === 'calendar' ? (
           <CalendarView entries={entries} onOpenDay={(d) => openDay(d)} />
+        ) : view === 'events' ? (
+          <EventsView events={events} entries={entries} selectedId={eventId} onSelect={setEventId} onSearch={searchTag}
+            onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'photos' ? (
           <PhotosView entries={entries} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
@@ -174,5 +193,6 @@ export default function App() {
       )}
       <UpdatePrompt />
     </div>
+    </OpenEventContext.Provider>
   )
 }

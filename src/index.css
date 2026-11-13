@@ -238,7 +238,7 @@ button.tag { border: 0; padding: 0; background: none; color: var(--accent); font
 button.tag:hover { text-decoration: underline; }
 button.tag-person { color: var(--person); }
 button.tag-place { color: var(--place); }
-.tag-event { color: var(--event); font-weight: 500; }
+.tag-event, button.tag-event { color: var(--event); font-weight: 500; }
 .edit { margin-top: 0.4rem; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .empty { color: var(--muted); text-align: center; padding: 2rem 0; }
@@ -333,6 +333,17 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .tag-page .summary { margin: 0.25rem 0 0.75rem; }
 .tag-page-actions { margin-bottom: 0.75rem; }
 
+/* Events */
+.events .day-nav input { flex: 1; min-width: 8rem; }
+.event-group h3 { margin: 1rem 0 0.4rem; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+.event-row { display: grid; grid-template-columns: 10rem 1fr auto; gap: 0.75rem; align-items: baseline; padding: 0.5rem 0.75rem; margin-bottom: 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.event-row .when, .event-row .n { color: var(--muted); font-size: 0.85rem; }
+.event-row button.event-title { justify-self: start; border: 0; padding: 0; background: none; color: var(--event); font-weight: 500; text-align: left; }
+.event-row button.event-title:hover { text-decoration: underline; }
+.event-page .back { margin-left: -0.45rem; }
+.event-page h2 { margin: 0.25rem 0; color: var(--event); }
+.event-page .summary { margin: 0.25rem 0 0.75rem; color: var(--muted); }
+
 /* Settings */
 .settings h2 { margin-bottom: 0.75rem; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; margin-bottom: 0.75rem; }
@@ -370,8 +381,10 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 
 @media (max-width: 520px) {
   .top { gap: 0.5rem; }
-  .top nav { gap: 0.1rem; } /* five tabs have to fit without scrolling */
-  .top nav button { padding: 0.35rem 0.5rem; font-size: 0.95rem; }
+  .top nav { gap: 0; } /* six tabs have to fit without scrolling */
+  .top nav button { padding: 0.35rem 0.25rem; font-size: 0.85rem; }
+  .event-row { grid-template-columns: 1fr auto; gap: 0.1rem 0.75rem; }
+  .event-row .when { grid-column: 1 / -1; }
   .capture-head .muted { display: none; }
   .entry-meta { flex-wrap: wrap; }
   .bubble { max-width: 100%; }
