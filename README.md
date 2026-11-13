@@ -2,7 +2,11 @@
 
 A quick, searchable interstitial journal: short timestamped notes between tasks, with `#tags` and photos, saved as
 plain Markdown files (photos as image files next to them). An installable, offline-capable web app (PWA) for Windows and
-Android browsers (hosting for Android is still to do); native apps are planned.
+Android browsers; native apps are planned.
+
+**Use it:** https://jesseracine.github.io/interstitial-diary/ (open it in Edge or Chrome and choose Install). The site
+is only the app's code: your entries and photos stay in your own browser or folder and are never uploaded. Each browser
+or installed copy starts with its own empty journal.
 
 - [DESIGN.md](DESIGN.md): how it works (data model, file format, sync, storage modules, search, photos, data safety)
 - [PROGRESS.md](PROGRESS.md): what's done, what's next, what still needs confirming on a real device

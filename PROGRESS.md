@@ -46,7 +46,9 @@ _Last updated: 2026-11-09_
 
 | ec9e90a | Step 4.2: base path: Vite `base` from the `BASE_PATH` variable (`base-path.ts`, `normaliseBase`, 5 new tests); checked on a build under `/interstitial-diary/`; `dist-sub` git-ignored |
 
-| (this commit) | Step 4.3: GitHub Pages deploy workflow `.github/workflows/deploy.yml` (tests, build with `BASE_PATH`, deploy); 5 new tests; not yet run on GitHub |
+| b8df143 | Step 4.3: GitHub Pages deploy workflow `.github/workflows/deploy.yml` (tests, build with `BASE_PATH`, deploy); 5 new tests |
+
+| (this commit) | Step 4.4/4.5: repo published, site live at https://jesseracine.github.io/interstitial-diary/ (first deploy green; hosted site checked read-only in the Browser pane); docs |
 
 **All hashes above, except f3c682f and the ones after it, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
 old doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -80,6 +82,12 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
    browser granted persistent storage (installing usually gets it granted). Do one real export (Settings > Your data)
    and check "Last backup" changes to today. With the folder module connected, no "Only in this browser" badge or
    backup reminder should appear, not even for a moment after opening the app.
+9. **Install the hosted app (2026-11-12, new).** In Edge on Windows and Chrome on Android, open
+   https://jesseracine.github.io/interstitial-diary/ and install it (Edge: the install icon in the address bar or
+   Settings > Apps; Chrome on Android: menu > Install app). Check that it opens in its own window, that the long-press
+   "New entry" shortcut works, and that it opens with no network (turn on airplane mode after the first open). It starts
+   with its own **empty** data, separate from the `localhost:4173` test install: use Export/Import-by-folder if you want
+   your entries there. On Android, entries exist only in that browser until pCloud (step 5): keep the backup reminder on.
 
 ## Next steps (in order)
 
@@ -123,11 +131,15 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
 - Possible later polish: a "Files inside this browser" user still sees a green "Saved" header badge (the Settings card
   and the reminder do say it isn't a backup).
 
-### 4. Hosting on GitHub Pages: NEXT (decided 2026-11-10: GitHub Pages, not Cloudflare)
-**Status (2026-11-10): decisions made; checklist sub-step 1 (clean-up) done, including the new dated archive in the
-Windows session folder (`archive-2026-11-10/` + zip, snapshot of 8ec4067; restore tested from the bundle). Still local: no
-remote, nothing pushed. Sub-steps 2 (base path) and 3 (deploy workflow, not yet run) done. Next: install `gh` in WSL
-(ask first), the user's `gh auth login`, create the repo, first push (sub-step 4).** Work through the checklist in order, one sub-step per turn.
+### 4. Hosting on GitHub Pages: LIVE (2026-11-12); installs and the update-banner test still to do
+**Status (2026-11-12): the site is live at https://jesseracine.github.io/interstitial-diary/.** Sub-steps 1 (clean-up and
+new dated archive in the Windows session folder, `archive-2026-11-10/` + zip), 2 (base path), 3 (deploy workflow), 4
+(repo created, `main` pushed, first run green) and the read-only part of 5 (hosted site checked in the Browser pane) are
+done. **Next: the user installs it in Edge and on Android (waiting-list item 9); then sub-step 6 (a second deploy with a
+visible change, to see the update banner).** Repo: https://github.com/JesseRacine/interstitial-diary (public, default
+branch `main`); `gh` 2.103.3 lives in the WSL home at `~/.local/bin/gh` (not on PATH; the user signed in themself with
+`gh auth login`; pushes use `git -c "credential.helper=!$HOME/.local/bin/gh auth git-credential" push`, no git config was
+changed).
 
 **Decisions (answered 2026-11-10):** GitHub account `JesseRacine` (numeric id 9375408; looked up from GitHub's public
 profile API); repo `interstitial-diary`, public; address `https://jesseracine.github.io/interstitial-diary/` (so
@@ -192,7 +204,7 @@ repo's local git identity); branch `main`. The superseded `junior-plan.md` was d
    12 files precached (the image worker chunk included); with the server stopped the app still reloads from the worker.
    A plain build still emits root-absolute paths. **Not verified until it is hosted:** the real GitHub Pages address
    (HTTPS, Pages' own 404 behaviour), and the Android install.
-3. **Deploy workflow: WRITTEN, NOT RUN (2026-11-10).** `.github/workflows/deploy.yml`: on push to `main` (and manual):
+3. **Deploy workflow: DONE, first run green (2026-11-12).** `.github/workflows/deploy.yml`: on push to `main` (and manual):
    checkout, setup-node (Node 26, as in WSL), `npm ci`, `npm test`, `npm run build` (runs `tsc -b`) with
    `BASE_PATH=/interstitial-diary/`, two `grep` checks that the build really uses the sub-path, `configure-pages`,
    `upload-pages-artifact` (path `dist`), then a second job `deploy-pages`; permissions `contents: read`, `pages: write`,
@@ -200,12 +212,22 @@ repo's local git identity); branch `main`. The superseded `junior-plan.md` was d
    releases on 2026-11-10: checkout v7, setup-node v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5 (all
    first-party `actions/*`, pinned to a major version; re-check them if a run warns about a deprecated version). Checked
    locally: the YAML parses, the same build and `grep` checks pass with `BASE_PATH` and the check fails without it;
-   `src/deployWorkflow.test.ts` (5 tests) guards trigger, order, base path, permissions and pinning. **Only a real run on
-   GitHub proves it**: that comes with the first push (sub-step 4).
-4. **Push and watch** the first run (`gh run watch`, or the user's Actions tab; do not poll in a loop). Pages can take a
-   minute or two to start serving.
-5. **Verify the hosted site** in the Browser pane (read-only checks: manifest, service worker active and its scope, precache
-   list, offline reload on the hosted origin, icons load) and ask the user to install it in Edge and on Android.
+   `src/deployWorkflow.test.ts` (5 tests) guards trigger, order, base path, permissions and pinning. On GitHub the build
+   job (tests included, 17 s) and the deploy job (9 s) both passed. Its only warning: the `ubuntu-latest` label is moving
+   to Ubuntu 26 (GitHub notice, nothing to change unless a run breaks).
+4. **Push and watch: DONE (2026-11-12).** Repo `JesseRacine/interstitial-diary` created public and empty with `gh repo
+   create`, `main` pushed (45 commits, every one under the noreply identity, history scanned for personal strings first).
+   The user then set Settings > Pages > Source: GitHub Actions. I did not see the result of the very first attempt; when I
+   looked afterwards the only run listed (`gh run list`) was green, both jobs.
+5. **Verify the hosted site: read-only checks DONE (2026-11-12), installs wait for the user.** In the Browser pane on
+   `https://jesseracine.github.io/interstitial-diary/` (HTTPS): page, CSS, JS, favicon and apple-touch-icon load from the
+   sub-path; the manifest's `start_url`/`scope` resolve to `/interstitial-diary/`, its three icons return 200 as PNG; the
+   service worker is active with scope `/interstitial-diary/` and controls the page after one reload; 12 files precached,
+   the image worker included; `?view=journal` focuses the capture box; no console errors; a missing page returns GitHub's
+   404 (the app has no path routes, so that is fine). The JS file name (`index-Dl4IZBmu.js`) is identical to the local
+   sub-path build, so the hosted build is reproducible. Test data from the check (service worker, caches, empty database)
+   was removed. **Not checked from the pane:** offline reload on the hosted origin (can't switch GitHub off); installing in
+   Edge and on Android is the user's (waiting-list item 9).
 6. **Close the loop on the update banner** (waiting-list item 7): make a visible change, deploy a second time, and the
    installed app should show "A new version is ready".
 7. **Docs:** add the live URL to README, CLAUDE.md (status, commands, code map: `.github/workflows/deploy.yml`, the

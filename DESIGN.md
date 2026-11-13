@@ -290,12 +290,11 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
     shows "A new version is ready. Reload": a new version is never applied on its own, so a half-written entry is never
     lost. It also checks for updates hourly (an installed window can stay open for days).
   - The service worker only exists in production builds (`npm run build`, `npm run preview`), not in `npm run dev`.
-  - **Next (PROGRESS step 4):** host it on GitHub Pages over HTTPS (required for installing on Android; decided
-    2026-11-10). The hosted site is public and contains only the app's code: journal data never leaves the user's browser
+  - **Hosted (PROGRESS step 4, live 2026-11-12):** on GitHub Pages over HTTPS (required for installing on Android). The hosted site is public and contains only the app's code: journal data never leaves the user's browser
     or their own folder. Browser data belongs to the exact address, so the final address is chosen before anyone
     installs. The build is path-independent (relative manifest paths, query-parameter routing), so a sub-path such as
     `/<repo>/` only needs Vite's `base`. `vite.config.ts` reads it from the `BASE_PATH` environment variable
-    (`base-path.ts`: unset = `/`; a malformed value fails the build). The planned address is
+    (`base-path.ts`: unset = `/`; a malformed value fails the build). The address is
     `https://jesseracine.github.io/interstitial-diary/` (`BASE_PATH=/interstitial-diary/`); the service worker's scope
     then is that path, and the installed app's data belongs to that origin. `.github/workflows/deploy.yml` builds and
     publishes on every push to `main` (tests first: a failing test stops the deploy).

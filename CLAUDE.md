@@ -13,14 +13,16 @@ Read these before changing anything substantial:
   built; phase 4 = pCloud). [android-capture-plan.md](android-capture-plan.md): quick capture on Android (not started).
 
 **Status (2026-11-10):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3), the installable PWA and the data-safety features are built; 282 tests pass. **In progress: PROGRESS.md
-step 4, hosting on GitHub Pages** (decisions made, pre-publish cleanup, the `BASE_PATH` base path and the deploy workflow
-written; next `gh` sign-in, repo creation and the first push, which is the workflow's first real run). After that: pCloud, Tauri.
+(phases 1–3), the installable PWA and the data-safety features are built; 282 tests pass. **Live: the app is hosted on GitHub Pages at
+https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; PROGRESS.md step 4:
+done except the user's installs on Edge/Android and the update-banner test with a second deploy). After that: pCloud, Tauri.
 
-**Public repo (step 4):** this repo is going public on GitHub (hosted on GitHub Pages). Keep it free of personal data:
-no machine paths, personal email addresses, keys or tokens. Commits use the GitHub noreply address (set as the repo's
-local git identity). Do not push to any remote until the pre-publish checks in PROGRESS.md step 4 are done. (Edge's
-Install offer and Lighthouse are still to be confirmed by the user.)
+**This repo is public** (`origin` = https://github.com/JesseRacine/interstitial-diary; every push to `main` deploys the
+site). Keep it free of personal data: no machine paths, personal email addresses, keys or tokens (scan before pushing:
+`git grep -n -I -i -E "gmail|/home/|C:\\\\Users|wsl.localhost" -- . ':!package-lock.json'`). Commits use the GitHub noreply
+address (set as the repo's local git identity). **Ask the user before every push** (it publishes). `gh` is at
+`~/.local/bin/gh` in WSL (not on PATH); push with `git -c "credential.helper=!$HOME/.local/bin/gh auth git-credential"
+push` (the user signed in with `gh auth login`; never handle the token). Rewriting pushed history is no longer safe.
 
 ## Where things are
 
