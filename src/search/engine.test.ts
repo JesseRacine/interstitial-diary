@@ -100,4 +100,21 @@ describe('computeTagStats', () => {
     expect(stats[0]).toMatchObject({ tag: 'work', count: 4 })
     expect(stats.find((s) => s.tag === 'tired')?.count).toBe(2)
   })
+  it('records the first and last time each was used', () => {
+    const stats = computeTagStats(known)
+    // #tired: k1 (2 Nov 2026) and k5 (15 Oct 2026)
+    expect(stats.find((s) => s.tag === 'tired')).toMatchObject({ first: at(2026, 10, 15, 7, 45), last: at(2026, 11, 2, 9, 14) })
+    // #work: oldest k6 (1 Sep), newest k4 (8 Nov)
+    expect(stats.find((s) => s.tag === 'work')).toMatchObject({ first: at(2026, 9, 1, 9), last: at(2026, 11, 8, 10, 5) })
+  })
+  it('counts people and places like tags, and skips deleted entries', () => {
+    const e = [
+      makeEntry('@tom at ~home', at(2026, 1, 5, 9), 'a'),
+      makeEntry('@tom again', at(2026, 1, 9, 9), 'b'),
+      { ...makeEntry('@tom deleted', at(2026, 1, 20, 9), 'c'), deleted: 1 as const },
+    ]
+    const stats = computeTagStats(e)
+    expect(stats.find((s) => s.tag === '@tom')).toEqual({ tag: '@tom', count: 2, first: at(2026, 1, 5, 9), last: at(2026, 1, 9, 9) })
+    expect(stats.find((s) => s.tag === '~home')?.count).toBe(1)
+  })
 })

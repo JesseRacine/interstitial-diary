@@ -35,8 +35,12 @@ them (index at the bottom)._
   work per kind (`parseTagName` in `tagKinds.ts` checks the typed name: "Sara Jones" becomes `sara_jones`, `3pm` is
   refused for people and places, a trailing `-`/`/` is refused for all). Checked in the browser incl. phone width.
   378 tests. (`first` used date for `computeTagStats` is left for step 5, where it is used.)
-- **Next, one per turn:** 5 person/place page, 6 docs and push (ask first). **The app is consistent now: it can be
-  pushed after step 4 if the user wants people/places live before the page exists.**
+- **Step 5 done (2026-11-12, not pushed):** clicking a person or place in the Tags view opens its page (`TagPage.tsx`:
+  count, first/last mention via the new `first` in `TagStat`, month bars reusing `Histogram` from `Results.tsx` with
+  click-to-filter, "Search these entries", entries newest first, back button). New `hasPage` flag on `TagKind`.
+  Checked in the browser incl. phone width. 380 tests.
+- **Next:** 6 final docs (HISTORY.md row, LIMITS-AND-IDEAS.md) and push (ask first). Ideas left out on purpose: people
+  or places mentioned together with this one, a "use my location" place suggestion, more kinds (projects, moods).
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 

@@ -322,6 +322,12 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .tag-table tr:last-child td { border-bottom: 0; }
 .tags .day-nav input { flex: 1; min-width: 8rem; }
 .kind-tabs { margin-bottom: 0.75rem; }
+.tag-page .back { margin-left: -0.45rem; }
+.tag-page h2 { margin: 0.25rem 0; }
+.tag-page[data-kind="person"] h2 { color: var(--person); }
+.tag-page[data-kind="place"] h2 { color: var(--place); }
+.tag-page .summary { margin: 0.25rem 0 0.75rem; }
+.tag-page-actions { margin-bottom: 0.75rem; }
 
 /* Settings */
 .settings h2 { margin-bottom: 0.75rem; }

@@ -72,9 +72,10 @@ export function runSearch(q: ParsedQuery, entries: Entry[], index: SearchIndex, 
 }
 
 export interface TagStat {
-  tag: string
+  tag: string // stored key: `work`, `@sarah`, `~home`
   count: number
-  last: number
+  first: number // createdAt of the oldest entry that has it
+  last: number // createdAt of the newest
 }
 
 export function computeTagStats(entries: Entry[]): TagStat[] {
@@ -82,8 +83,9 @@ export function computeTagStats(entries: Entry[]): TagStat[] {
   for (const e of entries) {
     if (e.deleted) continue
     for (const t of e.tags) {
-      const s = map.get(t) ?? { tag: t, count: 0, last: 0 }
+      const s = map.get(t) ?? { tag: t, count: 0, first: e.createdAt, last: 0 }
       s.count++
+      s.first = Math.min(s.first, e.createdAt)
       s.last = Math.max(s.last, e.createdAt)
       map.set(t, s)
     }

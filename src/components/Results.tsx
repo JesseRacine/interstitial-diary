@@ -6,7 +6,8 @@ import { EntryItem } from './EntryItem'
 
 const PAGE = 100
 
-function Histogram({ hits, onPick }: { hits: Hit[]; onPick: (token: string) => void }) {
+/** Bars of how many hits fall in each month (or year, for long spans); clicking a bar passes `in:YYYY-MM` (or `in:YYYY`). */
+export function Histogram({ hits, onPick }: { hits: Hit[]; onPick: (token: string) => void }) {
   const bins = useMemo(() => {
     if (hits.length < 2) return []
     const days = hits.map((h) => h.entry.day).sort()

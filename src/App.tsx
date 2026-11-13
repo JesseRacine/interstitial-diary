@@ -163,7 +163,8 @@ export default function App() {
         ) : view === 'photos' ? (
           <PhotosView entries={entries} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
-          <TagsView tagStats={tagStats} onSearch={searchTag} />
+          <TagsView tagStats={tagStats} entries={entries} index={index} onSearch={searchTag}
+            onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : (
           <SettingsView entries={entries} theme={theme} setTheme={setTheme} tagCount={tagStats.length} />
         )}

@@ -17,12 +17,13 @@ export interface TagKind {
   className: string // CSS class for the clickable tag in an entry
   letterFirst: boolean // the name must start with a letter (so "~5 min" and "@3pm" are not tags)
   pretty: boolean // show "sarah_jones" as "Sarah Jones"
+  hasPage: boolean // clicking it in the Tags view opens its own page (otherwise it searches straight away)
 }
 
 export const TAG_KINDS: readonly TagKind[] = [
-  { id: 'tag', sigil: '#', prefix: '', label: 'Tag', plural: 'Tags', icon: '#', className: 'tag', letterFirst: false, pretty: false },
-  { id: 'person', sigil: '@', prefix: '@', label: 'Person', plural: 'People', icon: '👤', className: 'tag tag-person', letterFirst: true, pretty: true },
-  { id: 'place', sigil: '~', prefix: '~', label: 'Place', plural: 'Places', icon: '📍', className: 'tag tag-place', letterFirst: true, pretty: true },
+  { id: 'tag', sigil: '#', prefix: '', label: 'Tag', plural: 'Tags', icon: '#', className: 'tag', letterFirst: false, pretty: false, hasPage: false },
+  { id: 'person', sigil: '@', prefix: '@', label: 'Person', plural: 'People', icon: '👤', className: 'tag tag-person', letterFirst: true, pretty: true, hasPage: true },
+  { id: 'place', sigil: '~', prefix: '~', label: 'Place', plural: 'Places', icon: '📍', className: 'tag tag-place', letterFirst: true, pretty: true, hasPage: true },
 ]
 
 const PLAIN = TAG_KINDS[0]

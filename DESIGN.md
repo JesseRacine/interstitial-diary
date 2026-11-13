@@ -325,7 +325,10 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 - **Calendar:** month or year heatmap; click a day to open it.
 - **Tags:** a Tags / People / Places switch (one tab per kind in `TAG_KINDS`, each with its count); per name the
   entry count and last-used date; rename/merge within the kind (a person's new name may be typed as "Sara Jones",
-  stored `@sara_jones`; a name that already exists offers a merge).
+  stored `@sara_jones`; a name that already exists offers a merge). Clicking a person or place opens **its page** (kinds
+  with `hasPage`; plain tags still search straight away): entry count, first and last mention, a bar per month (click a
+  bar to show only that month), "Search these entries", and the entries newest first. The page lives inside the Tags view
+  (`TagPage.tsx`), not as a header tab.
 - **Settings:** storage, **photos on this device**, theme, export, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The
