@@ -54,7 +54,7 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | 9322bf5 | Events 2/5: marker shown as a blue "🎉 title" chip (`--event`); entry-box hint mentions `!"event"` |
 | a9bfddf | Events 3/5: Events tab (`EventsView.tsx`, `lib/eventRows.ts`): rows by month, title filter, year, sort, event page; chips open their event via `OpenEventContext`; phone nav tightened for six tabs |
 | 457cb9b | Events 4/5: Rename event (`renameEvent` in `db.ts`, `eventAfterRename`) |
-| (events docs commit) | Events 5/5: DESIGN.md "Events", limits and ideas, code map |
+| 0995008 | Events 5/5: DESIGN.md "Events", limits and ideas, code map. **Pushed 2026-11-13 (deploy #10 green, live bundle checked)** |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

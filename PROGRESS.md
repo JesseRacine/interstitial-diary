@@ -21,7 +21,7 @@ them (index at the bottom)._
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## Events (`!"Jack's 40th birthday"`): all 5 steps built locally 2026-11-13, NOT PUSHED (ask the user before pushing)
+## Events (`!"Jack's 40th birthday"`): all 5 steps built, PUSHED and live 2026-11-13 (`0995008`, deploy #10 green; live bundle checked)
 
 Not a tag kind: an event is the unique name of something that happened, so it has its own module and, later, its own
 top-level **Events** view (timeline by date and title). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
@@ -51,8 +51,8 @@ the title needed).
   browser pane (prompt/confirm stubbed): both entries and the page updated, `#trip` untouched.
 - **Step 5 done:** DESIGN.md "Events" (+ Events view bullet), docs/HISTORY.md rows, docs/LIMITS-AND-IDEAS.md (limits and
   ideas), CLAUDE.md (code map, six tabs, rule 13: events are not tags).
-- **Next:** ask the user whether to push (publishes and redeploys). **Not verified on the user's real devices** (item 13
-  below, after a push).
+- **Next:** nothing in progress. **Not verified on the user's real devices** (item 13 below; reload until both devices
+  have the new version).
 
 ## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
 
@@ -120,7 +120,7 @@ both devices, then Start over once more (item 11).
 
 ## Waiting on the user
 
-**13. Events** (not pushed yet; after a push and a reload on both devices): a. write `Went to !"Jack's 40th birthday" with
+**13. Events** (pushed 2026-11-13; reload on both devices until they have the new version): a. write `Went to !"Jack's 40th birthday" with
 @sam` (a straight or curly quote from the phone keyboard): shown as a blue "🎉 Jack's 40th birthday" chip; b. the Events
 tab lists it by month, the chip opens its page, Rename event fixes a typo; c. the six header tabs fit the phone without
 scrolling; d. with Dropbox, a renamed event shows renamed on the other device.

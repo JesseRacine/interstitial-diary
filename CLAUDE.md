@@ -20,8 +20,8 @@ Read these before changing anything substantial:
 **Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
 **Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features, **hosting** and **Settings > Start
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
-"seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built locally and
-**not pushed** (2026-11-13); 411 tests pass (`storage/manager.test.ts` shows how to test the manager
+"seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
+pushed (2026-11-13, not yet confirmed on the user's devices, item 13 in PROGRESS.md); 411 tests pass (`storage/manager.test.ts` shows how to test the manager
 singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
