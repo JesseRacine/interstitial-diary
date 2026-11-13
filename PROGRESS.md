@@ -16,6 +16,9 @@ them (index at the bottom)._
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
+- **Backup:** a new dated archive was made 2026-11-12 at commit `b19f155` (`archive-2026-11-12/` + zip in the Claude
+  session folder, restore tested, 380 tests passed on its copy). The user was also advised to do one Settings > Export
+  (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
@@ -31,8 +34,12 @@ docs/HISTORY.md. 380 tests, `tsc` clean, lint unchanged; each step was checked i
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 
-1. **A new dated backup archive** in the Claude session folder (the current one, 2026-11-10, predates hosting, Dropbox
-   and Start over; steps in CLAUDE.md "Where things are").
+1. **Separate Dropbox app for development** (offered 2026-11-12, user said "not now"): the Dropbox App key is hard-coded
+   (`DROPBOX_APP_KEY`) and `http://localhost:5173/` is a registered redirect of the same app, so a dev-server Dropbox
+   sign-in writes to the real `Apps/Interstitial Journal/` folder. Plan: the user registers a second app-folder app
+   ("Interstitial Journal Dev", redirect `http://localhost:5173/`) and sends only its App key; read the key from
+   `import.meta.env.VITE_DROPBOX_APP_KEY` (git-ignored `.env.local`, live build keeps the real key), plus a visible DEV
+   badge. Until then: **never connect Dropbox on localhost.**
 2. **Step 4.6, the update-banner test** (still open; see below).
 3. **pCloud** (step 5, on hold), or **native apps with Tauri** (step 6). Both described below.
 4. Confirm the open details of waiting items 10 and 11 if the user wants them recorded as verified.

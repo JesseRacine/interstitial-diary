@@ -25,9 +25,10 @@ singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-d
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
-**Next:** nothing in progress; options are pCloud (step 5, on hold: its app approval may be manual), native apps with
-Tauri (step 6), the update-banner test (step 4.6, skipped on request, still open), and a fresh dated backup archive (the
-current one predates hosting and Dropbox). Ask the user which.
+**Next:** nothing in progress; options are a separate Dropbox app for development (the dev server shares the real
+app's Dropbox folder: never connect Dropbox on localhost until then), pCloud (step 5, on hold: its app approval may be
+manual), native apps with Tauri (step 6), and the update-banner test (step 4.6, skipped on request, still open). A new
+dated backup archive was made 2026-11-12. Ask the user which.
 
 **Lessons from real-device testing (2026-11-12):** the Claude browser pane can't use Dropbox passkeys, so real Dropbox
 sign-ins happen in the user's own browser; a stopped dev server makes an already-open localhost tab fail to make photo
