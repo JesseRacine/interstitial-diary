@@ -31,8 +31,12 @@ them (index at the bottom)._
 - **Step 3 done (2026-11-12, not pushed):** search reads `@sarah`, `~home`, `-@sarah`, `@a|@b`, `#work|~home` as the
   stored keys (`tagKeyOfToken` in `query.ts`); `~5` / `@3pm` stay plain words; help rows added; clicking a person or
   place in an entry or the Tags view searches for it. Checked in the browser. 377 tests, DESIGN.md search table updated.
-- **Next, one per turn:** 4 Tags view split (Tags / People / Places) + rename per kind (brings Rename back for people
-  and places), 5 person/place page, 6 docs and push (ask first). The app is now consistent enough to push after step 4.
+- **Step 4 done (2026-11-12, not pushed):** Tags view has a Tags / People / Places switch with counts; Rename and merge
+  work per kind (`parseTagName` in `tagKinds.ts` checks the typed name: "Sara Jones" becomes `sara_jones`, `3pm` is
+  refused for people and places, a trailing `-`/`/` is refused for all). Checked in the browser incl. phone width.
+  378 tests. (`first` used date for `computeTagStats` is left for step 5, where it is used.)
+- **Next, one per turn:** 5 person/place page, 6 docs and push (ask first). **The app is consistent now: it can be
+  pushed after step 4 if the user wants people/places live before the page exists.**
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 

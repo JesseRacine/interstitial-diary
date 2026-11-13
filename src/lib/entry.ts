@@ -1,5 +1,5 @@
 import { ulid } from 'ulid'
-import { TAG_KINDS, type TagKind, kindForSigil, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
+import { NAME_REST, TAG_KINDS, type TagKind, kindForSigil, nameStart, tagKey, tagKindOf, tagName, tagToken } from './tagKinds'
 
 /** A photo attached to an entry. Only this small reference lives on the entry; the bytes live elsewhere. */
 export interface ImageRef {
@@ -42,8 +42,6 @@ const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
 /** Characters that may not come right before a tag symbol: a word (so "bob@example.com" is no tag), "&", or any symbol. */
 const SIGILS = TAG_KINDS.map((k) => escapeRe(k.sigil)).join('')
 const NOT_BEFORE = `(?<![\\p{L}\\p{N}_&${SIGILS}])`
-const NAME_REST = '[\\p{L}\\p{N}_\\-/]*'
-const nameStart = (k: TagKind) => (k.letterFirst ? '\\p{L}' : '\\p{L}\\p{N}_')
 
 /** One alternative per kind, in TAG_KINDS order, each with one capture group holding the name. */
 const ANY_TAG_RE = new RegExp(

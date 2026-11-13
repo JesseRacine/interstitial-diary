@@ -27,6 +27,10 @@ export const TAG_KINDS: readonly TagKind[] = [
 
 const PLAIN = TAG_KINDS[0]
 
+/** The characters a name may continue with, and the ones it may start with, as regex character-class bodies (for the u flag). */
+export const NAME_REST = '[\\p{L}\\p{N}_\\-/]*'
+export const nameStart = (k: TagKind): string => (k.letterFirst ? '\\p{L}' : '\\p{L}\\p{N}_')
+
 /** The kind a stored key belongs to. */
 export function tagKindOf(key: string): TagKind {
   return TAG_KINDS.find((k) => k.prefix && key.startsWith(k.prefix)) ?? PLAIN
@@ -43,6 +47,22 @@ export const tagKey = (kind: TagKind, name: string): string => kind.prefix + nam
 
 /** How the tag is typed in text and in search: `work` gives `#work`, `@sarah` stays `@sarah`. */
 export const tagToken = (key: string): string => tagKindOf(key).sigil + tagName(key)
+
+/**
+ * Check a name typed by the user (for rename) and turn it into the name part of a stored key: the kind's own symbol
+ * is allowed in front, case is ignored, and spaces become `_` for people and places ("Sarah Jones" gives `sarah_jones`).
+ */
+export function parseTagName(kind: TagKind, input: string): { name: string } | { error: string } {
+  let s = input.trim()
+  if (s.startsWith(kind.sigil)) s = s.slice(kind.sigil.length)
+  s = s.toLowerCase()
+  if (kind.pretty) s = s.replace(/\s+/g, '_')
+  if (!new RegExp(`^[${nameStart(kind)}]${NAME_REST}$`, 'u').test(s)) {
+    return { error: `A ${kind.label.toLowerCase()} name can contain letters, numbers, _ - and /${kind.letterFirst ? ', and must start with a letter' : ''}.` }
+  }
+  if (/[-/]$/.test(s)) return { error: 'A name cannot end with - or /.' }
+  return { name: s }
+}
 
 /** The label of a tag in a list: `#work`, or an icon and a name for people and places ("👤 Sarah Jones"). */
 export function tagLabel(key: string): string {

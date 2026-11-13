@@ -323,7 +323,9 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it.
-- **Tags:** count and last-used date per tag; rename/merge.
+- **Tags:** a Tags / People / Places switch (one tab per kind in `TAG_KINDS`, each with its count); per name the
+  entry count and last-used date; rename/merge within the kind (a person's new name may be typed as "Sara Jones",
+  stored `@sara_jones`; a name that already exists offers a merge).
 - **Settings:** storage, **photos on this device**, theme, export, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The
