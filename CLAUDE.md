@@ -1,7 +1,7 @@
 # CLAUDE.md: Interstitial Diary
 
-An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, `@people`, `~places`, strong search,
-photos, and Markdown files as the durable copy. Targets **Windows and Android**: an installable PWA first, then native
+An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, `@people` and `~places`,
+strong search, photos, and Markdown files as the durable copy. Targets **Windows and Android**: an installable PWA first, then native
 apps via Tauri built from the same code.
 
 Read these before changing anything substantial:
@@ -19,10 +19,10 @@ Read these before changing anything substantial:
 
 **Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
 **Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features, **hosting** and **Settings > Start
-over** are built and live; **people and places** (`@sarah_jones`, `~home`) are built and live (pushed
-2026-11-12; the user's own check is PROGRESS.md item 12); 380 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on
-GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; the user
-has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
+over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
+"seems to work", item 12 in PROGRESS.md); 380 tests pass (`storage/manager.test.ts` shows how to test the manager
+singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+`JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
 **Next:** nothing in progress; options are pCloud (step 5, on hold: its app approval may be manual), native apps with
@@ -133,8 +133,9 @@ src/
     zoom.ts             lightbox zoom/pan maths
     exportZip.ts        export: planExport / writeExportZip (streamed, photos stored, <4 GB, per year)
   search/
-    query.ts            search syntax parser (incl. has:image)
-    engine.ts           MiniSearch full-text + filters, tag stats, day counts
+    query.ts            search syntax parser (incl. has:image; `#tag`, `@person`, `~place` tokens become stored keys via
+                        tagKeyOfToken)
+    engine.ts           MiniSearch full-text + filters, tag stats (count, first, last), day counts
   storage/              modular storage; knows nothing about the UI
     types.ts            FileStore (text + optional blob methods incl. removeBlob) / StorageBackend / LocalStore
     sync.ts             backend-agnostic sync engine (text: day files + tombstones)
@@ -216,8 +217,9 @@ src/
   `attachments.test.ts` and `cleanup.test.ts` do; database code with `fake-indexeddb` (`lib/db.test.ts`).
 - For anything that deletes or merges data, **mutation-check** the key test: temporarily break the safeguard and confirm
   tests fail, then restore it (and grep that no marker is left behind).
-- `manager.ts` is a singleton wired to the browser and has no direct tests: keep real logic in tested modules and make
-  the manager a thin wire-up.
+- `manager.ts` is a singleton wired to the browser. `storage/manager.test.ts` tests it with a fresh copy per test
+  (`vi.resetModules()`, fake-indexeddb, a fake page, mocked modules): copy that approach. Still keep real logic in tested
+  modules and make the manager a thin wire-up.
 
 ## Gotchas
 
@@ -230,6 +232,10 @@ src/
   that server (`preview_stop`) and reload the tab: the service worker answers. A stale service worker on a port can
   serve an old build; unregister it or use a fresh origin. Keep `images.worker-*.js` in the precache (it is, via the
   `globPatterns` in `vite.config.ts`).
+- **Checking that a push deployed:** the workflow takes about a minute. Look at the public Actions page
+  (https://github.com/JesseRacine/interstitial-diary/actions, `get_page_text`) or, from inside the repo folder, `~/.local/bin/gh run list --limit 3` (checked 2026-11-12). Don't
+  compare the live bundle from the pane without first unregistering its service worker and deleting its caches: the
+  worker answers `fetch` with the old precached files, so a finished deploy looks like it hasn't happened.
 - **Don't glob the repo root or `node_modules`** (12,000+ files); glob `src/` or list files with `Get-ChildItem -File`.
 - **Port 5173 may already be taken** by another session's dev server (it serves the same repo, so edits show up there).
   If `preview_start` fails with "port in use", open `http://127.0.0.1:5173` with `preview_start {url}` instead.
