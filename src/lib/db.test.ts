@@ -77,6 +77,34 @@ describe('db with images', () => {
     expect((await m.db.entries.get('r1'))?.text).toContain('~flat')
   })
 
+  it('renames one event: only the listed entries change, they are marked for sync, other text and images stay', async () => {
+    const a = makeEntry('Packing for !"Beach wekend" #trip', Date.UTC(2031, 5, 1, 9), 'ev-a', [IMG_A])
+    const b = makeEntry('At the !"beach WEKEND" now', Date.UTC(2031, 5, 3, 9), 'ev-b')
+    const far = makeEntry('Again !"Beach wekend" a year on', Date.UTC(2032, 5, 1, 9), 'ev-far') // another event, same title
+    const gone = { ...makeEntry('!"Beach wekend" deleted', Date.UTC(2031, 5, 2, 9), 'ev-gone'), deleted: 1 as const }
+    await m.db.entries.bulkPut([a, b, far, gone].map((e) => ({ ...e, dirty: 0 as const })))
+
+    expect(await m.renameEvent(['ev-a', 'ev-b', 'ev-gone', 'ev-missing'], 'beach wekend', 'Beach weekend')).toBe(2)
+
+    const ra = await m.db.entries.get('ev-a')
+    expect(ra?.text).toBe('Packing for !"Beach weekend" #trip')
+    expect(ra?.tags).toEqual(['trip'])
+    expect(ra?.dirty).toBe(1)
+    expect(ra?.updatedAt).toBeGreaterThan(a.updatedAt)
+    expect(ra?.images).toEqual([IMG_A])
+    expect((await m.db.entries.get('ev-b'))?.text).toBe('At the !"Beach weekend" now')
+    expect((await m.db.entries.get('ev-far'))?.text).toBe('Again !"Beach wekend" a year on')
+    expect((await m.db.entries.get('ev-far'))?.dirty).toBe(0)
+    expect((await m.db.entries.get('ev-gone'))?.text).toBe('!"Beach wekend" deleted')
+  })
+
+  it('renameEvent changes nothing when no listed entry has the title', async () => {
+    const e = makeEntry('plain note', Date.UTC(2031, 6, 1, 9), 'ev-plain')
+    await m.db.entries.put({ ...e, dirty: 0 })
+    expect(await m.renameEvent(['ev-plain'], 'no such event', 'Whatever')).toBe(0)
+    expect((await m.db.entries.get('ev-plain'))?.dirty).toBe(0)
+  })
+
   it('adds an entry with images; text is still required', async () => {
     const e = await m.addEntry('  with photos  ', [IMG_A])
     expect((await m.db.entries.get(e!.id))?.images).toEqual([IMG_A])

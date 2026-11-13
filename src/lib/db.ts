@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie'
 import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
 import { type Entry, type ImageRef, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
+import { renameEventInText } from './events'
 
 export interface Meta {
   key: string
@@ -113,6 +114,21 @@ export async function renameTag(from: string, to: string): Promise<number> {
   const updated = affected.map((e) =>
     withDerived({ ...e, text: replaceTag(e.text, from, to), updatedAt: nextStamp(e.updatedAt), dirty: 1 }),
   )
+  await db.entries.bulkPut(updated)
+  return updated.length
+}
+
+/**
+ * Give one event a new title: rewrites the `!"title"` markers with `key` (see events.ts) in the entries listed, which
+ * are that event's entries (a same-titled event months away is not touched). Entries change like any edit: updatedAt
+ * is bumped and they are marked for sync. Returns how many entries changed. `newTitle` must be valid (parseEventTitle).
+ */
+export async function renameEvent(entryIds: string[], key: string, newTitle: string): Promise<number> {
+  const rows = (await db.entries.bulkGet(entryIds)).filter((e): e is Entry => !!e && !e.deleted)
+  const updated = rows
+    .map((e) => ({ e, text: renameEventInText(e.text, key, newTitle) }))
+    .filter(({ e, text }) => text !== e.text)
+    .map(({ e, text }) => withDerived({ ...e, text, updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
   await db.entries.bulkPut(updated)
   return updated.length
 }

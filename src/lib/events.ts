@@ -103,6 +103,18 @@ export function renameEventInText(text: string, key: string, newTitle: string): 
   return out + text.slice(last)
 }
 
+/**
+ * The event `event` becomes once its entries carry `newTitle`, found by running computeEvents on the renamed texts (it
+ * may join a neighbouring event of the same title, so its id can differ from a guess). Undefined only if the new
+ * title is not valid. Used to keep the event page open after a rename, before the database has caught up.
+ */
+export function eventAfterRename(entries: readonly EventSource[], event: EventStat, newTitle: string): EventStat | undefined {
+  const ids = new Set(event.entryIds)
+  const renamed = entries.map((e) => (ids.has(e.id) ? { ...e, text: renameEventInText(e.text, event.key, newTitle) } : e))
+  const key = eventKey(newTitle)
+  return computeEvents(renamed).find((x) => x.key === key && x.entryIds.includes(event.entryIds[0]))
+}
+
 /** One event on the Events page: entries that carry the same title on days close together. */
 export interface EventStat {
   id: string // title key + the first entry's id; stable while that entry exists
@@ -121,6 +133,7 @@ const dayNumber = (k: string): number => {
 }
 
 type EventSource = Pick<Entry, 'id' | 'text' | 'day' | 'createdAt' | 'deleted'>
+
 
 /**
  * All events in the journal, oldest first. Entries with the same title belong to one event while each is within

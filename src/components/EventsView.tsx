@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { type Entry } from '../lib/entry'
+import { renameEvent } from '../lib/db'
+import type { Entry } from '../lib/entry'
 import { type EventSort, eventDateLabel, eventYears, filterEvents, groupEvents, sortEvents } from '../lib/eventRows'
-import { EVENT_ICON, type EventStat } from '../lib/events'
+import { EVENT_ICON, type EventStat, eventAfterRename, parseEventTitle } from '../lib/events'
 import { EntryItem } from './EntryItem'
 
 const SORTS: [EventSort, string][] = [['newest', 'Newest'], ['oldest', 'Oldest'], ['name', 'A–Z']]
@@ -32,7 +33,7 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
   if (selectedId !== null) {
     return (
       <EventPage key={selectedId} event={events.find((e) => e.id === selectedId)} entries={entries}
-        onBack={() => onSelect(null)} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
+        onBack={() => onSelect(null)} onSelect={onSelect} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
   }
 
@@ -77,11 +78,12 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
   )
 }
 
-/** One event: its dates and its entries, oldest first (the story in order). */
-function EventPage({ event, entries, onBack, onSearch, onOpenDay, onOpenImage }: {
+/** One event: its dates and its entries, oldest first (the story in order). Its title can be changed (typos). */
+function EventPage({ event, entries, onBack, onSelect, onSearch, onOpenDay, onOpenImage }: {
   event: EventStat | undefined // undefined once it is gone (title renamed, entries edited or deleted while open)
   entries: Entry[]
   onBack: () => void
+  onSelect: (id: string | null) => void
   onSearch: (tag: string) => void
   onOpenDay: (e: Entry) => void
   onOpenImage: (e: Entry, index: number) => void
@@ -90,6 +92,21 @@ function EventPage({ event, entries, onBack, onSearch, onOpenDay, onOpenImage }:
     const ids = new Set(event?.entryIds)
     return entries.filter((e) => ids.has(e.id))
   }, [event, entries])
+
+  /** Rewrites the title in this event's entries only; the page then follows the event to its new id. */
+  const rename = async () => {
+    if (!event) return
+    const input = prompt('Rename this event to:', event.title)
+    if (input === null) return
+    const parsed = parseEventTitle(input)
+    if ('error' in parsed) return alert(parsed.error)
+    if (parsed.title === event.title) return
+    const n = event.count
+    if (!confirm(`Rename "${event.title}" to "${parsed.title}" in ${n} ${n === 1 ? 'entry' : 'entries'}?`)) return
+    const after = eventAfterRename(entries, event, parsed.title)
+    await renameEvent(event.entryIds, event.key, parsed.title)
+    if (after) onSelect(after.id)
+  }
 
   return (
     <section className="event-page">
@@ -100,6 +117,9 @@ function EventPage({ event, entries, onBack, onSearch, onOpenDay, onOpenImage }:
           <p className="summary">
             {eventDateLabel(event.first, event.last)} · {event.count} {event.count === 1 ? 'entry' : 'entries'}
           </p>
+          <div className="event-page-actions">
+            <button type="button" onClick={rename}>Rename event</button>
+          </div>
           <div className="timeline">
             {mine.map((e) => (
               <EntryItem key={e.id} entry={e} showDate onTag={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />

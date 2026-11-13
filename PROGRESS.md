@@ -21,7 +21,7 @@ them (index at the bottom)._
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## Events (`!"Jack's 40th birthday"`): IN PROGRESS, steps 1-3 of 5 built locally 2026-11-13 (not pushed)
+## Events (`!"Jack's 40th birthday"`): IN PROGRESS, steps 1-4 of 5 built locally 2026-11-13 (not pushed)
 
 Not a tag kind: an event is the unique name of something that happened, so it has its own module and, later, its own
 top-level **Events** view (timeline by date and title). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
@@ -43,7 +43,13 @@ the title needed).
   with seeded entries (list, range, same birthday a year apart = two events, chip from the journal opens the right one, filter,
   year, 375px). 407 tests, `tsc` clean, lint 0 errors. The journal list was blank on first load in the emulated phone
   view until scrolled (not looked into; JournalView untouched, probably old).
-- **Next:** 4 rename an event's title; 5 docs (DESIGN.md "Events", HISTORY, LIMITS).
+- **Step 4 done:** a **Rename event** button on the event page (prompt, then a confirm that says how many entries).
+  `renameEvent(entryIds, key, newTitle)` in `db.ts` rewrites the markers only in that event's entries (a same-titled event
+  months away is untouched), keeps the quote marks the person typed, bumps `updatedAt` and marks them dirty so it syncs;
+  `eventAfterRename` (`events.ts`) lets the page follow the event to its new id (it may join a neighbour with the same
+  new title). Tests: 2 in `db.test.ts`, 2 in `events.test.ts`; 411 total, `tsc` clean, lint 0 errors. Checked in the
+  browser pane (prompt/confirm stubbed): both entries and the page updated, `#trip` untouched.
+- **Next:** 5 docs (DESIGN.md "Events", HISTORY, LIMITS), then ask the user about pushing.
 
 ## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
 

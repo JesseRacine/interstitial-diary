@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blankEvents, computeEvents, eventKey, eventSegments, eventSpans, parseEventTitle, renameEventInText } from './events'
+import { blankEvents, computeEvents, eventAfterRename, eventKey, eventSegments, eventSpans, parseEventTitle, renameEventInText } from './events'
 import { extractTags, makeEntry, replaceTag } from './entry'
 import { parseDay, serializeDay } from './markdown'
 
@@ -128,6 +128,23 @@ describe('computing events', () => {
   })
   it('ignores deleted entries and entries without events', () => {
     expect(computeEvents([entry('a', '2026-06-01', '!"Gone"', 1), entry('b', '2026-06-01', 'nothing here #tag')])).toEqual([])
+  })
+})
+
+describe('after a rename', () => {
+  it('finds the renamed event, with its new id', () => {
+    const entries = [entry('a', '2026-05-01', '!"Trip"'), entry('b', '2026-05-03', '!"Trip" again'), entry('z', '2026-05-02', '!"Other"')]
+    const before = computeEvents(entries).find((e) => e.key === 'trip')!
+    const after = eventAfterRename(entries, before, 'Road trip')!
+    expect(after).toMatchObject({ key: 'road trip', title: 'Road trip', entryIds: ['a', 'b'] })
+    expect(after.id).not.toBe(before.id)
+  })
+  it('joins a neighbouring event that already has the new title', () => {
+    const entries = [entry('n', '2026-05-01', '!"Weekend away"'), entry('t', '2026-05-04', '!"Wekend away"')]
+    const typo = computeEvents(entries).find((e) => e.key === 'wekend away')!
+    const after = eventAfterRename(entries, typo, 'Weekend away')!
+    expect(after.entryIds).toEqual(['n', 't'])
+    expect(after.first).toBe('2026-05-01')
   })
 })
 
