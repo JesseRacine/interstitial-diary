@@ -55,6 +55,7 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | a9bfddf | Events 3/5: Events tab (`EventsView.tsx`, `lib/eventRows.ts`): rows by month, title filter, year, sort, event page; chips open their event via `OpenEventContext`; phone nav tightened for six tabs |
 | 457cb9b | Events 4/5: Rename event (`renameEvent` in `db.ts`, `eventAfterRename`) |
 | 0995008 | Events 5/5: DESIGN.md "Events", limits and ideas, code map. **Pushed 2026-11-13 (deploy #10 green, live bundle checked)** |
+| 03c54dc | Plan step 1 (2026-11-13, local): Enter adds a line on touch screens (`enterAction` in `lib/dom.ts`); hint lines follow the device |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

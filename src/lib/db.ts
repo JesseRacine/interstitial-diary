@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
 import { type Entry, type ImageRef, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 import { renameEventInText } from './events'
+import { isAllowedTime, retimeEntry, retimedCreatedAt } from './retime'
 
 export interface Meta {
   key: string
@@ -82,15 +83,21 @@ export async function updateEntryText(id: string, text: string): Promise<void> {
 }
 
 /**
- * Save an edit of text and images together (one updatedAt bump). Text is required: an empty text leaves the entry as
- * it was. Returns whether anything changed.
+ * Save an edit of text, images and (optionally) time together (one updatedAt bump). Text is required: an empty text
+ * leaves the entry as it was. `pickedTime` is the time the person chose (ms, to the minute); it may move the entry to
+ * another day (see retime.ts) but never into the future, and a refused time saves nothing at all. Returns whether
+ * anything changed.
  */
-export async function updateEntry(id: string, text: string, images: ImageRef[]): Promise<boolean> {
+export async function updateEntry(id: string, text: string, images: ImageRef[], pickedTime?: number): Promise<boolean> {
   const t = text.trim()
   const e = await db.entries.get(id)
   if (!e || !t) return false
-  if (t === e.text && sameImages(e, { images })) return false
-  await db.entries.put(withDerived({ ...e, text: t, images, updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
+  const createdAt = pickedTime === undefined ? e.createdAt : retimedCreatedAt(e.createdAt, pickedTime)
+  const retimed = createdAt !== e.createdAt
+  if (retimed && !isAllowedTime(createdAt, Date.now())) return false
+  if (!retimed && t === e.text && sameImages(e, { images })) return false
+  const next: Entry = { ...e, text: t, images, updatedAt: nextStamp(e.updatedAt), dirty: 1 }
+  await db.entries.put(retimed ? retimeEntry(next, createdAt, next.updatedAt) : withDerived(next))
   return true
 }
 

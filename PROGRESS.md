@@ -12,15 +12,15 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 417 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 434 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
-- **Backup:** the newest dated archive was made 2026-11-12 at commit `b19f155` (`archive-2026-11-12/` + zip in the Claude
-  session folder, restore tested, 380 tests passed on its copy); it **does not include Events** (make a new one after
-  big changes; offer it). The user was also advised to do one Settings > Export
-  (a Dropbox sync is not a backup); not confirmed done.
+- **Backup:** the newest dated archive was made 2026-11-13 at commit `03c54dc` (`archive-2026-11-13/` + zip in the Claude
+  session folder, restore tested, 417 tests passed on a fresh clone of its bundle): it includes Events and the touch-screen
+  Enter change, not the time edit (make a new one after big changes; offer it). The user was also advised to do one
+  Settings > Export (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Current plan (agreed 2026-11-13): six improvements, one step per turn, in this order
@@ -28,8 +28,13 @@ them (index at the bottom)._
 1. **Enter adds a line on touch screens: built and committed locally 2026-11-13, not pushed** (`enterAction` in `lib/dom.ts`,
    6 tests; checked in the pane with the phone preset: plain Enter is left to the browser, desktop unchanged). The hint line
    changes on touch. **Not tried on the real phone** (waiting item 14).
-2. **Edit an entry's time and date, any date** (changes sync: a stale copy stays in the old day file unless sync rewrites
-   it, plan: local-only `Entry.prevDay`; offer a fresh backup first).
+2. **Edit an entry's time and date, any date: built and committed locally 2026-11-13, not pushed.** A "When" field in the
+   entry editor (not in the future). A new backup was made first (`archive-2026-11-13/`, commit 03c54dc, restore tested).
+   Because a day change leaves a stale copy in the old day's file, the entry carries a local-only `prevDay` that
+   `syncOnce` uses to rewrite that file (DESIGN.md "Editing an entry's time"; `lib/retime.ts`). 434 tests (7 new sync tests,
+   mutation-checked, + db and retime tests); checked in the pane, including a real sync to "files inside this browser":
+   the moved entry left the old day's file and the other entry stayed. **Not tried on the real Windows folder or with
+   Dropbox on two devices** (waiting item 15).
 3. **Weekly review** inside the Calendar tab (Month | Year | Week).
 4. **Events/people:** 4a `event:` search filter and `has:event`; 4b merge an event into an existing one; 4c an event's own
    date (pick the syntax with the user first).
@@ -136,6 +141,13 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**15. Edit an entry's time** (step 2 above, once pushed and both devices have the new version): a. in the journal click
+Edit on an entry, change "When" to an earlier day: Save moves it there; b. with Dropbox, the entry appears under the new
+day on the other device after its next sync, and in `Apps/Interstitial Journal/` the new day's file has it and the old
+day's file no longer does (or is gone if it was the only entry); c. a time later today just reorders the day; d. a time in
+the future is refused. Reload both devices until they have the new version before testing (an old version would write
+the old day back).
 
 **14. Enter on the phone** (step 1 above, once pushed and the installed app has updated): in the capture box on Android,
 Enter adds a line and the Save button saves; the hint under the time says so; a two-line entry shows both lines in the

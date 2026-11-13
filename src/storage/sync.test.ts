@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { type Entry, type ImageRef, makeEntry } from '../lib/entry'
+import { retimeEntry } from '../lib/retime'
 import { memoryLocal, memoryStore } from './memory'
 import { dayFromPath, emptySyncState, sameVersion, syncOnce, TOMBSTONES_PATH } from './sync'
 import type { FileStore, SyncState } from './types'
 
 const at = (d: number, h: number, m = 0) => new Date(2026, 10, d, h, m).getTime()
+/** An edit stamp later than every entry's creation, so it wins a merge the way a real edit does. */
+const S = (n: number) => at(20, 0) + n
 
 /** A simulated device: its own local database and its own sync state. */
 function device(initial: Entry[] = []) {
@@ -22,6 +25,10 @@ function device(initial: Entry[] = []) {
     edit(id: string, text: string, ts: number) {
       const e = local.entries.get(id)!
       local.entries.set(id, { ...makeEntry(text, e.createdAt, id), updatedAt: ts })
+    },
+    /** Give an entry another time, the way the editor does (retimeEntry). */
+    move(id: string, createdAt: number, stamp: number) {
+      local.entries.set(id, retimeEntry(local.entries.get(id)!, createdAt, stamp))
     },
     remove(id: string, ts: number) {
       const e = local.entries.get(id)!
@@ -230,6 +237,115 @@ describe('syncOnce', () => {
       expect(sameVersion(e, { ...e, images: [B] })).toBe(false)
       expect(sameVersion(e, { ...e, images: undefined })).toBe(false)
       expect(sameVersion({ ...e, images: undefined }, { ...e, images: [] })).toBe(true)
+    })
+  })
+
+  describe('an entry given another time', () => {
+    const NEW_DAY = '2026/2026-11-09.md'
+    const OLD_DAY = '2026/2026-11-08.md'
+
+    it('moves to the new day’s file and leaves the old day’s file without it', async () => {
+      const store = memoryStore()
+      const a = device()
+      a.add('stays', at(8, 9), 'e2')
+      a.add('moves', at(8, 10), 'e1')
+      await a.sync(store)
+
+      a.move('e1', at(9, 7), S(1))
+      const r = await a.sync(store)
+      expect(store.files.get(NEW_DAY)!.content).toContain('id:e1')
+      expect(store.files.get(OLD_DAY)!.content).not.toContain('id:e1')
+      expect(store.files.get(OLD_DAY)!.content).toContain('id:e2')
+      expect(r.written).toBe(2)
+      expect('prevDay' in a.local.entries.get('e1')!).toBe(false) // done: cleared once synced
+      expect(await a.sync(store)).toEqual({ read: 0, written: 0, removed: 0, updatedLocally: 0 })
+    })
+
+    it('removes the old day’s file when it was the only entry there', async () => {
+      const store = memoryStore()
+      const a = device()
+      a.add('only one', at(8, 10), 'e1')
+      await a.sync(store)
+      a.move('e1', at(9, 7), S(1))
+      const r = await a.sync(store)
+      expect([...store.files.keys()].sort()).toEqual([NEW_DAY])
+      expect(r.removed).toBe(1)
+    })
+
+    it('another device that had the old copy follows it to the new day', async () => {
+      const store = memoryStore()
+      const a = device()
+      const b = device()
+      a.add('moves', at(8, 10), 'e1')
+      await a.sync(store)
+      await b.sync(store)
+
+      a.move('e1', at(9, 7), S(1))
+      await a.sync(store)
+      const filesAfterA = new Map([...store.files].map(([p, f]) => [p, f.content]))
+      await b.sync(store)
+      expect(b.local.entries.get('e1')!.day).toBe('2026-11-09')
+      expect(b.local.entries.get('e1')!.createdAt).toBe(at(9, 7))
+      expect(b.live()).toEqual(['moves'])
+      // B's sync changed nothing in the files, and A learns nothing new either.
+      expect(new Map([...store.files].map(([p, f]) => [p, f.content]))).toEqual(filesAfterA)
+      await a.sync(store)
+      expect(a.live()).toEqual(['moves'])
+    })
+
+    it('moved twice before a sync still clears the day that last reached a file, and moved back is fine', async () => {
+      const store = memoryStore()
+      const a = device()
+      a.add('moves', at(8, 10), 'e1')
+      a.add('stays', at(8, 11), 'e2')
+      await a.sync(store)
+
+      a.move('e1', at(9, 7), S(1))
+      a.move('e1', at(10, 7), S(2))
+      await a.sync(store)
+      expect(store.files.get(OLD_DAY)!.content).not.toContain('id:e1')
+      expect(store.files.has(NEW_DAY)).toBe(false) // never reached a file: no stray day
+      expect(store.files.get('2026/2026-11-10.md')!.content).toContain('id:e1')
+
+      a.move('e1', at(8, 8), S(3)) // back to its first day, earlier in the day
+      await a.sync(store)
+      expect([...store.files.keys()].sort()).toEqual([OLD_DAY])
+      expect(store.files.get(OLD_DAY)!.content.indexOf('id:e1')).toBeLessThan(store.files.get(OLD_DAY)!.content.indexOf('id:e2'))
+    })
+
+    it('a new time on the same day just reorders that day’s file', async () => {
+      const store = memoryStore()
+      const a = device()
+      a.add('first', at(8, 9), 'e1')
+      a.add('second', at(8, 10), 'e2')
+      await a.sync(store)
+      a.move('e1', at(8, 11), S(1))
+      await a.sync(store)
+      const text = store.files.get(OLD_DAY)!.content
+      expect(text.indexOf('id:e2')).toBeLessThan(text.indexOf('id:e1'))
+      expect(store.files.size).toBe(1)
+    })
+
+    it('moving an entry before its first sync leaves no file for the day it never reached', async () => {
+      const store = memoryStore()
+      const a = device()
+      a.add('draft', at(8, 10), 'e1')
+      a.move('e1', at(9, 7), S(1))
+      await a.sync(store)
+      expect([...store.files.keys()]).toEqual([NEW_DAY])
+    })
+
+    it('an entry deleted after it was moved is gone from both days', async () => {
+      const store = memoryStore()
+      const a = device()
+      a.add('moves', at(8, 10), 'e1')
+      a.add('stays', at(8, 11), 'e2')
+      await a.sync(store)
+      a.move('e1', at(9, 7), S(1))
+      a.remove('e1', S(2))
+      await a.sync(store)
+      expect(store.files.get(OLD_DAY)!.content).not.toContain('id:e1')
+      expect(store.files.has(NEW_DAY)).toBe(false)
     })
   })
 

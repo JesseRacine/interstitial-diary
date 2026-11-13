@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { deleteEntry, updateEntry } from '../lib/db'
-import { type Entry, entryImages, formatGap, shortDayLabel, timeLabel } from '../lib/entry'
+import { type Entry, dayKey, entryImages, formatGap, shortDayLabel, timeLabel } from '../lib/entry'
+import { fromDateTimeInput, isAllowedTime, retimedCreatedAt, toDateTimeInput } from '../lib/retime'
 import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
 import { useOpenEvent } from './eventNav'
@@ -28,14 +29,28 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
   const input = useImageInput(photos)
   const images = entryImages(entry)
 
+  const [when, setWhen] = useState(() => toDateTimeInput(entry.createdAt))
+  const [clock, setClock] = useState(0) // "now" as of the last time the field changed (the time check must not read the clock while rendering)
+  const picked = fromDateTimeInput(when)
+  const newCreatedAt = retimedCreatedAt(entry.createdAt, picked)
+  const whenError = Number.isNaN(picked)
+    ? 'Pick a date and a time'
+    : newCreatedAt !== entry.createdAt && !isAllowedTime(newCreatedAt, clock)
+      ? 'That time is in the future'
+      : null
+  const movesTo = !whenError && dayKey(newCreatedAt) !== entry.day ? shortDayLabel(dayKey(newCreatedAt)) : null
+
   const startEdit = () => {
     setDraft(entry.text)
+    setWhen(toDateTimeInput(entry.createdAt))
+    setClock(Date.now())
     photos.reset(images)
     setEditing(true)
   }
+  const canSave = !photos.busy && !!draft.trim() && !whenError
   const save = async () => {
-    if (photos.busy || !draft.trim()) return
-    await updateEntry(entry.id, draft, photos.refs)
+    if (!canSave) return
+    await updateEntry(entry.id, draft, photos.refs, picked)
     setEditing(false)
   }
   const remove = async () => {
@@ -79,8 +94,15 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
             }}
           />
           <DraftChips draft={photos} />
+          <div className="row when">
+            <label htmlFor={`when-${entry.id}`} className="muted">When</label>
+            <input id={`when-${entry.id}`} type="datetime-local" value={when} onChange={(e) => { setWhen(e.target.value); setClock(Date.now()) }}
+              aria-invalid={!!whenError} />
+            {whenError && <span className="error">{whenError}</span>}
+            {movesTo && <span className="muted">Moves to {movesTo}</span>}
+          </div>
           <div className="row">
-            <button type="button" className="primary" onClick={save} disabled={photos.busy || !draft.trim()}>Save</button>
+            <button type="button" className="primary" onClick={save} disabled={!canSave}>Save</button>
             <button type="button" onClick={() => setEditing(false)}>Cancel</button>
             <AttachButton draft={photos} />
             <span className="muted">{photos.busy ? 'Preparing photos…' : coarse ? 'Enter for a new line' : 'Ctrl+Enter to save · Esc to cancel'}</span>

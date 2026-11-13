@@ -45,7 +45,7 @@
 ```ts
 Entry {
   id: string          // ULID for app-created entries; "h<yyyymmdd><hhmm><hash>" for hand-written ones
-  createdAt: number   // ms epoch, never changes (so an entry never moves to another day)
+  createdAt: number   // ms epoch; only changes through the editor's "When" field (see "Editing an entry's time")
   updatedAt: number   // ms epoch, bumped on every edit/delete; the merge "clock"
   text: string        // trimmed
   tags: string[]      // derived: lowercase stored keys (`work`, `@sarah`, `~home`; see "Tags" below)
@@ -53,6 +53,7 @@ Entry {
   deleted: 0 | 1      // soft delete (tombstone)
   dirty: 0 | 1        // changed since last successful sync
   images?: ImageRef[] // missing = none; only small references, never image bytes
+  prevDay?: string    // local only, never in a file: the day last synced, while a time edit hasn't synced yet
 }
 ImageRef { hash: string /* 16 hex chars of SHA-256, file name stem */, ext: string, w: number, h: number /* 0 = unknown */ }
 ```
@@ -89,6 +90,18 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
 - **Search:** no new syntax; the title's words are in the text, so keywords and `"phrases"` find it.
 - **Rename** (`renameEvent` in `db.ts`, Events page): rewrites the markers with that title only in that event's entries,
   keeping the quote marks typed, bumping `updatedAt` and marking them dirty so it syncs like any edit.
+
+**Editing an entry's time** (`src/lib/retime.ts`, `updateEntry(id, text, images, pickedTime)` in `db.ts`, the "When"
+field in the editor): the person picks a date and time to the minute; the entry keeps its own seconds (so entries in the
+same minute keep their order), a time in the future or an unreadable one is refused (the editor disables Save and says
+why; `updateEntry` refuses it too and saves nothing). It is an ordinary edit (`updatedAt` bumped, `dirty: 1`) and the
+heading's `created:` stamp in the file carries the new time, so **the file format has no new syntax**. The one catch is a
+change of *day*: the entry is written to the new day's file, but the old day's file still lists it. So `retimeEntry`
+remembers the day it was last synced on in the local-only `prevDay` (kept through further moves, since the days in
+between never reached a file) and `syncOnce` rewrites that day's file too (removing it if no entry is left), then clears
+`prevDay`. On other devices nothing special happens: the newer version of the entry wins in the merge as a whole, so it
+follows to the new day. The usual last-write-wins applies: a time edit on one device and a text edit of the same entry on
+another before they sync keep only the newer of the two.
 
 Other local data lives in the Dexie `meta` table: `savedSearches`, `recentSearches`, `storage` (active backend id +
 config, e.g. a folder handle), `sync:<backendId>` (file revisions from the last sync), `images:<backendId>` (image
@@ -136,7 +149,8 @@ Each run:
    outside the app. It gets a fresh `updatedAt` so it wins. Images count too (`sameImages`): adding or removing an
    image line by hand is an edit, so a removed line is not written back.
 3. **Merge** by id: newest `updatedAt` wins; on a tie, a deletion wins; a tombstone beats any version not edited after it.
-4. **Write** day files that have dirty local entries, that changed after merging, or that are missing from storage
+4. **Write** day files that have dirty local entries (and the `prevDay` of an entry whose time was edited, so the day it
+   left is rewritten without it), that changed after merging, or that are missing from storage
    (so a new empty folder gets everything). Remove files for days left with no live entries. Write tombstones if changed.
 5. **Save** merged entries locally with `dirty: 0`, skipping any entry edited in the app while the sync ran
    (`LocalStore.apply` compares `updatedAt` with the snapshot).

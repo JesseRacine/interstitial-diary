@@ -96,7 +96,12 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
     else liveByDay.set(e.day, [e])
   }
   const days = new Set<string>(pulled.keys())
-  for (const e of snapshot) if (e.dirty) days.add(e.day)
+  for (const e of snapshot) {
+    if (!e.dirty) continue
+    days.add(e.day)
+    // An entry given another time still sits in the day file it was last synced to: rewrite that file without it.
+    if (e.prevDay) days.add(e.prevDay)
+  }
   for (const d of liveByDay.keys()) if (!remote.has(dayFilePath(d))) days.add(d)
 
   for (const day of [...days].sort()) {
@@ -128,7 +133,11 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
     const l = localById.get(e.id)
     const changed = !l || !sameVersion(l, e)
     if (changed) report.updatedLocally++
-    if (changed || l.dirty) updates.push({ ...e, dirty: 0 })
+    if (changed || l.dirty) {
+      const synced: Entry = { ...e, dirty: 0 }
+      delete synced.prevDay // the old day's file was rewritten above
+      updates.push(synced)
+    }
   }
   if (updates.length) await local.apply(updates, base)
 

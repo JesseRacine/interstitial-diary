@@ -23,9 +23,14 @@ export interface Entry {
   deleted: 0 | 1
   dirty: 0 | 1 // changed since last sync
   images?: ImageRef[] // missing means none (old rows and files have no images)
+  /**
+   * Local only, never written to a file: the day this entry was on when its time was edited and it has not synced since.
+   * Sync rewrites that day's file too, so no stale copy stays behind (see retime.ts). Cleared once synced.
+   */
+  prevDay?: string
 }
 
-type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty' | 'images'>
+type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty' | 'images' | 'prevDay'>
 
 /** An entry's images; treats a missing field as none. */
 export const entryImages = (e: Pick<Entry, 'images'>): ImageRef[] => e.images ?? []
@@ -149,6 +154,7 @@ export function shortDayLabel(k: string): string {
  * Fill in the fields that are derived from text and createdAt.
  * Every field of CoreFields must be copied here: anything left out is silently dropped on edit, tag rename and parse.
  * `images` is only set when there are some, so entries without images look exactly as they did before images existed.
+ * `prevDay` is only set while a time edit has not synced yet.
  */
 export function withDerived(e: CoreFields): Entry {
   const d = new Date(e.createdAt)
@@ -166,6 +172,7 @@ export function withDerived(e: CoreFields): Entry {
     weekday: d.getDay(),
   }
   if (e.images?.length) out.images = e.images.map((i) => ({ hash: i.hash, ext: i.ext, w: i.w, h: i.h }))
+  if (e.prevDay) out.prevDay = e.prevDay
   return out
 }
 

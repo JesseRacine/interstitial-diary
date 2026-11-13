@@ -22,7 +22,7 @@ Read these before changing anything substantial:
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
 "seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
 pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); 417 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+in PROGRESS.md); 434 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
@@ -124,6 +124,8 @@ src/
                         photoUsage, localImageSizes, removeLocalImagesUnlessUsed
     markdown.ts         day file <-> entries (the on-disk format, see DESIGN.md)
     merge.ts            union-by-id merge + tombstones
+    retime.ts           editing an entry's time/date: retimedCreatedAt, isAllowedTime, retimeEntry (sets the local-only
+                        `prevDay` that sync uses to rewrite the old day's file), datetime-local helpers
     hooks.ts            useLive: a Dexie liveQuery as React state
     dom.ts              isTyping (keyboard shortcuts ignore typing); enterAction (Enter saves or adds a line; touch screens
                         add a line) + hasCoarsePointer; hooks.ts also has useCoarsePointer

@@ -160,6 +160,44 @@ describe('db with images', () => {
     expect((await m.db.entries.get(e!.id))!.images).toEqual([IMG_A, IMG_B])
   })
 
+  it('updateEntry can give an entry another time and day: derived fields follow, seconds stay, the old day is remembered', async () => {
+    const created = new Date(2020, 5, 10, 14, 30, 45, 123).getTime()
+    await m.db.entries.add(makeEntry('late note', created, 'retime-1'))
+    const picked = new Date(2020, 5, 9, 23, 5).getTime() // a date-time field has no seconds
+    expect(await m.updateEntry('retime-1', 'late note', [], picked)).toBe(true)
+    const got = (await m.db.entries.get('retime-1'))!
+    expect(got.createdAt).toBe(new Date(2020, 5, 9, 23, 5, 45, 123).getTime())
+    expect([got.day, got.hour, got.minute, got.weekday]).toEqual(['2020-06-09', 23, 23 * 60 + 5, 2])
+    expect(got.updatedAt).toBeGreaterThan(created)
+    expect(got.dirty).toBe(1)
+    expect(got.prevDay).toBe('2020-06-10')
+
+    // Moved again before any sync: the day that last reached a file is still the one to rewrite.
+    expect(await m.updateEntry('retime-1', 'late note', [], new Date(2020, 5, 8, 9, 0).getTime())).toBe(true)
+    expect((await m.db.entries.get('retime-1'))!.prevDay).toBe('2020-06-10')
+  })
+
+  it('a time change alone counts as an edit; a time in the same minute, or none, is no change', async () => {
+    const created = new Date(2020, 5, 10, 14, 30, 45).getTime()
+    await m.db.entries.add(makeEntry('same text', created, 'retime-2'))
+    expect(await m.updateEntry('retime-2', 'same text', [], new Date(2020, 5, 10, 14, 30).getTime())).toBe(false)
+    expect(await m.updateEntry('retime-2', 'same text', [])).toBe(false)
+    expect((await m.db.entries.get('retime-2'))!.createdAt).toBe(created)
+    expect(await m.updateEntry('retime-2', 'same text', [], new Date(2020, 5, 10, 9, 15).getTime())).toBe(true)
+    const got = (await m.db.entries.get('retime-2'))!
+    expect(got.minute).toBe(9 * 60 + 15)
+    expect('prevDay' in got).toBe(false) // same day: no other file to rewrite
+  })
+
+  it('a time in the future, or not a time, is refused and nothing changes', async () => {
+    const created = new Date(2020, 5, 10, 14, 30).getTime()
+    await m.db.entries.add(makeEntry('stays', created, 'retime-3'))
+    expect(await m.updateEntry('retime-3', 'edited too', [], Date.now() + 3 * 3_600_000)).toBe(false)
+    expect(await m.updateEntry('retime-3', 'edited too', [], Number.NaN)).toBe(false)
+    const got = (await m.db.entries.get('retime-3'))!
+    expect([got.text, got.createdAt, got.updatedAt]).toEqual(['stays', created, created])
+  })
+
   it('stores thumbnails and originals in their own tables', async () => {
     const blob = new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' })
     await m.db.blobs.put({ hash: IMG_A.hash, blob, mime: 'image/jpeg', size: 3, onRemote: 0, addedAt: 1 })

@@ -5,6 +5,9 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 ## Known limitations
 - Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
 - Removing an entry from a file by hand doesn't delete it (by design; see DESIGN.md).
+- Editing an entry's time: not into the future; the time is to the minute (the entry keeps its seconds). Changing the
+  time in a day file by hand (`## 09:14`) is ignored when the heading has the id comment: use the app's "When" field.
+  A time edit and a text edit of the same entry on two devices before they sync keep only the newer one.
 - The folder module needs Chrome/Edge on desktop and usually needs "Reconnect folder" after a browser restart.
 - On Android there is currently no copy outside the browser (the app warns about this in the header and Settings, and
   reminds you to export every couple of weeks) until a cloud module (Dropbox, then pCloud) works.
@@ -35,7 +38,6 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 - Restyle search results to match the chat look (they still use cards).
 - Idle nudge ("you haven't logged in 90 minutes").
 - Weekly review page: entries per day, top tags, time-of-day patterns.
-- Edit an entry's time.
 - Incremental search indexing if the journal gets very large.
 - GitHub storage module (see [CLOUD-STORAGE.md](CLOUD-STORAGE.md), "Other storage ideas").
 - Photos view: filter by tag/date range; jump to the entry from the lightbox.
