@@ -120,7 +120,9 @@ both devices, then Start over once more (item 11).
 
 ## Waiting on the user
 
-**13. Events** (pushed 2026-11-13; reload on both devices until they have the new version): a. write `Went to !"Jack's 40th birthday" with
+**13. Events** (pushed 2026-11-13; the user tried it on an empty local copy with no storage connected and said **"it works"**,
+without reporting a-d one by one, and not on the phone or with Dropbox, so those are not confirmed; reload on both
+devices until they have the new version): a. write `Went to !"Jack's 40th birthday" with
 @sam` (a straight or curly quote from the phone keyboard): shown as a blue "🎉 Jack's 40th birthday" chip; b. the Events
 tab lists it by month, the chip opens its page, Rename event fixes a typo; c. the six header tabs fit the phone without
 scrolling; d. with Dropbox, a renamed event shows renamed on the other device.
