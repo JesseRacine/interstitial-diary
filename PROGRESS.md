@@ -9,13 +9,22 @@ them (index at the bottom)._
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`). Every push to `main` runs the tests and
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
 - **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: live
-  since 2026-11-12, working Windows ↔ Android per the user), photos (phases 1–3), installable PWA, data-safety features, hosting.
+  since 2026-11-12, working Windows ↔ Android per the user), photos (phases 1–3), installable PWA, data-safety features,
+  hosting, Settings > **Start over** (live 2026-11-12, works per the user).
   355 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
+
+## NEXT: nothing in progress (as of 2026-11-12); ask the user which of these
+
+1. **A new dated backup archive** in the Claude session folder (the current one, 2026-11-10, predates hosting, Dropbox
+   and Start over; steps in CLAUDE.md "Where things are").
+2. **Step 4.6, the update-banner test** (still open; see below).
+3. **pCloud** (step 5, on hold), or **native apps with Tauri** (step 6). Both described below.
+4. Confirm the open details of waiting items 10 and 11 if the user wants them recorded as verified.
 
 ## Step 5a, Dropbox: built, pushed, and working across devices (user, 2026-11-12)
 
