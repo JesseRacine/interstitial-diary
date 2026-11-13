@@ -48,7 +48,9 @@ _Last updated: 2026-11-09_
 
 | b8df143 | Step 4.3: GitHub Pages deploy workflow `.github/workflows/deploy.yml` (tests, build with `BASE_PATH`, deploy); 5 new tests |
 
-| (this commit) | Step 4.4/4.5: repo published, site live at https://jesseracine.github.io/interstitial-diary/ (first deploy green; hosted site checked read-only in the Browser pane); docs |
+| 6e90356 | Step 4.4/4.5: repo published, site live at https://jesseracine.github.io/interstitial-diary/ (first deploy green; hosted site checked read-only in the Browser pane); docs |
+
+| (this commit) | Docs: hosted install confirmed by the user; second deploy green |
 
 **All hashes above, except f3c682f and the ones after it, are from before the 2026-11-10 history rewrite** (author change plus a scrub of
 old doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -82,7 +84,9 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
    browser granted persistent storage (installing usually gets it granted). Do one real export (Settings > Your data)
    and check "Last backup" changes to today. With the folder module connected, no "Only in this browser" badge or
    backup reminder should appear, not even for a moment after opening the app.
-9. **Install the hosted app (2026-11-12, new).** In Edge on Windows and Chrome on Android, open
+9. **Install the hosted app: user reported "installed, works" (2026-11-12).** They did not say which of Edge/Android, or
+   whether the shortcut and airplane-mode checks were each tried, so those are **not individually confirmed**; ask again
+   if it matters. Original instructions: in Edge on Windows and Chrome on Android, open
    https://jesseracine.github.io/interstitial-diary/ and install it (Edge: the install icon in the address bar or
    Settings > Apps; Chrome on Android: menu > Install app). Check that it opens in its own window, that the long-press
    "New entry" shortcut works, and that it opens with no network (turn on airplane mode after the first open). It starts
@@ -135,8 +139,8 @@ and Save dialog can't be driven from the Browser pane). Until confirmed they are
 **Status (2026-11-12): the site is live at https://jesseracine.github.io/interstitial-diary/.** Sub-steps 1 (clean-up and
 new dated archive in the Windows session folder, `archive-2026-11-10/` + zip), 2 (base path), 3 (deploy workflow), 4
 (repo created, `main` pushed, first run green) and the read-only part of 5 (hosted site checked in the Browser pane) are
-done. **Next: the user installs it in Edge and on Android (waiting-list item 9); then sub-step 6 (a second deploy with a
-visible change, to see the update banner).** Repo: https://github.com/JesseRacine/interstitial-diary (public, default
+done. The user has installed it ("installed, works", waiting-list item 9). The docs push (6e90356) also deployed green.
+**Next: sub-step 6 (a second deploy with a visible change, to see the update banner in the installed app).** Repo: https://github.com/JesseRacine/interstitial-diary (public, default
 branch `main`); `gh` 2.103.3 lives in the WSL home at `~/.local/bin/gh` (not on PATH; the user signed in themself with
 `gh auth login`; pushes use `git -c "credential.helper=!$HOME/.local/bin/gh auth git-credential" push`, no git config was
 changed).
