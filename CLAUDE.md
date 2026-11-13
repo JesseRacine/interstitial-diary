@@ -1,6 +1,6 @@
 # CLAUDE.md: Interstitial Diary
 
-An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, strong search,
+An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, `@people`, `~places`, strong search,
 photos, and Markdown files as the durable copy. Targets **Windows and Android**: an installable PWA first, then native
 apps via Tauri built from the same code.
 
@@ -19,7 +19,8 @@ Read these before changing anything substantial:
 
 **Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
 **Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features, **hosting** and **Settings > Start
-over** are built and live; 355 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on
+over** are built and live; **people and places** (`@sarah_jones`, `~home`) are built and committed locally but **not
+pushed yet** (PROGRESS.md item 12); 380 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on
 GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; the user
 has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
@@ -108,8 +109,11 @@ src/
   main.tsx, App.tsx   entry point; views (Journal, Calendar, Photos, Tags, Settings), routing, keyboard shortcuts,
                       the photo viewer's history entry
   lib/                pure logic and the database
-    entry.ts            Entry/ImageRef types, tag parsing, date helpers (all local time), withDerived
-    db.ts               Dexie schema (v2: entries, meta, thumbs, blobs) + add/update/delete/renameTag/setEntryImages;
+    entry.ts            Entry/ImageRef types, tag parsing (extractTags, replaceTag, tagSegments, tagBeingTyped), date
+                        helpers (all local time), withDerived
+    tagKinds.ts         the kinds of tag (`#`, `@` person, `~` place; one row each) + stored-key helpers (tagKindOf,
+                        tagToken, displayName, tagLabel, parseTagName)
+    db.ts               Dexie schema (v3: entries, meta, thumbs, blobs; v3 recalculates tags) + add/update/delete/renameTag/setEntryImages;
                         cached originals (touchOriginal, saveFetchedOriginal, evictOriginals*, getOriginalsLimit),
                         photoUsage, localImageSizes, removeLocalImagesUnlessUsed
     markdown.ts         day file <-> entries (the on-disk format, see DESIGN.md)
@@ -152,8 +156,8 @@ src/
     resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
-    Capture, JournalView, EntryItem, Results, SearchBar, CalendarView, TagsView, SettingsView, text.tsx (tag highlighting
-    + autocomplete)
+    Capture, JournalView, EntryItem, Results, SearchBar, CalendarView, TagsView (+ TagPage: one person/place), SettingsView,
+    text.tsx (tag display + autocomplete)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
     EntryImages.tsx     photos in a bubble
     Thumb.tsx + useThumbUrl.ts   thumbnails via the shared URL cache; "Not synced yet" from manager's missingImages
@@ -198,7 +202,10 @@ src/
 10. Keep the UI working at phone width (375px) and in light and dark mode. Colours come from CSS variables in
     `src/index.css`. The header's five tabs fit 375px only because of the tighter padding in the `max-width: 520px`
     block; check it if you add a tab.
-11. Anything that can only be wrong at the user's real folder, or on a second device, is **not verified** until the user
+11. **A tag is a stored key, not a bare name:** `work`, `@sarah`, `~home` (`lib/tagKinds.ts`). Never build `#${tag}` or
+    strip a `#` by hand: use `tagToken`, `tagName`, `displayName`, `tagLabel`. A new kind of tag = one row in `TAG_KINDS`
+    (symbol, prefix, colour variable in `index.css`, a search-help row, tests).
+12. Anything that can only be wrong at the user's real folder, or on a second device, is **not verified** until the user
     confirms it; say so in PROGRESS.md.
 
 ## Testing

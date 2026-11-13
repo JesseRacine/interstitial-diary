@@ -19,6 +19,11 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 - "Photos of deleted entries" syncs first and refuses to run if that sync fails; with no storage connected it only
   cleans this device.
 - Photos in HEIC/AVIF are stored but can't be shown (placeholder with Save); there is no HEIC conversion.
+- People and places: older text that happens to contain `@word` or `~word` (a letter right after the symbol, not glued
+  to a word before it) becomes a person or place the first time the new version runs; nothing is changed in the files,
+  but it shows in colour, in the Tags view and in search. Edit the text if that is unwanted.
+- A person or place name has no spaces (`@sarah_jones`); the app shows the underscore as a space. A tag, person and
+  place of the same name (`#sarah`, `@sarah`, `~sarah`) are three different things; rename cannot change a tag's kind.
 
 ## Ideas backlog
 - Restyle search results to match the chat look (they still use cards).
@@ -29,4 +34,8 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 - GitHub storage module (see [CLOUD-STORAGE.md](CLOUD-STORAGE.md), "Other storage ideas").
 - Photos view: filter by tag/date range; jump to the entry from the lightbox.
 - Clean up photos removed from live entries (needs a way to know nothing else uses the file).
+- People and places, next: on a person's/place's page show who or where they were mentioned together with; suggest a
+  place from the device location (asks for permission, privacy-sensitive); turn an old `#sarah` into `@sarah` in one
+  go (a "convert to person/place" action); a page for plain tags too (`hasPage` on the `tag` kind); more kinds such as
+  projects or moods (one row in `lib/tagKinds.ts`, plus colours and a search-help row).
 - Small polish: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.

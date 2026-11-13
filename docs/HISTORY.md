@@ -44,6 +44,11 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | 512ac61 | Docs: hosted install confirmed by the user; second deploy green |
 | 3685037 | Docs: pCloud step 5 started; OAuth facts from pCloud's docs and what the user must register |
 | 61235a6 | Docs: Dropbox storage module chosen (step 5a): OAuth PKCE facts and what the user registers |
+| 006db68 | People and places 1/6 (local, 2026-11-12): `#tag`, `@person`, `~place` read from text; `lib/tagKinds.ts` (one row per kind); stored keys `work` / `@sarah` / `~home`; Dexie v3 recalculates tags without marking entries changed; fixed rename of a tag containing `-` (invalid regex escape) |
+| 8afa9dc | People and places 2/6: shown as "👤 Sarah Jones" / "📍 Blue Door" in their own colours; `@`/`~`/`#` autocomplete offers only its own kind (`tagSegments`, `tagBeingTyped`, `tagLabel`) |
+| eb800d3 | People and places 3/6: search `@sarah`, `~home`, `-@sarah`, `@a\|@b`, mixed groups; `~5` / `@3pm` stay plain words |
+| e78bbc4 | People and places 4/6: Tags view split into Tags / People / Places; per-kind rename and merge (`parseTagName`) |
+| 5bad3f0 | People and places 5/6: a page per person/place (`TagPage.tsx`: counts, first/last, month bars that filter, entries); `first` in `TagStat`, `hasPage` on `TagKind` |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

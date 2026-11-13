@@ -8,39 +8,26 @@ them (index at the bottom)._
 - **Live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo:
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`). Every push to `main` runs the tests and
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
-- **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: live
-  since 2026-11-12, working Windows ↔ Android per the user), photos (phases 1–3), installable PWA, data-safety features,
-  hosting, Settings > **Start over** (live 2026-11-12, works per the user).
-  355 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+- **Built:** journal, search, calendar, tags (+ **people and places**, built locally, not yet pushed), export, three
+  storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
+  photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
+  per the user). 380 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## IN PROGRESS: people and place tags (plan: `~/.claude/plans/we-are-going-to-agile-riddle.md`, 6 steps)
+## People and place tags: all 6 steps built and committed locally (2026-11-12), NOT PUSHED: ask the user first
 
-`#tag`, `@person`, `~place` (names with spaces use `_`; `@`/`~` need a letter first; more kinds later = one row in
-`src/lib/tagKinds.ts`). Stored keys: `work`, `@sarah`, `~home` (DESIGN.md "Tags").
-- **Step 1 done (2026-11-12, not pushed):** reading the kinds from text (`extractTags`/`replaceTag` in `entry.ts`),
-  `tagKinds.ts`, Dexie v3 tag recalculation, 369 tests. Also fixed an old bug: renaming a tag containing `-` threw.
-- **Step 2 done (2026-11-12, not pushed):** people/places show as "👤 Sarah Jones" / "📍 Blue Door" (plum / amber, light
-  and dark; the typed text is the tooltip); `@` and `~` suggestions list only their own kind (`tagSegments` and
-  `tagBeingTyped` in `entry.ts`, `tagLabel` in `tagKinds.ts`); Capture hint; search chips and the Tags view show the
-  right labels; Rename is hidden for people/places until step 4. Checked in the browser (dark + light). 372 tests.
-- **Step 3 done (2026-11-12, not pushed):** search reads `@sarah`, `~home`, `-@sarah`, `@a|@b`, `#work|~home` as the
-  stored keys (`tagKeyOfToken` in `query.ts`); `~5` / `@3pm` stay plain words; help rows added; clicking a person or
-  place in an entry or the Tags view searches for it. Checked in the browser. 377 tests, DESIGN.md search table updated.
-- **Step 4 done (2026-11-12, not pushed):** Tags view has a Tags / People / Places switch with counts; Rename and merge
-  work per kind (`parseTagName` in `tagKinds.ts` checks the typed name: "Sara Jones" becomes `sara_jones`, `3pm` is
-  refused for people and places, a trailing `-`/`/` is refused for all). Checked in the browser incl. phone width.
-  378 tests. (`first` used date for `computeTagStats` is left for step 5, where it is used.)
-- **Step 5 done (2026-11-12, not pushed):** clicking a person or place in the Tags view opens its page (`TagPage.tsx`:
-  count, first/last mention via the new `first` in `TagStat`, month bars reusing `Histogram` from `Results.tsx` with
-  click-to-filter, "Search these entries", entries newest first, back button). New `hasPage` flag on `TagKind`.
-  Checked in the browser incl. phone width. 380 tests.
-- **Next:** 6 final docs (HISTORY.md row, LIMITS-AND-IDEAS.md) and push (ask first). Ideas left out on purpose: people
-  or places mentioned together with this one, a "use my location" place suggestion, more kinds (projects, moods).
+`#tag`, `@person`, `~place`; names with spaces use `_` (`@sarah_jones` is shown as "Sarah Jones"); `@`/`~` need a letter
+first; more kinds later = one row in `src/lib/tagKinds.ts`. Stored keys: `work`, `@sarah`, `~home`. Markdown files are
+unchanged; Dexie v3 recalculates tags on each device without marking anything changed. Done: reading (`entry.ts`),
+showing/typing (`text.tsx`), search (`query.ts`), Tags / People / Places switch with per-kind rename (`TagsView.tsx`),
+a page per person/place (`TagPage.tsx`). Details: DESIGN.md "Tags" and its Tags UI bullet; commits `006db68`..`5bad3f0` in
+docs/HISTORY.md. 380 tests, `tsc` clean, lint unchanged; each step was checked in the browser pane (dark, light, 375px).
+**Not verified on the user's real data/devices** (see waiting item 12). Left out on purpose (docs/LIMITS-AND-IDEAS.md):
+"mentioned together with", place suggestion from location, converting an old `#sarah` into `@sarah`.
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 
@@ -92,6 +79,14 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**12. People and places on the real app** (after the user approves a push and both devices have the new version):
+a. Open the app on Windows: the journal, search and Tags view still work, nothing looks lost (the one-time tag
+recalculation ran). Any old text like `@home` or `~word` now shows as a person/place: expected, see limits.
+b. Write `Lunch with @sarah_jones at ~blue_door`: shown as "👤 Sarah Jones", "📍 Blue Door"; `@sa` suggests, search
+`@sarah_jones` finds it; Tags > People > click it opens its page.
+c. With Dropbox: the entry appears on the phone, with the same people/places; the day file in Dropbox has the text as
+typed (no format change) and the upgrade itself uploaded nothing.
 
 **11. Start over with Dropbox, second try** (fix pushed 2026-11-12; the user said "I think it works", without
 reporting each check below, so not individually confirmed): open the app on both devices and reload until
