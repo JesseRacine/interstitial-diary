@@ -247,9 +247,26 @@ repo's local git identity); branch `main`. The superseded `junior-plan.md` was d
 **Done when:** the app is installed on both Windows and Android from the hosted address, and a second deploy shows the
 update banner.
 
-### 5. pCloud storage module
+### 5. pCloud storage module: STARTED 2026-11-12 (waiting on the user's pCloud app registration)
 - See DESIGN.md "pCloud notes". The user registers an app in pCloud's developer console (needs the hosted address
   for the OAuth redirect) and provides the client id.
+- **Read in pCloud's docs on 2026-11-12** (docs.pcloud.com/methods/oauth_2.0/authorize.html): the sign-in page is
+  `https://my.pcloud.com/oauth2/authorize` with `client_id`, `response_type=token` and a mandatory `redirect_uri`; for a
+  pure browser app pCloud recommends the **token (implicit) flow**: it redirects to `redirect_uri#access_token=...&uid=...
+  &locationid=1|2&hostname=api.pcloud.com|eapi.pcloud.com` (so the region comes back automatically: all later API calls go
+  to that `hostname`). Tokens **do not expire** (no refresh needed; a lost token means sign in again). No client secret is
+  needed in the browser: **never put an app secret in this public repo**.
+- **What the user does (Claude can't, it needs their pCloud login):** (1) have a pCloud account; (2) at
+  https://docs.pcloud.com/my_apps/ log in and register an app, named e.g. "Interstitial Diary"; (3) add these redirect
+  URIs: `https://jesseracine.github.io/interstitial-diary/` (the real one) and, for testing, `http://localhost:5173/` and
+  `http://127.0.0.1:5173/`; (4) if the console offers a choice, give the app access to **its own app folder only**, not the
+  whole pCloud (the journal then sits in `Apps/<app name>/`, and a leaked token can't read their other files); (5) send
+  Claude the **app key / client id** (a public identifier, fine to commit) and say whether the account is US or Europe.
+  Never share the app secret or any access token.
+- **Design question for Claude once the id arrives:** the sign-in leaves the page. `StorageBackend.setup()` is an
+  interactive promise, so either a popup that posts the token back, or a full-page redirect whose return is handled at
+  startup (more robust for an installed Android PWA; needs a small "pending setup" step in the manager). Decide then,
+  and keep `sync.ts` untouched (rule 3).
 - Implement `storage/backends/pcloud.ts`; handle the US/EU region; token stored in the backend config. Include the
   image methods (phase 4) so photos sync too.
 - **Done when:** an entry written on Windows appears on Android and vice versa, including offline edits on both.
