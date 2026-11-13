@@ -17,13 +17,13 @@ Read these before changing anything substantial:
   built; phase 4 = images on the cloud modules). [android-capture-plan.md](android-capture-plan.md): quick capture on
   Android (not started).
 
-**Status (2026-11-12):** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos
-(phases 1–3), the installable PWA, the data-safety features and **hosting** are built; 282 tests pass. **Live on GitHub
-Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public; the user has
-installed it). **Next: step 5a, the Dropbox storage module** (so Windows and Android can share one journal; plan in
-docs/CLOUD-STORAGE.md), which is waiting for the user to create a Dropbox app and send the **App key** (PROGRESS.md item 10;
-the key-independent code and mocked-`fetch` tests can be built first: ask). After that pCloud (on hold: its app approval
-may be manual) and Tauri. The update-banner test (step 4.6) was skipped on request and is still open.
+**Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
+**Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features and **hosting** are built; 327 tests
+pass. **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`,
+public; the user has installed it). **Dropbox (step 5a)** is built and its first real sign-in worked on localhost; it is
+waiting for the user's real checks and the cross-device round trip (PROGRESS.md item 10), and for a push the user
+approves. After that pCloud (on hold: its app approval may be manual) and Tauri. The update-banner test (step 4.6) was
+skipped on request and is still open.
 
 **This repo is public** (`origin` = https://github.com/JesseRacine/interstitial-diary; every push to `main` runs the tests
 and deploys the site). Keep it free of personal data: no machine paths, personal email addresses, keys or tokens (scan
@@ -138,8 +138,10 @@ src/
                         planImageCleanup / removeImagesOfDeletedEntries
     memory.ts           in-memory FileStore/LocalStore for tests (and a template for new modules)
     fs-access.d.ts      File System Access API typings
-    backends/           one file per storage module (folder.ts, browser.ts; fs-store.ts = shared directory store)
-                        + index.ts registry
+    backends/           one file per storage module (folder.ts, browser.ts, dropbox.ts; fs-store.ts = shared directory
+                        store; oauth.ts = PKCE sign-in for cloud modules; dropbox-store.ts = Dropbox FileStore;
+                        fake-dropbox.ts = test-only fake Dropbox API) + index.ts registry
+    resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
   components/           React UI
     Capture, JournalView, EntryItem, Results, SearchBar, CalendarView, TagsView, SettingsView, text.tsx (tag highlighting
     + autocomplete)

@@ -8,39 +8,26 @@ them (index at the bottom)._
 - **Live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo:
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`). Every push to `main` runs the tests and
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
-- **Built:** journal, search, calendar, tags, export, two storage modules (folder, browser files), photos (phases 1–3),
-  installable PWA, data-safety features, hosting. 282 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: built
+  2026-11-12, not yet verified across devices), photos (phases 1–3), installable PWA, data-safety features, hosting.
+  327 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## NEXT: step 5a, the Dropbox storage module (blocked on the user's App key)
+## NEXT: step 5a, Dropbox: built, waiting for the real checks (item 10) and a push
 
-The user has a Dropbox account and chose it as the first cloud module, so Windows and Android can share one journal and
-photos (images phase 4). Plan: OAuth PKCE with a refresh token, app-folder access only, a `FileStore` over Dropbox's HTTP
-API with the blob methods, tests against a mocked `fetch`, then a Settings entry. **Full plan, the facts read from
-Dropbox's docs, what is still unchecked, and the build order: [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md).**
+All five sub-steps are built and committed locally (2026-11-12): 5a.1 sign-in helper (`oauth.ts`), 5a.2 the
+`FileStore` (`dropbox-store.ts`, tested against `fake-dropbox.ts`), 5a.3 the module and finishing the sign-in at
+startup (`dropbox.ts`, `resume.ts`, `oauthPending.ts`, `manager.ts`), 5a.4 the App key and Settings wording, 5a.5 docs.
+How it works and why: DESIGN.md "Dropbox notes"; the build log: [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md).
 
-- The user chose (2026-11-12) to build the key-independent part first. Sub-steps (design in docs/CLOUD-STORAGE.md
-  "Build plan"): **5a.1 done**: `src/storage/backends/oauth.ts` (PKCE, authorize URL, pending sign-in kept in a store,
-  return parsing, code exchange, refresh; revoked refresh token → `NotAllowedError`) + `oauth.test.ts`.
-  **5a.2 done**: `dropbox-store.ts` (the `FileStore` with photos, token refresh on 401, 429 waits) tested against
-  `fake-dropbox.ts` (an in-memory Dropbox behind `fetch`, test-only), incl. a two-device `syncAll` round trip with a
-  photo. The fake follows Dropbox's docs; the real API (CORS, root path `""`, download without Content-Type) is
-  **not tried yet**. **5a.3 done**: `backends/dropbox.ts` (registered; greyed out "Not set up in this version yet"
-  while `DROPBOX_APP_KEY` is empty), `resume.ts` (finishes the sign-in return at startup), `oauthPending.ts` (pending
-  sign-in in IndexedDB), `resumeSetup?` on `StorageBackend`; `manager.ts` now has one `adopt()` for connect and the
-  return, cleans the URL, reopens a storage chosen in another tab when the window becomes visible (`connectedAt`), and
-  for a sign-in module "reconnect" signs in again. A failed return sets `signInError` (**not shown in Settings yet**:
-  5a.4). Checked in the dev app: Settings lists Dropbox greyed out; a stray `?code=&state=` URL is cleaned, no errors.
-  **5a.4 done (2026-11-12)**: App key `ebolibsz2jounxf` (public) in `DROPBOX_APP_KEY`; Settings shows `signInError`
-  (header badge "Sign-in not finished" + notice), and "Sign in again" wording for Dropbox. **First real sign-in
-  worked** on localhost:5173 in the user's own browser (the Claude browser pane can't use Dropbox passkeys): Settings
-  showed "Dropbox · Saved", so the token exchange, CORS and the `""` root listing work. **Not yet seen for real:** files
-  in `Apps/<app>/`, a photo upload, a download (another device's entry), staying signed in after a reload.
-  **Next: 5a.5** docs + those checks + the real Windows↔Android check (needs a push to the hosted site, ask first).
-- Blocked on the user from 5a.3 on (item 10 below): they create the Dropbox app and send the **App key**. Nothing counts
-  as working until a real entry travels Windows to Android and back.
+- **Confirmed for real (localhost:5173, the user's own browser):** sign-in, token exchange, browser (CORS) calls, the
+  `""` root listing; Settings showed "Dropbox · Saved".
+- **Still to do:** the user's localhost checks (item 10 below), then **ask before pushing** (the push publishes the
+  Dropbox module on the hosted site), then the real Windows↔Android round trip on the hosted app. Only then is Dropbox
+  "verified" and the Android data-safety story changes (DESIGN.md "Platform plan").
+- Testing note: the Claude browser pane can't use Dropbox passkeys; real sign-ins happen in the user's own browser.
 
 **After Dropbox:** pCloud (step 5, on hold: its app approval may need manual approval; notes in the same doc), then native
 apps with Tauri (step 6: Windows `.exe` and Android `.apk` built in GitHub Actions, tray/hotkey, native Android folder;
@@ -52,13 +39,15 @@ change. Closes waiting item 7.
 
 ## Waiting on the user
 
-**10. For Dropbox: create the app and send the App key** (asked 2026-11-12, not done yet). At
-https://www.dropbox.com/developers/apps: **Create app** > **Scoped access** > **App folder** (not Full Dropbox) > a unique
-name (e.g. "Interstitial Diary JR"). **Permissions** tab: tick `files.metadata.read`, `files.metadata.write`,
-`files.content.read`, `files.content.write` and click Submit. **Settings** tab > OAuth 2: add redirect URIs
-`https://jesseracine.github.io/interstitial-diary/`, `http://localhost:5173/` and `http://127.0.0.1:5173/`, and make sure
-"Allow public clients (Implicit Grant & PKCE)" is on. Send Claude the **App key** (public). **Never share the App secret
-or any token.**
+**10. Dropbox real checks** (asked 2026-11-12; the app "Interstitial Journal" exists and its key is in the code). In
+the user's own browser on `http://localhost:5173/` with Dropbox connected (the dev server must be running):
+- a. Add an entry; within a few seconds `Apps/Interstitial Journal/2026/2026-11-xx.md` appears on dropbox.com.
+- b. Attach a photo; after the next save `2026/images/` and `.thumbs/` hold a file each.
+- c. Close the tab, open the app again: still "Dropbox · Saved" (the refresh token works), no sign-in.
+- d. Edit that day's file on dropbox.com (or add a line), then click "Save now": the change shows in the app (download).
+Then, after a push the user approves: e. the hosted app on Windows and on Android (Settings > Dropbox on each, each
+signs in), an entry and a photo written on one appear on the other, including edits made offline on both.
+**Never share the App secret or any token.**
 
 **Older checks** (can only be done on the real Windows folder, a real Save dialog, or a second device; until the user
 confirms them they are **not verified**):

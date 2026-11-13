@@ -182,7 +182,8 @@ interface FileStore {           // what a module implements
 interface StorageBackend<Config> { // how the app offers and reopens it
   id, name, description
   unsupportedReason(): string | null
-  setup(): Promise<{ config, store, label }>          // interactive, runs in a click handler
+  setup(): Promise<{ config, store, label }>          // interactive, runs in a click handler (a sign-in module leaves the page here)
+  resumeSetup?(href): Promise<{ config, store, label }> // only sign-in modules: finish setup from the return URL (storage/resume.ts)
   open(config, interactive): Promise<OpenResult>       // reopen from saved config; may need permission
   insideBrowser?: boolean  // its files live in this browser's own data: local originals are never dropped for it
 }
@@ -200,7 +201,7 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 |---|---|---|
 | `folder`: Folder on this computer | done | Text and images. File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
 | `browser`: Files inside this browser | done | Text and images; `insideBrowser`. OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
-| `dropbox` | **next** (2026-11-12) | App-folder access, OAuth PKCE with a refresh token; text and images. See "Dropbox notes" below and docs/CLOUD-STORAGE.md. Waiting for the user's App key. |
+| `dropbox`: Dropbox | built, **not verified across devices** (2026-11-12) | Text and images, in `Apps/<app name>/`. OAuth PKCE redirect with a refresh token. Works everywhere incl. Android. First real sign-in and sync worked on localhost; the Windows↔Android round trip is still to do. See "Dropbox notes" below and docs/CLOUD-STORAGE.md. |
 | `pcloud` | planned, on hold | pCloud's app registration may need manual approval. See "pCloud notes" below. |
 | `github` | idea | Files in a private repo via the GitHub contents API (a token pasted into the app; free version history). |
 | `onedrive`, `gdrive` | ideas | OneDrive simple upload is 4 MB (photos need upload sessions); Google Drive has fiddly sign-in rules. |
@@ -210,15 +211,30 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 (and remove it from `PLANNED_BACKENDS`), then test it against the sync engine the same way `sync.test.ts` uses
 `memoryStore` (and, with blob methods, the way `attachments.test.ts` does). Nothing else should need to change.
 
-**Dropbox notes** (from Dropbox's docs, 2026-11-12; the full list with what is still unchecked is in docs/CLOUD-STORAGE.md):
-- Sign-in is **OAuth code flow with PKCE** (no client secret in the browser) with `token_access_type=offline`: a short-lived
-  access token plus a refresh token kept in the backend config. The app registers as a **scoped app with App folder
-  access** (the journal lives in `Apps/<app name>/`), scopes `files.metadata.read/write` and `files.content.read/write`,
-  and the redirect URIs are the hosted address plus `http://localhost:5173/` and `http://127.0.0.1:5173/`.
-- Browsers may call it directly: RPC endpoints on `api.dropboxapi.com`, content on `content.dropboxapi.com` (arguments in
-  the `Dropbox-API-Arg` header or an `arg` URL parameter). Paths are case-insensitive. Photos must never be overwritten
-  (`BlobCollisionError`), so uploads of image files use add-mode, text files use overwrite.
-- The App key is public and kept in one constant; the app secret and all tokens are never committed.
+**Dropbox notes** (built 2026-11-12; files: `backends/oauth.ts` sign-in, `backends/dropbox-store.ts` the FileStore,
+`backends/dropbox.ts` the module, `resume.ts` + `oauthPending.ts` the return; tests run against `backends/fake-dropbox.ts`):
+- **Sign-in:** OAuth code flow with PKCE (no client secret) and `token_access_type=offline`, as a **full-page redirect**
+  (a popup's `opener` is unreliable from an installed Android app). The verifier and `state` wait in the IndexedDB meta
+  table (`oauth:pending`, 30 min), so the return can be finished in whichever tab of the origin it lands in; a window
+  that becomes visible reopens a storage another tab chose (`connectedAt` in the saved storage). The URL is cleaned
+  after the return. A failed return shows "Sign-in not finished" and leaves the old storage as it was.
+- **Saved config:** `{ refreshToken, accountId }` only; the access token stays in memory, refreshed when about to expire
+  or after a 401. A refused refresh (`invalid_grant`, e.g. the app was removed in Dropbox) becomes `NotAllowedError`,
+  shown as "Sign in to Dropbox again"; "reconnect" for a sign-in module signs in again (a fresh sync state, safe).
+- **The app:** a **scoped app with App folder access** (`Apps/<app name>/`; the user's app is "Interstitial Journal"),
+  scopes `files.metadata.read/write` and `files.content.read/write`, redirect URIs = the hosted address,
+  `http://localhost:5173/` and `http://127.0.0.1:5173/`. The App key is public, in `DROPBOX_APP_KEY`; the app secret
+  and all tokens are never committed.
+- **Files:** `rev` = Dropbox `content_hash` (same content, same rev on every device). `list()` reads the root (`""`),
+  then each `YYYY` folder and `.meta` one level deep (images are never walked). Text uploads use mode `overwrite`,
+  photos mode `add` without autorename (a conflict re-checks the size: same = fine, else `BlobCollisionError`).
+  Arguments for upload/download go in the `Dropbox-API-Arg` header with non-ASCII as `\uXXXX`. Errors are matched by
+  `error_summary` prefix (not-found is `path/not_found`, but `path_lookup/not_found` for `delete_v2`). 429/503 wait for
+  `Retry-After` (up to 4 times). Paths are case-insensitive. One upload is at most 150 MiB (phone photos are far below).
+- **Confirmed for real (2026-11-12, localhost):** the sign-in and token exchange, browser (CORS) calls, the `""` root.
+- **Limits:** the built-in Claude browser pane can't use Dropbox passkeys (test in a real browser). "Stop" forgets the
+  sign-in on this device but does not revoke it at Dropbox (the user can remove the app under Dropbox settings >
+  Connected apps).
 
 **pCloud notes** (from a CORS check on 2026-11-08; sign-in details read in pCloud's docs on 2026-11-12):
 - Use the **HTTP API** (`api.pcloud.com` US / `eapi.pcloud.com` EU). It returns `Access-Control-Allow-Origin: *`.
@@ -318,8 +334,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   platform-specific pieces or storage modules.
 - **Browser data can be wiped** by: clearing site data, uninstalling with "clear data" ticked, Android "Clear storage"
   for Chrome, eviction under low disk (unless persistent storage was granted; the app requests it at startup), or the
-  app's address changing. This is why file storage matters. On Android, until a cloud module (Dropbox first, then pCloud) or
-  native exists, the only copy is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
+  app's address changing. This is why file storage matters. On Android the Dropbox module (built 2026-11-12, not yet
+  verified there) is the way out; without it, or native, the only copy is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
 - **The app says so** (`lib/dataSafety.ts`): with no storage chosen, or only "Files inside this browser" (same browser
   data, so not a backup), the Settings storage card shows a warning: "Entries are only in this browser", or "Entries and
   photos are only in this browser" with the photo count when the device holds any, suggesting a storage or Export. The

@@ -3,7 +3,11 @@
 _Read this when working on step 5a/5 (a cloud storage module). For the short state of things read
 [../PROGRESS.md](../PROGRESS.md) first. The storage contract is in [../DESIGN.md](../DESIGN.md) ("Storage modules")._
 
-## 5a. Dropbox storage module: NEXT (chosen 2026-11-12; waiting on the user's App key)
+## 5a. Dropbox storage module: BUILT 2026-11-12, waiting for the real cross-device check
+
+_Status: all five sub-steps committed; first real sign-in and sync on localhost worked. How it works now: DESIGN.md
+"Dropbox notes". What the user still checks: PROGRESS.md waiting item 10. The rest of this section is the original plan
+and build log._
 The user has a Dropbox account and wants to try it. Same pattern as every module: `storage/backends/dropbox.ts` + one
 line in `backends/index.ts`, no changes to `sync.ts` (CLAUDE.md rule 3). It must implement the blob methods
 (`readBlob`/`writeBlob`/`hasBlob`/`removeBlob`) so photos sync too (images phase 4). Facts read from Dropbox's docs on
