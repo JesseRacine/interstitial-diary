@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-12. Kept short on purpose: read this file first, and open the `docs/` files only when you need
+_Last updated: 2026-11-13. Kept short on purpose: read this file first, and open the `docs/` files only when you need
 them (index at the bottom)._
 
 ## Where things stand
@@ -8,23 +8,26 @@ them (index at the bottom)._
 - **Live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo:
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`). Every push to `main` runs the tests and
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
-- **Built:** journal, search, calendar, tags (+ **people and places**, live 2026-11-12), export, three
+- **Built:** journal, search, calendar, tags (+ **people and places**, live 2026-11-12), **events** (`!"Title"`, an Events
+  tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 380 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 411 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
-- **Backup:** a new dated archive was made 2026-11-12 at commit `b19f155` (`archive-2026-11-12/` + zip in the Claude
-  session folder, restore tested, 380 tests passed on its copy). The user was also advised to do one Settings > Export
+- **Backup:** the newest dated archive was made 2026-11-12 at commit `b19f155` (`archive-2026-11-12/` + zip in the Claude
+  session folder, restore tested, 380 tests passed on its copy); it **does not include Events** (make a new one after
+  big changes; offer it). The user was also advised to do one Settings > Export
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Events (`!"Jack's 40th birthday"`): all 5 steps built, PUSHED and live 2026-11-13 (`0995008`, deploy #10 green; live bundle checked)
 
-Not a tag kind: an event is the unique name of something that happened, so it has its own module and, later, its own
-top-level **Events** view (timeline by date and title). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
+Not a tag kind: an event is the unique name of something that happened, so it has its own module and its own
+top-level **Events** view (timeline by date and title). The user tried it on an empty local copy (no storage connected)
+and said **"it works"** (2026-11-13). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
 follow whitespace/start/an opening bracket), no autocomplete, nothing new stored (the marker stays in the entry text; the
 list is computed), same title within 7 days = one event, a longer gap = a new event with the same title (no year in
 the title needed).
@@ -65,7 +68,7 @@ docs/HISTORY.md. 380 tests, `tsc` clean, lint unchanged; each step was checked i
 **Not verified on the user's real data/devices** (see waiting item 12; installed apps update on reload). Left out on purpose (docs/LIMITS-AND-IDEAS.md):
 "mentioned together with", place suggestion from location, converting an old `#sarah` into `@sarah`.
 
-## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
+## NEXT (after that); nothing else in progress as of 2026-11-13; ask the user which of these
 
 1. **Separate Dropbox app for development** (offered 2026-11-12, user said "not now"): the Dropbox App key is hard-coded
    (`DROPBOX_APP_KEY`) and `http://localhost:5173/` is a registered redirect of the same app, so a dev-server Dropbox
