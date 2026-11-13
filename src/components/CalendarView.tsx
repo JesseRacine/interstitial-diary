@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react'
-import { dayKey, type Entry, MONTH_NAMES, pad } from '../lib/entry'
+import { addDays, dayKey, type Entry, MONTH_NAMES, pad } from '../lib/entry'
+import { eventDateLabel } from '../lib/eventRows'
+import type { EventStat } from '../lib/events'
+import { buildWeekReview, weekStart } from '../lib/weekReview'
 import { countByDay } from '../search/engine'
+import { WeekReview } from './WeekReview'
 
 const WEEK_HEAD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -41,13 +45,24 @@ function Month({ y, m, counts, max, compact, today, onOpenDay }: {
   )
 }
 
-export function CalendarView({ entries, onOpenDay }: { entries: Entry[]; onOpenDay: (day: string) => void }) {
+type Mode = 'month' | 'year' | 'week'
+
+export function CalendarView({ entries, events, onOpenDay, onTag, onOpenEvent }: {
+  entries: Entry[]
+  events: EventStat[]
+  onOpenDay: (day: string) => void
+  onTag: (tag: string) => void
+  onOpenEvent: (id: string) => void
+}) {
   const counts = useMemo(() => countByDay(entries), [entries])
   const now = new Date()
-  const [mode, setMode] = useState<'month' | 'year'>('month')
+  const [mode, setMode] = useState<Mode>('month')
   const [y, setY] = useState(now.getFullYear())
   const [m, setM] = useState(now.getMonth())
   const today = dayKey(now)
+  const thisWeek = weekStart(today)
+  const [week, setWeek] = useState(thisWeek) // the Monday of the week shown in Week mode
+  const review = useMemo(() => (mode === 'week' ? buildWeekReview(entries, week, events) : null), [mode, entries, week, events])
 
   const prefix = mode === 'month' ? `${y}-${pad(m + 1)}` : `${y}`
   let max = 0
@@ -56,6 +71,7 @@ export function CalendarView({ entries, onOpenDay }: { entries: Entry[]; onOpenD
   for (const [k, c] of counts) if (k.startsWith(prefix)) { max = Math.max(max, c); total += c; activeDays++ }
 
   const step = (dir: number) => {
+    if (mode === 'week') return setWeek(addDays(week, dir * 7))
     if (mode === 'year') return setY(y + dir)
     const d = new Date(y, m + dir, 1)
     setY(d.getFullYear())
@@ -66,15 +82,23 @@ export function CalendarView({ entries, onOpenDay }: { entries: Entry[]; onOpenD
     <section className="calendar">
       <div className="day-nav">
         <button type="button" onClick={() => step(-1)} aria-label="Previous">‹</button>
-        <h2>{mode === 'month' ? `${MONTH_NAMES[m]} ${y}` : y}</h2>
-        <button type="button" onClick={() => step(1)} aria-label="Next">›</button>
+        <h2>{mode === 'week' ? `Week of ${eventDateLabel(week, addDays(week, 6))}` : mode === 'month' ? `${MONTH_NAMES[m]} ${y}` : y}</h2>
+        <button type="button" onClick={() => step(1)} aria-label="Next" disabled={mode === 'week' && week >= thisWeek}>›</button>
+        {mode === 'week' && week !== thisWeek && <button type="button" onClick={() => setWeek(thisWeek)}>This week</button>}
         <div className="seg">
           <button type="button" className={mode === 'month' ? 'on' : ''} onClick={() => setMode('month')}>Month</button>
           <button type="button" className={mode === 'year' ? 'on' : ''} onClick={() => setMode('year')}>Year</button>
+          <button type="button" className={mode === 'week' ? 'on' : ''} onClick={() => setMode('week')}>Week</button>
         </div>
-        <span className="muted count">{total} entries · {activeDays} days</span>
+        {review ? (
+          <span className="muted count">{review.total} {review.total === 1 ? 'entry' : 'entries'}</span>
+        ) : (
+          <span className="muted count">{total} entries · {activeDays} days</span>
+        )}
       </div>
-      {mode === 'month' ? (
+      {review ? (
+        <WeekReview review={review} onOpenDay={onOpenDay} onTag={onTag} onOpenEvent={onOpenEvent} />
+      ) : mode === 'month' ? (
         <Month y={y} m={m} counts={counts} max={max} today={today} onOpenDay={onOpenDay} />
       ) : (
         <div className="year">
@@ -83,9 +107,11 @@ export function CalendarView({ entries, onOpenDay }: { entries: Entry[]; onOpenD
           ))}
         </div>
       )}
-      <div className="legend muted">
-        Fewer {[0, 1, 2, 3, 4].map((l) => <span key={l} className={`cell heat-${l}`} />)} More
-      </div>
+      {!review && (
+        <div className="legend muted">
+          Fewer {[0, 1, 2, 3, 4].map((l) => <span key={l} className={`cell heat-${l}`} />)} More
+        </div>
+      )}
     </section>
   )
 }

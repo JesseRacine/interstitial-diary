@@ -358,7 +358,13 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   that day in the journal. A photo without a thumbnail shows the same placeholders as in a bubble.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
-- **Calendar:** month or year heatmap; click a day to open it.
+- **Calendar:** month or year heatmap; click a day to open it. A third switch, **Week** (the weekly review), shows one
+  Monday-to-Sunday week with ‹ › to move between weeks (not past the current one) and "This week" to come back. It is worked
+  out from the entries each time (`buildWeekReview` in `lib/weekReview.ts`; nothing stored, nothing to sync): entries,
+  days written (of 7), photos, the busiest day (the earliest if tied) and the change against the week before; a bar per day
+  (click opens that day); entries by time of day (night 0–6, morning 6–12, afternoon 12–18, evening 18–24, by the hour
+  written); the most used tags, people and places (click searches it); and the events with an entry that week (click opens
+  the event). One hue (the calendar's green ramp), the busiest day the darker step.
 - **Tags:** a Tags / People / Places switch (one tab per kind in `TAG_KINDS`, each with its count); per name the
   entry count and last-used date; rename/merge within the kind (a person's new name may be typed as "Sara Jones",
   stored `@sara_jones`; a name that already exists offers a merge). Clicking a person or place opens **its page** (kinds

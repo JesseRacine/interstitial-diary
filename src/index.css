@@ -322,6 +322,32 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .legend { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; margin-top: 1rem; justify-content: flex-end; }
 .legend .cell { width: 14px; aspect-ratio: 1; border-radius: 3px; }
 
+/* Calendar > Week (weekly review): one hue from the calendar's ramp; the busiest day is the darker step */
+.week-review { display: flex; flex-direction: column; gap: 1.25rem; }
+.week-review h3 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.5rem; }
+.week-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.5rem; margin: 0; }
+.week-stats > div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.55rem 0.75rem; }
+.week-stats dt { font-size: 0.8rem; color: var(--muted); }
+.week-stats dd { margin: 0.1rem 0; font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+.week-stats dd .muted { font-size: 0.9rem; font-weight: 400; }
+.week-stats > div > span.muted { font-size: 0.8rem; }
+.week-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.week-bar { display: flex; flex-direction: column; align-items: stretch; gap: 3px; border: 0; background: none; padding: 0; height: 9rem; }
+.week-bar:hover:not(:disabled) { border: 0; }
+.week-bar .num { height: 1.1rem; font-size: 0.8rem; font-weight: 600; text-align: center; }
+.week-bar .track { flex: 1; display: flex; align-items: flex-end; border-bottom: 1px solid var(--border); }
+.week-bar .fill { display: block; width: 100%; height: var(--h); background: var(--heat-3); border-radius: 4px 4px 0 0; }
+.week-bar.top .fill { background: var(--heat-4); }
+.week-bar:hover .fill, .week-bar:focus-visible .fill { filter: brightness(1.15); }
+.week-bar .dow { font-size: 0.8rem; }
+.week-bands { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.week-bands li { display: grid; grid-template-columns: 8.5rem 1fr 2rem; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+.week-bands .track { height: 10px; background: var(--heat-0); border-radius: 5px; overflow: hidden; }
+.week-bands .fill { display: block; height: 100%; background: var(--heat-3); border-radius: 0 5px 5px 0; }
+.week-bands .count { text-align: right; font-variant-numeric: tabular-nums; }
+.week-chips { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; }
+.week-events { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+
 /* Tags */
 .tag-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .tag-table th, .tag-table td { text-align: left; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--border); }

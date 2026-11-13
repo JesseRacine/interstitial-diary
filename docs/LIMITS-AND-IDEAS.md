@@ -5,6 +5,9 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 ## Known limitations
 - Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
 - Removing an entry from a file by hand doesn't delete it (by design; see DESIGN.md).
+- Weekly review: weeks start on Monday (like the calendar; not a setting), there is no future week, and the week is the
+  entry's day in local time (an entry written at 00:10 counts for the new day). The time-of-day parts are fixed
+  (night 0–6, morning 6–12, afternoon 12–18, evening 18–24). A tag counts once per entry however often it is written.
 - Editing an entry's time: not into the future; the time is to the minute (the entry keeps its seconds). Changing the
   time in a day file by hand (`## 09:14`) is ignored when the heading has the id comment: use the app's "When" field.
   A time edit and a text edit of the same entry on two devices before they sync keep only the newer one.
@@ -37,7 +40,8 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 ## Ideas backlog
 - Restyle search results to match the chat look (they still use cards).
 - Idle nudge ("you haven't logged in 90 minutes").
-- Weekly review page: entries per day, top tags, time-of-day patterns.
+- Weekly review, next: a month review; an "entries per hour" detail for a day; compare two weeks side by side; a weekly
+  note or a "what went well" prompt; tags that are new this week.
 - Incremental search indexing if the journal gets very large.
 - GitHub storage module (see [CLOUD-STORAGE.md](CLOUD-STORAGE.md), "Other storage ideas").
 - Photos view: filter by tag/date range; jump to the entry from the lightbox.

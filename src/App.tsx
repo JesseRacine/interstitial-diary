@@ -175,7 +175,8 @@ export default function App() {
             <Capture tagStats={tagStats} inputRef={captureRef} onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
-          <CalendarView entries={entries} onOpenDay={(d) => openDay(d)} />
+          <CalendarView entries={entries} events={events} onOpenDay={(d) => openDay(d)} onTag={searchTag}
+            onOpenEvent={(id) => { setEventId(id); setView('events'); setQuery(''); setBackQuery(null) }} />
         ) : view === 'events' ? (
           <EventsView events={events} entries={entries} selectedId={eventId} onSelect={setEventId} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />

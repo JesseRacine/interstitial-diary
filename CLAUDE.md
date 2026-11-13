@@ -22,7 +22,7 @@ Read these before changing anything substantial:
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
 "seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
 pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); 434 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+in PROGRESS.md); 444 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
@@ -124,6 +124,8 @@ src/
                         photoUsage, localImageSizes, removeLocalImagesUnlessUsed
     markdown.ts         day file <-> entries (the on-disk format, see DESIGN.md)
     merge.ts            union-by-id merge + tombstones
+    weekReview.ts       the weekly review: weekStart (Monday), buildWeekReview (per-day counts, time-of-day bands, top
+                        tags/people/places, events of the week, vs the week before), compareLabel
     retime.ts           editing an entry's time/date: retimedCreatedAt, isAllowedTime, retimeEntry (sets the local-only
                         `prevDay` that sync uses to rewrite the old day's file), datetime-local helpers
     hooks.ts            useLive: a Dexie liveQuery as React state
@@ -166,7 +168,8 @@ src/
     resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
-    Capture, JournalView, EntryItem, Results, SearchBar, CalendarView, TagsView (+ TagPage: one person/place), SettingsView,
+    Capture, JournalView, EntryItem, Results, SearchBar, CalendarView (Month | Year | Week; WeekReview.tsx is the weekly
+    review, its logic is lib/weekReview.ts), TagsView (+ TagPage: one person/place), SettingsView,
     EventsView (list + event page + rename), eventNav.ts (OpenEventContext: event chips open their event),
     text.tsx (tag and event display + tag autocomplete)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
