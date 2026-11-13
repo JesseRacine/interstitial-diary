@@ -80,7 +80,8 @@ both devices, then Start over once more (item 11).
 
 ## Waiting on the user
 
-**12. People and places on the real app** (pushed 2026-11-12; reload until both devices have the new version):
+**12. People and places on the real app** (pushed 2026-11-12; the user tested it and said **"seems to work"**, without
+reporting a, b and c one by one, so they are not individually confirmed; reload until both devices have the new version):
 a. Open the app on Windows: the journal, search and Tags view still work, nothing looks lost (the one-time tag
 recalculation ran). Any old text like `@home` or `~word` now shows as a person/place: expected, see limits.
 b. Write `Lunch with @sarah_jones at ~blue_door`: shown as "👤 Sarah Jones", "📍 Blue Door"; `@sa` suggests, search
