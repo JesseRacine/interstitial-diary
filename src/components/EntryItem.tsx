@@ -4,6 +4,7 @@ import { type Entry, entryImages, formatGap, shortDayLabel, timeLabel } from '..
 import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
 import { useOpenEvent } from './eventNav'
+import { useCoarsePointer } from '../lib/hooks'
 import { EntryText } from './text'
 import { useDraftImages, useImageInput } from './useDraftImages'
 
@@ -20,6 +21,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
   onOpenImage?: (e: Entry, index: number) => void
 }) {
   const openEvent = useOpenEvent()
+  const coarse = useCoarsePointer()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(entry.text)
   const photos = useDraftImages(entryImages(entry))
@@ -81,7 +83,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
             <button type="button" className="primary" onClick={save} disabled={photos.busy || !draft.trim()}>Save</button>
             <button type="button" onClick={() => setEditing(false)}>Cancel</button>
             <AttachButton draft={photos} />
-            <span className="muted">{photos.busy ? 'Preparing photos…' : 'Ctrl+Enter to save · Esc to cancel'}</span>
+            <span className="muted">{photos.busy ? 'Preparing photos…' : coarse ? 'Enter for a new line' : 'Ctrl+Enter to save · Esc to cancel'}</span>
           </div>
         </div>
       ) : (

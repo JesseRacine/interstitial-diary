@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { addEntry } from '../lib/db'
+import { enterAction, hasCoarsePointer } from '../lib/dom'
 import { timeLabel } from '../lib/entry'
+import { useCoarsePointer } from '../lib/hooks'
 import type { TagStat } from '../search/engine'
 import { AttachButton, DraftChips } from './DraftImages'
 import { Suggestions, useTagAutocomplete } from './text'
@@ -23,6 +25,7 @@ export function Capture({ tagStats, onSaved, inputRef }: {
   const [text, setText] = useState('')
   const [caret, setCaret] = useState(0)
   const now = useClock()
+  const coarse = useCoarsePointer()
   const ac = useTagAutocomplete(text, caret, tagStats)
   const draft = useDraftImages()
   const focus = () => inputRef.current?.focus()
@@ -60,7 +63,8 @@ export function Capture({ tagStats, onSaved, inputRef }: {
     const tag = ac.onKey(e)
     if (tag) return pick(tag)
     if (e.defaultPrevented) return
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+    // A touch screen's keyboard has no Shift+Enter, so there a plain Enter adds a line (see enterAction).
+    if (enterAction({ key: e.key, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, isComposing: e.nativeEvent.isComposing }, hasCoarsePointer()) === 'save') {
       e.preventDefault()
       void save()
     }
@@ -76,7 +80,10 @@ export function Capture({ tagStats, onSaved, inputRef }: {
     >
       <div className="capture-head">
         <span className="time">{timeLabel(now)}</span>
-        <span className="muted">Enter to save · Shift+Enter for a new line · # tags · @ people · ~ places · !"event"</span>
+        <span className="muted">
+          {coarse ? 'Enter for a new line · Save button saves' : 'Enter to save · Shift+Enter for a new line'}
+          {' '}· # tags · @ people · ~ places · !"event"
+        </span>
       </div>
       <div className="field">
         <textarea

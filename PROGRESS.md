@@ -12,7 +12,7 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 411 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 417 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
@@ -22,6 +22,20 @@ them (index at the bottom)._
   big changes; offer it). The user was also advised to do one Settings > Export
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
+
+## Current plan (agreed 2026-11-13): six improvements, one step per turn, in this order
+
+1. **Enter adds a line on touch screens: built and committed locally 2026-11-13, not pushed** (`enterAction` in `lib/dom.ts`,
+   6 tests; checked in the pane with the phone preset: plain Enter is left to the browser, desktop unchanged). The hint line
+   changes on touch. **Not tried on the real phone** (waiting item 14).
+2. **Edit an entry's time and date, any date** (changes sync: a stale copy stays in the old day file unless sync rewrites
+   it, plan: local-only `Entry.prevDay`; offer a fresh backup first).
+3. **Weekly review** inside the Calendar tab (Month | Year | Week).
+4. **Events/people:** 4a `event:` search filter and `has:event`; 4b merge an event into an existing one; 4c an event's own
+   date (pick the syntax with the user first).
+5. **Photo filters** in the Photos tab, using the search syntax.
+6. **Quick capture on Android, stage 1 (PWA):** `?new=1` shortcut + fast start + text share target (photo share later).
+The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
 
 ## Events (`!"Jack's 40th birthday"`): all 5 steps built, PUSHED and live 2026-11-13 (`0995008`, deploy #10 green; live bundle checked)
 
@@ -122,6 +136,10 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**14. Enter on the phone** (step 1 above, once pushed and the installed app has updated): in the capture box on Android,
+Enter adds a line and the Save button saves; the hint under the time says so; a two-line entry shows both lines in the
+journal and on Dropbox. Not tried on a real touch device (the pane only emulates one).
 
 **13. Events** (pushed 2026-11-13; the user tried it on an empty local copy with no storage connected and said **"it works"**,
 without reporting a-d one by one, and not on the phone or with Dropbox, so those are not confirmed; reload on both

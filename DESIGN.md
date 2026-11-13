@@ -2,7 +2,10 @@
 
 ## Product principles
 
-1. **Capture in seconds.** Opening the app lands in the capture box; Enter saves. If writing is slow, the habit dies.
+1. **Capture in seconds.** Opening the app lands in the capture box; Enter saves (Shift+Enter adds a line). On a touch screen
+   (`(pointer: coarse)`), whose keyboard has no Shift+Enter, Enter adds a line and the Save button saves; Ctrl/Cmd+Enter
+   saves everywhere (`enterAction` in `lib/dom.ts`). Line breaks are kept in the entry text and the day files. If writing
+   is slow, the habit dies.
 2. **Freeform first.** One text box, automatic timestamp, optional `#tags` anywhere in the text. No required fields.
 3. **Search and browse are core**, not extras: by keyword, phrase, tag, date, date range, time of day and weekday,
    plus calendar and tag views.
