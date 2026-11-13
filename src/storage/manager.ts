@@ -163,7 +163,8 @@ export function syncNow(): Promise<void> {
 async function followStartOver(id: string, s: FileStore) {
   const seen = await getMeta<string | undefined>(resetKey(id), undefined)
   const marker = await readMarker(s)
-  const action = resetAction(seen, marker)
+  const syncedBefore = Object.keys((await getMeta<SyncState>(syncKey(id), emptySyncState())).revs).length > 0
+  const action = resetAction(seen, marker, syncedBefore)
   if (action === 'clear') {
     await eraseLocalJournal()
     missingImages.replace([])

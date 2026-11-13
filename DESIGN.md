@@ -214,8 +214,11 @@ first). Every device would otherwise upload its copy again, so the storage gets 
 (`{ id, at }`, not a diary file: `list()` never returns it and the sync engine ignores it). Each device remembers per
 module the marker id it has acted on (meta `reset:<id>`, or `none`). At the start of each sync: a marker it hasn't seen
 while it remembered another one (or `none`) → it clears its own copy (`eraseLocalJournal`: entries, photos, `sync:*`,
-`images:*`; settings stay) and shows "Journal started over"; nothing remembered yet (just connected, or upgraded from an
-older version) → it only remembers the marker, so connecting a device still merges its entries. Order on the starting
+`images:*`; settings stay) and shows "Journal started over"; nothing remembered yet → if it **had synced with this
+storage before** (its `sync:<id>` lists files: it ran an older version) and there is a marker, it clears too; if it
+just connected (sync state empty), it only remembers the marker, so connecting a device still merges its entries.
+(Fixed 2026-11-12 after the first real test: a phone that updated after the PC started over remembered nothing and
+uploaded its old copy again.) Order on the starting
 device: `removeAll()`, then the marker, then the local erase, so a failure part-way never leaves a marker without the
 storage emptied, and a failure before that changes nothing locally. Limits: anything a device wrote offline after the
 start-over is lost when it clears; a device still running an older version uploads its old copy (open the app on every

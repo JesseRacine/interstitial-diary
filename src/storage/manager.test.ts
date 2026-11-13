@@ -272,7 +272,21 @@ describe('manager: start over', () => {
     expect(await dbm.getMeta('reset:cloud', null)).toBe('m1')
   })
 
-  it('a device from before this feature (nothing remembered) only notes the marker', async () => {
+  it('a device that synced here with an older version, then updated after the start-over, clears (regression)', async () => {
+    // The user's phone, 2026-11-12: it had synced with Dropbox before, got the new version only after the PC started
+    // over, so it remembered no marker. It must clear instead of uploading its old copy.
+    await connectedDevice(undefined, ['old phone entry'])
+    await dbm.setMeta('sync:cloud', { revs: { '2026/2026-11-08.md': 'r-old' } }) // it had synced with this storage
+    await load()
+    h.stores['cloud:A1'] = (await import('./memory')).memoryStore({ [MARKER]: JSON.stringify({ id: 'm1', at: 77 }) })
+    await m.initStorage()
+    expect(await entries()).toEqual([])
+    expect(h.stores['cloud:A1'].files.has('2026/2026-11-08.md')).toBe(false) // nothing uploaded again
+    expect(m.storageState().startedOverAt).toBe(77)
+    expect(await dbm.getMeta('reset:cloud', null)).toBe('m1')
+  })
+
+  it('a device that never synced with this storage (nothing remembered) keeps its entries and notes the marker', async () => {
     await connectedDevice(undefined, ['kept'])
     h.stores['cloud:A1'] = (await import('./memory')).memoryStore({ [MARKER]: JSON.stringify({ id: 'm1', at: 1 }) })
     await m.initStorage()

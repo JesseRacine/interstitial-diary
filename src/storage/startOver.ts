@@ -8,8 +8,11 @@ import type { FileStore } from './types'
  * Every device remembers, per storage module, the marker id it has already acted on (`resetKey`). On each sync:
  * - a marker this device hasn't seen, while it had seen an older one or none ("none") → this device clears its own
  *   copy first, then syncs (so it gets only what was written after the start-over);
- * - nothing remembered yet (a device that just connected, or that ran an older app version until now) → it only
- *   remembers the current marker. Connecting a device keeps its entries and uploads them, as always.
+ * - nothing remembered yet: if it had synced with this storage before (it ran an older app version until now) and
+ *   there is a marker → it clears too; if it just connected → it only remembers the current marker. Connecting a
+ *   device keeps its entries and uploads them, as always.
+ * A device still RUNNING an older version knows nothing about the marker and uploads its copy again; nothing here can
+ * stop that, so every device must have this version before anyone starts over.
  * The marker is not a diary file (list() never returns it), so the sync engine ignores it.
  */
 
@@ -37,9 +40,16 @@ export async function readMarker(store: FileStore): Promise<ResetMarker | null> 
 
 export type ResetAction = 'none' | 'remember' | 'clear'
 
-/** What a sync should do about the marker, given what this device remembers (undefined = nothing yet). */
-export function resetAction(seen: string | undefined, marker: ResetMarker | null): ResetAction {
-  if (seen === undefined) return 'remember'
+/**
+ * What a sync should do about the marker, given what this device remembers (undefined = nothing yet) and whether it
+ * has synced with this storage before (its sync state lists files).
+ * Nothing remembered + synced before = a device that was already using this storage when it got this app version: if
+ * there is a marker, the journal was started over while it ran an older version, so it clears too (2026-11-12: a phone
+ * in exactly this state uploaded its old copy again). Nothing remembered + never synced = it just connected: it keeps
+ * its entries and only remembers the marker.
+ */
+export function resetAction(seen: string | undefined, marker: ResetMarker | null, syncedBefore: boolean): ResetAction {
+  if (seen === undefined) return marker && syncedBefore ? 'clear' : 'remember'
   if (!marker) return 'none' // no marker (or it was removed by hand): nothing to act on
   return marker.id === seen ? 'none' : 'clear'
 }
