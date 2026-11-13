@@ -283,7 +283,8 @@ One search bar; filter chips write the same syntax. Parser: `search/query.ts`. E
 | `report draft` | all words must match; prefix match, fuzzy for words over 4 letters |
 | `"email triage"` | exact phrase |
 | `#work #tired` / `#work\|#personal` | all tags / any tag |
-| `-#personal` / `-meeting` / `-"a phrase"` | exclude |
+| `@sarah_jones` / `~home` / `@sarah\|@tom` / `#work\|~home` | a person / a place; groups may mix `#`, `@` and `~`. They are matched on stored keys, so `#sarah` and `@sarah` are different. A symbol with no usable name (`~5`, `@3pm`) is searched as a plain word |
+| `-#personal` / `-@sarah` / `-~home` / `-meeting` / `-"a phrase"` | exclude |
 | `on:2026-11-08`, `from:2026-11-01 to:2026-11`, `in:2026-11`, `in:2026` | dates (day, month or year precision) |
 | `today`, `yesterday`, `last:7d` / `w` / `m` / `y` | relative dates (`last:7d` = the 7 days ending today) |
 | `time:09-12`, `time:22-05` (wraps midnight), `after:22:00`, `before:7` | time of day (end exclusive) |

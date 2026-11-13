@@ -28,10 +28,11 @@ them (index at the bottom)._
   and dark; the typed text is the tooltip); `@` and `~` suggestions list only their own kind (`tagSegments` and
   `tagBeingTyped` in `entry.ts`, `tagLabel` in `tagKinds.ts`); Capture hint; search chips and the Tags view show the
   right labels; Rename is hidden for people/places until step 4. Checked in the browser (dark + light). 372 tests.
-- **Next, one per turn:** 3 search (`query.ts`, `SearchBar.tsx` help rows, tests; clicking a name already calls
-  `searchTag` with `tagToken`), 4 Tags view split + rename per kind, 5 person/place page, 6 docs and push (ask first).
-- Until step 3 ships, clicking a person/place or typing `@sarah` in search does **not** filter yet (the parser reads it
-  as a plain word): **don't push before step 3**.
+- **Step 3 done (2026-11-12, not pushed):** search reads `@sarah`, `~home`, `-@sarah`, `@a|@b`, `#work|~home` as the
+  stored keys (`tagKeyOfToken` in `query.ts`); `~5` / `@3pm` stay plain words; help rows added; clicking a person or
+  place in an entry or the Tags view searches for it. Checked in the browser. 377 tests, DESIGN.md search table updated.
+- **Next, one per turn:** 4 Tags view split (Tags / People / Places) + rename per kind (brings Rename back for people
+  and places), 5 person/place page, 6 docs and push (ask first). The app is now consistent enough to push after step 4.
 
 ## NEXT (after that); nothing else in progress as of 2026-11-12; ask the user which of these
 

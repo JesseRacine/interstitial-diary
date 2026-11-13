@@ -1,11 +1,12 @@
 import { addDays, dayKey, pad } from '../lib/entry'
+import { kindForSigil, tagKey } from '../lib/tagKinds'
 
 export interface ParsedQuery {
   terms: string[] // keywords, all must match (prefix + fuzzy)
   phrases: string[] // exact substrings
   excludeTerms: string[] // words or phrases that must not appear
-  tags: string[] // all required
-  anyTags: string[][] // each group: at least one required (#a|#b)
+  tags: string[] // all required; stored keys: `work`, `@sarah`, `~home` (see lib/tagKinds.ts)
+  anyTags: string[][] // each group: at least one required (#a|#b, @a|@b)
   excludeTags: string[]
   from?: string // YYYY-MM-DD inclusive
   to?: string // YYYY-MM-DD inclusive
@@ -75,7 +76,16 @@ export function tokenize(input: string): string[] {
   return out
 }
 
-const stripHash = (t: string) => t.replace(/^#/, '').toLowerCase()
+/**
+ * The stored key of a tag token (`#work` gives `work`, `@Sarah` gives `@sarah`, `~home` gives `~home`), or null when
+ * it is not one: no symbol, nothing after it, or a name that cannot be a tag of that kind (`~5`, `@3pm`).
+ */
+function tagKeyOfToken(t: string): string | null {
+  const kind = kindForSigil(t.charAt(0))
+  const name = t.slice(1)
+  if (!kind || !name || (kind.letterFirst && !/^\p{L}/u.test(name))) return null
+  return tagKey(kind, name)
+}
 
 export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
   const q: ParsedQuery = { terms: [], phrases: [], excludeTerms: [], tags: [], anyTags: [], excludeTags: [], errors: [] }
@@ -94,13 +104,16 @@ export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
       continue
     }
 
-    // Tags
-    if (lower.startsWith('-#') && lower.length > 2) { q.excludeTags.push(stripHash(lower.slice(1))); continue }
-    if (lower.startsWith('#') && lower.length > 1) {
-      const group = lower.split('|').map(stripHash).filter(Boolean)
-      if (group.length > 1) q.anyTags.push(group)
-      else if (group.length === 1) q.tags.push(group[0])
-      continue
+    // Tags, people and places: #work  @sarah  ~home  -#work  -@sarah  @sarah|@tom  #work|~home
+    const excluded = lower.startsWith('-') ? tagKeyOfToken(lower.slice(1)) : null
+    if (excluded) { q.excludeTags.push(excluded); continue }
+    if (kindForSigil(lower.charAt(0)) && lower.length > 1) {
+      // In a group, a part without a symbol is a plain tag name (`#a|b`); a part that cannot be a tag is dropped.
+      const group = lower.split('|').map((part) => tagKeyOfToken(part) ?? (kindForSigil(part.charAt(0)) ? '' : part)).filter(Boolean)
+      if (group.length > 1) { q.anyTags.push(group); continue }
+      if (group.length === 1) { q.tags.push(group[0]); continue }
+      if (lower.includes('|')) continue // a group with no usable tag is ignored
+      // otherwise a lone token like "~5" or "@3pm" is not a tag: it falls through and is searched as a word
     }
 
     // Relative day keywords

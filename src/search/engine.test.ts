@@ -41,6 +41,24 @@ describe('runSearch', () => {
   it('exact phrase', () => expect(ids('"email triage"')).toEqual(['k1']))
   it('tags all', () => expect(ids('#work #tired')).toEqual(['k1']))
   it('tags any', () => expect(ids('#meeting|#personal').sort()).toEqual(['k2', 'k3', 'k5']))
+  it('people and places', () => {
+    const people = [
+      makeEntry('Lunch with @Sarah_Jones at ~Blue_Door #food', at(2026, 11, 2, 12, 0), 'q1'),
+      makeEntry('Call with @tom about the plan', at(2026, 11, 3, 15, 0), 'q2'),
+      makeEntry('Coffee with @sarah_jones and @tom ~home', at(2026, 11, 4, 9, 0), 'q3'),
+      makeEntry('Mentioned sarah in passing, no tag. #sarah', at(2026, 11, 5, 9, 0), 'q4'),
+    ]
+    const all = [...people, ...filler]
+    const run = (q: string) => runSearch(parseQuery(q, NOW), all, buildIndex(all)).map((h) => h.entry.id).sort()
+    expect(run('@sarah_jones')).toEqual(['q1', 'q3'])
+    expect(run('@sarah_jones @tom')).toEqual(['q3'])
+    expect(run('@sarah_jones|@tom')).toEqual(['q1', 'q2', 'q3'])
+    expect(run('~blue_door')).toEqual(['q1'])
+    expect(run('@tom -~home')).toEqual(['q2'])
+    expect(run('#sarah')).toEqual(['q4']) // the plain tag, not the person
+    expect(run('@sarah_jones #food')).toEqual(['q1'])
+    expect(computeTagStats(people).map((s) => s.tag).sort()).toEqual(['sarah', '@sarah_jones', '@tom', '~blue_door', '~home', 'food'].sort())
+  })
   it('exclude tag', () => expect(ids('#work -#meeting').sort()).toEqual(['k1', 'k4', 'k6']))
   it('exclude word', () => expect(ids('#tired -dog')).toEqual(['k1']))
   it('date range', () => expect(ids('#work from:2026-11-01 to:2026-11-07').sort()).toEqual(['k1', 'k2']))

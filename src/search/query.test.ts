@@ -20,6 +20,24 @@ describe('parseQuery', () => {
     expect(q.excludeTags).toEqual(['personal'])
     expect(q.excludeTerms).toEqual(['meeting', 'stand up'])
   })
+  it('people and places are stored keys with their symbol', () => {
+    expect(p('@Sarah_Jones ~Home #work').tags).toEqual(['@sarah_jones', '~home', 'work'])
+    expect(p('-@sarah -~home').excludeTags).toEqual(['@sarah', '~home'])
+    expect(p('@sarah|@tom').anyTags).toEqual([['@sarah', '@tom']])
+    expect(p('#work|~home|@tom').anyTags).toEqual([['work', '~home', '@tom']])
+    expect(p('#a|b').anyTags).toEqual([['a', 'b']]) // a bare name in a group is still a plain tag
+  })
+  it('a symbol with no usable name is a word, not a tag', () => {
+    const q = p('~5 @3pm @ ~ -~5')
+    expect(q.tags).toEqual([])
+    expect(q.terms).toEqual(['~5', '@3pm', '@', '~'])
+    expect(q.excludeTerms).toEqual(['~5'])
+  })
+  it('a group with no usable tag is ignored', () => expect(isEmptyQuery(p('~5|@3pm'))).toBe(true))
+  it('toggling a person token works like a tag chip', () => {
+    expect(toggleToken('#work', '@sarah')).toBe('#work @sarah')
+    expect(toggleToken('#work @Sarah', '@sarah')).toBe('#work')
+  })
   it('on:', () => expect([p('on:2026-11-08').from, p('on:2026-11-08').to]).toEqual(['2026-11-08', '2026-11-08']))
   it('from/to', () => {
     const q = p('from:2026-11-01 to:2026-11-07')
