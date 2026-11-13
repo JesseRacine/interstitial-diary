@@ -24,8 +24,10 @@ Dropbox's docs, what is still unchecked, and the build order: [docs/CLOUD-STORAG
 - The user chose (2026-11-12) to build the key-independent part first. Sub-steps (design in docs/CLOUD-STORAGE.md
   "Build plan"): **5a.1 done**: `src/storage/backends/oauth.ts` (PKCE, authorize URL, pending sign-in kept in a store,
   return parsing, code exchange, refresh; revoked refresh token → `NotAllowedError`) + `oauth.test.ts`.
-  **Next: 5a.2**, the Dropbox `FileStore` (`dropbox-store.ts`) with a fake Dropbox behind a mocked `fetch`, incl. a
-  two-device `syncAll` round trip. Then 5a.3 backend + startup return (needs the key to try for real), 5a.4 Settings,
+  **5a.2 done**: `dropbox-store.ts` (the `FileStore` with photos, token refresh on 401, 429 waits) tested against
+  `fake-dropbox.ts` (an in-memory Dropbox behind `fetch`, test-only), incl. a two-device `syncAll` round trip with a
+  photo. The fake follows Dropbox's docs; the real API (CORS, root path `""`, download without Content-Type) is
+  **not tried yet**. **Next: 5a.3** backend + startup return (needs the key to try for real), then 5a.4 Settings,
   5a.5 docs + the real Windows↔Android check.
 - Blocked on the user from 5a.3 on (item 10 below): they create the Dropbox app and send the **App key**. Nothing counts
   as working until a real entry travels Windows to Android and back.

@@ -1,7 +1,10 @@
 import { BlobCollisionError, type FileStore, type StoredFile } from '../types'
 
 /** Only these files belong to the diary; anything else in the folder is ignored. */
-const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json'
+export const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json'
+
+/** Image files (originals and thumbnails): the only paths removeBlob may delete, so a typo never reaches a day file. */
+export const isImagePath = (path: string) => /^(\d{4}\/images|\.thumbs)\/[0-9a-f]{8,64}\.[a-z0-9]{1,5}$/.test(path)
 
 const isNotFound = (e: unknown) => e instanceof DOMException && (e.name === 'NotFoundError' || e.name === 'TypeMismatchError')
 
@@ -79,7 +82,7 @@ export function directoryStore(root: FileSystemDirectoryHandle): FileStore {
     },
     async removeBlob(path) {
       // Only ever the image folders; a typo can never reach a day file or the tombstones.
-      if (!/^(\d{4}\/images|\.thumbs)\/[0-9a-f]{8,64}\.[a-z0-9]{1,5}$/.test(path)) throw new Error(`Not an image path: ${path}`)
+      if (!isImagePath(path)) throw new Error(`Not an image path: ${path}`)
       try {
         const [dir, name] = await dirFor(path, false)
         await dir.removeEntry(name)

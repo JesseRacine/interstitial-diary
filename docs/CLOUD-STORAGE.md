@@ -47,7 +47,12 @@ line in `backends/index.ts`, no changes to `sync.ts` (CLAUDE.md rule 3). It must
   saved config is `{ refreshToken, accountId }`, the access token stays in memory; a revoked refresh token throws
   `NotAllowedError`, which `manager.ts` already shows as "needs permission"; `rev` = Dropbox `content_hash`; `list()`
   lists the root and then each `YYYY` folder and `.meta` non-recursively (never walking images); text writes use upload
-  mode `overwrite`, photos mode `add` without autorename; retry 429/503 with `Retry-After`. 5a.1 (`oauth.ts`) is done.
+  mode `overwrite`, photos mode `add` without autorename; retry 429/503 with `Retry-After`. 5a.1 (`oauth.ts`) and 5a.2
+  (`dropbox-store.ts`, tested against `fake-dropbox.ts`) are done. Checked in the docs 2026-11-12: single upload ≤ 150
+  MiB; 409 `error_summary` matched by prefix; not-found is `path/not_found` for download, list_folder and get_metadata
+  but `path_lookup/not_found` for delete_v2; mode `add` on an existing file is `path/conflict/file`; non-ASCII in
+  `Dropbox-API-Arg` must be `\uXXXX`. Not in the docs, to confirm against the real API in 5a.3: the app-folder root is
+  `""` for list_folder, CORS from the browser, and download with no Content-Type header.
 - The App key is a public identifier: keep it in one constant. **Never commit the App secret, a refresh token or an access
   token.** Until a real entry travels Windows to Android and back, the module is **not verified**: put that on PROGRESS.md
   "Waiting on the user".
