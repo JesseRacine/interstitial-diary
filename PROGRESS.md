@@ -27,8 +27,15 @@ Dropbox's docs, what is still unchecked, and the build order: [docs/CLOUD-STORAG
   **5a.2 done**: `dropbox-store.ts` (the `FileStore` with photos, token refresh on 401, 429 waits) tested against
   `fake-dropbox.ts` (an in-memory Dropbox behind `fetch`, test-only), incl. a two-device `syncAll` round trip with a
   photo. The fake follows Dropbox's docs; the real API (CORS, root path `""`, download without Content-Type) is
-  **not tried yet**. **Next: 5a.3** backend + startup return (needs the key to try for real), then 5a.4 Settings,
-  5a.5 docs + the real Windows↔Android check.
+  **not tried yet**. **5a.3 done**: `backends/dropbox.ts` (registered; greyed out "Not set up in this version yet"
+  while `DROPBOX_APP_KEY` is empty), `resume.ts` (finishes the sign-in return at startup), `oauthPending.ts` (pending
+  sign-in in IndexedDB), `resumeSetup?` on `StorageBackend`; `manager.ts` now has one `adopt()` for connect and the
+  return, cleans the URL, reopens a storage chosen in another tab when the window becomes visible (`connectedAt`), and
+  for a sign-in module "reconnect" signs in again. A failed return sets `signInError` (**not shown in Settings yet**:
+  5a.4). Checked in the dev app: Settings lists Dropbox greyed out; a stray `?code=&state=` URL is cleaned, no errors.
+  **Next: 5a.4** Settings (needs the App key to try): put the key in `DROPBOX_APP_KEY`, show `signInError`, wording
+  per module ("Reconnect folder" / "Allow access" → "Sign in again" for Dropbox), then the first real sign-in on
+  localhost:5173 (also confirms CORS, the `""` root and download). Then 5a.5 docs + the real Windows↔Android check.
 - Blocked on the user from 5a.3 on (item 10 below): they create the Dropbox app and send the **App key**. Nothing counts
   as working until a real entry travels Windows to Android and back.
 

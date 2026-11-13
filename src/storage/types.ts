@@ -61,8 +61,16 @@ export interface StorageBackend<Config = unknown> {
   insideBrowser?: boolean
   /** null if usable here, otherwise a short reason why not. */
   unsupportedReason(): string | null
-  /** Interactive first-time setup (runs inside a click handler). */
+  /**
+   * Interactive first-time setup (runs inside a click handler). A module that signs in on another site (OAuth) sends
+   * the browser there instead and never resolves; the setup is then finished by `resumeSetup` when the page loads again.
+   */
   setup(): Promise<{ config: Config; store: FileStore; label: string }>
+  /**
+   * Only for modules whose setup leaves the page: finish it from the URL the sign-in site sent the browser back to.
+   * Called at startup (see storage/resume.ts) only when a sign-in for this module was started.
+   */
+  resumeSetup?(href: string): Promise<{ config: Config; store: FileStore; label: string }>
   /** Reopen from saved config. With interactive=true it may prompt (e.g. re-grant folder access). */
   open(config: Config, interactive: boolean): Promise<OpenResult>
 }

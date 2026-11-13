@@ -10,7 +10,9 @@ import { isDisplayable, typeForExt } from '../lib/images'
 import { type ImageLocal, imagesWaiting } from './attachments'
 import { backendById } from './backends'
 import { type CleanupLocal, type CleanupPlan, type CleanupResult, planCleanup, removeUnusedImages } from './cleanup'
+import { metaPending } from './oauthPending'
 import { fetchOriginal, limitMode } from './originals'
+import { resumeFromRedirect } from './resume'
 import { emptySyncState } from './sync'
 import { syncAll } from './syncAll'
 import { type FileStore, type LocalStore, type SyncReport, type SyncState, supportsBlobs } from './types'
@@ -46,6 +48,8 @@ const dexieCleanup: CleanupLocal = {
 interface SavedStorage {
   backendId: string
   config: unknown
+  /** When it was chosen; another tab or the installed app sees a change and reopens it (see `pickUpOtherTab`). */
+  connectedAt?: number
 }
 
 export type StorageStatus = 'off' | 'needs-permission' | 'syncing' | 'ok' | 'error'
@@ -62,6 +66,7 @@ export interface StorageState {
   imagesFailed: number // photos the last run couldn't fetch from storage (retried next sync)
   imageError: string | null // last image problem; never turns the status into 'error'
   restored: boolean // the saved storage (if any) has been read at startup; before that 'off' just means "not known yet"
+  signInError: string | null // a sign-in on another site (Dropbox) that could not be finished; the old storage stays
 }
 
 /** Photos the badge reports as waiting: still to save from here, plus ones that failed to download. */
@@ -69,7 +74,7 @@ export const imagesPending = (s: StorageState) => s.imagesWaiting + s.imagesFail
 
 let state: StorageState = {
   backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0,
-  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false,
+  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false, signInError: null,
 }
 const listeners = new Set<() => void>()
 function set(patch: Partial<StorageState>) {
@@ -94,6 +99,7 @@ export function useImageMissing(hash: string): boolean {
 }
 
 let store: FileStore | null = null
+let connectedAt: number | undefined // of the storage this window has open
 let running: Promise<void> | null = null
 let again = false
 let timer: ReturnType<typeof setTimeout> | undefined
@@ -284,6 +290,7 @@ export function loadOriginal(ref: Pick<ImageRef, 'hash' | 'ext'>, day: string): 
 async function openSaved(saved: SavedStorage, interactive: boolean) {
   const backend = backendById(saved.backendId)
   if (!backend) return set({ status: 'error', message: `Unknown storage “${saved.backendId}”` })
+  connectedAt = saved.connectedAt
   set({ backendId: backend.id })
   const r = await backend.open(saved.config as never, interactive)
   if (r.ok) {
@@ -311,8 +318,12 @@ export async function initStorage() {
     const unsaved = await dexieImages.unsaved()
     return unsaved.length ? imagesWaiting(await db.entries.toArray(), new Set(unsaved)) : 0
   }).subscribe({ next: (n) => set({ imagesWaiting: n }) })
-  document.addEventListener('visibilitychange', () => void syncNow()) // flush when hidden, pull when shown
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void pickUpOtherTab().then(() => syncNow())
+    else void syncNow()
+  }) // flush when hidden, pull when shown
   setInterval(() => void syncNow(), 5 * 60_000) // pick up changes made by other apps
+  if (await finishSignInReturn()) return set({ restored: true }) // the new storage is open and syncing already
   const saved = await getMeta<SavedStorage | null>('storage', null)
   if (saved) {
     const opening = openSaved(saved, false) // sets backendId before its first await
@@ -323,34 +334,90 @@ export async function initStorage() {
   }
 }
 
-/** Choose a storage module (call from a click handler). */
+/** Start using a storage that was just set up: save it, and compare everything afresh against it. */
+async function adopt(backendId: string, config: unknown, s: FileStore, label: string) {
+  const at = Date.now()
+  await setMeta('storage', { backendId, config, connectedAt: at } satisfies SavedStorage)
+  await setMeta(syncKey(backendId), emptySyncState()) // new location: compare everything afresh
+  await setMeta(imagesKey(backendId), []) // ...and check every image again
+  await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
+  store = s
+  connectedAt = at
+  missingImages.replace([]) // that answer was about the old storage
+  set({
+    backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null, imagesFailed: 0, imageError: null,
+    signInError: null,
+  })
+  await syncNow()
+}
+
+/** Choose a storage module (call from a click handler). A module that signs in on another site leaves the page here. */
 export async function connect(backendId: string) {
   const backend = backendById(backendId)
   if (!backend) return
   try {
     const { config, store: s, label } = await backend.setup()
-    await setMeta('storage', { backendId, config } satisfies SavedStorage)
-    await setMeta(syncKey(backendId), emptySyncState()) // new location: compare everything afresh
-    await setMeta(imagesKey(backendId), []) // ...and check every image again
-    await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
-    store = s
-    missingImages.replace([]) // that answer was about the old storage
-    set({ backendId, label, status: 'ok', message: null, lastSync: null, lastReport: null, imagesFailed: 0, imageError: null })
-    await syncNow()
+    await adopt(backendId, config, s, label)
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return // picker cancelled
     set({ status: 'error', message: describe(e) })
   }
 }
 
-/** Re-grant access after a restart (call from a click handler). */
+/**
+ * If this page load is the return from a sign-in page (Dropbox), finish that setup. True when the new storage was
+ * adopted; on failure the message is shown and the saved storage (if any) opens as usual. Never throws.
+ */
+async function finishSignInReturn(): Promise<boolean> {
+  try {
+    const r = await resumeFromRedirect(location.href, metaPending, backendById)
+    if (!r) return false
+    history.replaceState(history.state, '', r.cleanUrl) // a reload must not try the same sign-in again
+    if (!r.ok) {
+      set({ signInError: r.message })
+      return false
+    }
+    await adopt(r.backendId, r.config, r.store, r.label)
+    return true
+  } catch (e) {
+    set({ signInError: describe(e) })
+    return false
+  }
+}
+
+/**
+ * When this window comes back into view: if another tab (or, on Android, the browser tab a sign-in returned to) chose
+ * a storage meanwhile, open that one here too. Everything else was already done by that tab, in the shared database.
+ */
+async function pickUpOtherTab() {
+  try {
+    const saved = await getMeta<SavedStorage | null>('storage', null)
+    if (!saved?.connectedAt || saved.connectedAt === connectedAt) return
+    while (running) await running
+    missingImages.replace([])
+    set({ lastSync: null, lastReport: null, imagesFailed: 0, imageError: null, signInError: null })
+    await openSaved(saved, false)
+  } catch (e) {
+    console.warn('Could not check for storage chosen in another tab:', e)
+  }
+}
+
+/** Re-grant access after a restart (call from a click handler). A sign-in module signs in again instead. */
 export async function reconnect() {
   const saved = await getMeta<SavedStorage | null>('storage', null)
-  if (saved) await openSaved(saved, true)
+  if (!saved) return
+  if (backendById(saved.backendId)?.resumeSetup) return connect(saved.backendId)
+  await openSaved(saved, true)
+}
+
+/** Hide the "sign-in could not be finished" message. */
+export function dismissSignInError() {
+  set({ signInError: null })
 }
 
 export async function disconnect() {
   store = null
+  connectedAt = undefined
   clearTimeout(timer)
   missingImages.replace([])
   await db.meta.delete('storage')
