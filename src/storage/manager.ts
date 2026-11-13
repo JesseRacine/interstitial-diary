@@ -87,6 +87,9 @@ export function useStorage(): StorageState {
   return useSyncExternalStore(subscribe, () => state)
 }
 
+/** The current state outside React (tests, debugging). */
+export const storageState = (): StorageState => state
+
 /**
  * Photos that the last sync found nowhere: no thumbnail in storage and no original on this device (usually the
  * device that added them hasn't synced yet). Shown as "Not synced yet". Recomputed on every sync.

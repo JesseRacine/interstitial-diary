@@ -10,7 +10,9 @@ them (index at the bottom)._
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
 - **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: live
   since 2026-11-12, working Windows ↔ Android per the user), photos (phases 1–3), installable PWA, data-safety features, hosting.
-  327 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+  337 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
+  the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
