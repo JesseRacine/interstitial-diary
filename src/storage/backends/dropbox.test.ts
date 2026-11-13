@@ -4,7 +4,7 @@ import { memoryLocal } from '../memory'
 import { resumeFromRedirect } from '../resume'
 import { emptySyncState, syncOnce } from '../sync'
 import type { StorageBackend } from '../types'
-import { type DropboxConfig, dropboxBackend, makeDropboxBackend } from './dropbox'
+import { DROPBOX_APP_KEY, type DropboxConfig, dropboxBackend, makeDropboxBackend } from './dropbox'
 import { fakeDropbox } from './fake-dropbox'
 import type { PendingSignIn, PendingStore } from './oauth'
 import { makeEntry } from '../../lib/entry'
@@ -46,16 +46,27 @@ function world(tokenReply?: (form: URLSearchParams) => Response) {
 
 /** Start the sign-in and return the URL Dropbox would send the browser back to. */
 async function signInReturn(w: ReturnType<typeof world>, code = 'CODE') {
-  void w.backend.setup() // never resolves: the page would be leaving
-  await new Promise((r) => setTimeout(r, 0))
-  const state = new URL(w.navigated[0]).searchParams.get('state')
+  const state = await startAndGetState(w)
   return `${REDIRECT}?code=${code}&state=${state}`
 }
 
+/** Start the sign-in (setup never resolves: the page would be leaving) and wait until it navigates. */
+async function startAndGetState(w: ReturnType<typeof world>) {
+  const before = w.navigated.length
+  void w.backend.setup()
+  for (let i = 0; w.navigated.length === before; i++) {
+    if (i > 200) throw new Error('setup never navigated')
+    await new Promise((r) => setTimeout(r, 1))
+  }
+  return new URL(w.navigated[w.navigated.length - 1]).searchParams.get('state')
+}
+
 describe('the Dropbox module', () => {
-  it('is not offered until the App key is set (it is empty in this version)', () => {
-    expect(dropboxBackend.unsupportedReason()).toMatch(/Not set up/)
-    expect(world().backend.unsupportedReason()).toBeNull()
+  it('is offered only with an App key', () => {
+    expect(DROPBOX_APP_KEY).toMatch(/^[a-z0-9]{10,20}$/) // the public App key, never the secret
+    expect(dropboxBackend.unsupportedReason()).toBeNull()
+    const noKey = makeDropboxBackend({ appKey: '', pending: memoryPending(), redirectUri: () => REDIRECT, navigate: () => {} })
+    expect(noKey.unsupportedReason()).toMatch(/Not set up/)
   })
 
   it('setup sends the browser to Dropbox with PKCE and offline access, for this app folder', async () => {
@@ -132,9 +143,7 @@ describe('resumeFromRedirect (startup)', () => {
 
   it('reports a cancelled sign-in, and the old storage stays as it was', async () => {
     const w = world()
-    void w.backend.setup()
-    await new Promise((r) => setTimeout(r, 0))
-    const state = new URL(w.navigated[0]).searchParams.get('state')
+    const state = await startAndGetState(w)
     const r = await resumeFromRedirect(`${REDIRECT}?error=access_denied&state=${state}`, w.pending, lookupFor(w.backend))
     expect(r).toEqual({ ok: false, message: 'Sign-in was cancelled.', cleanUrl: REDIRECT })
   })

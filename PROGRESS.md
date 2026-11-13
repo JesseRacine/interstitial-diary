@@ -33,9 +33,12 @@ Dropbox's docs, what is still unchecked, and the build order: [docs/CLOUD-STORAG
   return, cleans the URL, reopens a storage chosen in another tab when the window becomes visible (`connectedAt`), and
   for a sign-in module "reconnect" signs in again. A failed return sets `signInError` (**not shown in Settings yet**:
   5a.4). Checked in the dev app: Settings lists Dropbox greyed out; a stray `?code=&state=` URL is cleaned, no errors.
-  **Next: 5a.4** Settings (needs the App key to try): put the key in `DROPBOX_APP_KEY`, show `signInError`, wording
-  per module ("Reconnect folder" / "Allow access" → "Sign in again" for Dropbox), then the first real sign-in on
-  localhost:5173 (also confirms CORS, the `""` root and download). Then 5a.5 docs + the real Windows↔Android check.
+  **5a.4 done (2026-11-12)**: App key `ebolibsz2jounxf` (public) in `DROPBOX_APP_KEY`; Settings shows `signInError`
+  (header badge "Sign-in not finished" + notice), and "Sign in again" wording for Dropbox. **First real sign-in
+  worked** on localhost:5173 in the user's own browser (the Claude browser pane can't use Dropbox passkeys): Settings
+  showed "Dropbox · Saved", so the token exchange, CORS and the `""` root listing work. **Not yet seen for real:** files
+  in `Apps/<app>/`, a photo upload, a download (another device's entry), staying signed in after a reload.
+  **Next: 5a.5** docs + those checks + the real Windows↔Android check (needs a push to the hosted site, ask first).
 - Blocked on the user from 5a.3 on (item 10 below): they create the Dropbox app and send the **App key**. Nothing counts
   as working until a real entry travels Windows to Android and back.
 

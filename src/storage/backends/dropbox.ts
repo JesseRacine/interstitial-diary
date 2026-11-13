@@ -7,7 +7,7 @@ import { OAuthError, type OAuthProvider, type PendingStore, beginSignIn, complet
  * The Dropbox app's App key: a public identifier (not a secret), from the Dropbox App Console. Empty until the app is
  * registered; the module then shows as not available. Never put the App secret or any token in this repository.
  */
-export const DROPBOX_APP_KEY: string = ''
+export const DROPBOX_APP_KEY: string = 'ebolibsz2jounxf'
 
 /** What is saved (in IndexedDB) for a connected Dropbox. The access token is never saved; it is fetched when needed. */
 export interface DropboxConfig {

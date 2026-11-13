@@ -2,10 +2,13 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { db } from '../lib/db'
 import { browserOnlyWarning, showHeaderWarning } from '../lib/dataSafety'
 import { useLive } from '../lib/hooks'
-import { BACKENDS, PLANNED_BACKENDS } from '../storage/backends'
+import { BACKENDS, PLANNED_BACKENDS, backendById } from '../storage/backends'
 import {
-  connect, disconnect, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
+  connect, disconnect, dismissSignInError, imagesPending, missingImages, reconnect, type StorageState, syncNow, useStorage,
 } from '../storage/manager'
+
+/** Modules that sign in on another site (Dropbox) get access back by signing in again; a folder by allowing access. */
+const signsIn = (backendId: string | null) => !!(backendId && backendById(backendId)?.resumeSetup)
 import { useBrowserOnlyMode } from './useBrowserOnlyMode'
 
 export function ago(ts: number | null): string {
@@ -53,13 +56,18 @@ export function StorageBadge({ onOpenSettings }: { onOpenSettings: () => void })
   const photos = usePhotoCount()
   const entries = useEntryCount()
   useTick(30_000)
+  if (s.signInError) {
+    return <button type="button" className="badge warn" onClick={onOpenSettings} title={s.signInError}>⚠ Sign-in not finished</button>
+  }
   if (s.status === 'off') {
     if (!showHeaderWarning(s.restored, true, entries, photos)) return null
     const w = browserOnlyWarning('none', photos)
     return <button type="button" className="badge warn" onClick={onOpenSettings} title={w.body}>⚠ {w.short}</button>
   }
   if (s.status === 'needs-permission') {
-    return <button type="button" className="badge warn" onClick={() => void reconnect()} title={`Allow access to ${s.label ?? 'storage'} again`}>⚠ Reconnect folder</button>
+    return signsIn(s.backendId)
+      ? <button type="button" className="badge warn" onClick={() => void reconnect()} title={`Sign in to ${s.label ?? 'storage'} again`}>⚠ Sign in to {s.label} again</button>
+      : <button type="button" className="badge warn" onClick={() => void reconnect()} title={`Allow access to ${s.label ?? 'storage'} again`}>⚠ Reconnect folder</button>
   }
   return (
     <button type="button" className={`badge ${s.status}`} onClick={onOpenSettings} title={s.message ?? s.label ?? ''}>
@@ -84,6 +92,12 @@ export function StorageCard() {
       <p className="muted">
         Entries are always kept in this browser for fast search. A storage also saves them (and their photos) as files you own.
       </p>
+      {s.signInError && (
+        <div className="notice warn" role="alert">
+          <strong>Sign-in not finished.</strong> {s.signInError}{' '}
+          <button type="button" className="ghost" onClick={dismissSignInError}>OK</button>
+        </div>
+      )}
       {warning && (
         <div className="notice warn" role="note">
           <strong>{warning.title}.</strong> {warning.body}
@@ -111,7 +125,7 @@ export function StorageCard() {
           </div>
           <div className="row">
             {s.status === 'needs-permission' ? (
-              <button type="button" className="primary" onClick={() => void reconnect()}>Allow access</button>
+              <button type="button" className="primary" onClick={() => void reconnect()}>{signsIn(s.backendId) ? 'Sign in again' : 'Allow access'}</button>
             ) : (
               <button type="button" onClick={() => void syncNow()} disabled={s.status === 'syncing'}>Save now</button>
             )}
