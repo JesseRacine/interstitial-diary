@@ -24,6 +24,12 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   but it shows in colour, in the Tags view and in search. Edit the text if that is unwanted.
 - A person or place name has no spaces (`@sarah_jones`); the app shows the underscore as a space. A tag, person and
   place of the same name (`#sarah`, `@sarah`, `~sarah`) are three different things; rename cannot change a tag's kind.
+- Events: only the quoted form `!"Title"` counts (an unquoted `!word` is plain text), and a title cannot contain quote
+  marks. There is no autocomplete, so the same event typed differently ("Jack's party" / "Jacks party") is two events
+  until you use Rename event on one of them (spacing and capitals are ignored, spelling is not). Entries with the same
+  title more than 7 days apart are separate events (that is how a yearly birthday stays separate); a long trip written
+  about with gaps over a week is split. An event's date is the day of its entries, not the day it was about. The event
+  list is computed on the fly from all entries each time they change (fine for tens of thousands, not measured).
 
 ## Ideas backlog
 - Restyle search results to match the chat look (they still use cards).
@@ -38,4 +44,7 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   place from the device location (asks for permission, privacy-sensitive); turn an old `#sarah` into `@sarah` in one
   go (a "convert to person/place" action); a page for plain tags too (`hasPage` on the `tag` kind); more kinds such as
   projects or moods (one row in `lib/tagKinds.ts`, plus colours and a search-help row).
+- Events, next: an `event:` search filter; give an event its own date (when it happened vs. when it was written about);
+  attach photos to an event; make the 7-day window a setting; merge two events by hand; an events export (a list of
+  dates and titles).
 - Small polish: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.

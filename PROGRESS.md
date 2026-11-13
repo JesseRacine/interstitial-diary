@@ -21,7 +21,7 @@ them (index at the bottom)._
   (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## Events (`!"Jack's 40th birthday"`): IN PROGRESS, steps 1-4 of 5 built locally 2026-11-13 (not pushed)
+## Events (`!"Jack's 40th birthday"`): all 5 steps built locally 2026-11-13, NOT PUSHED (ask the user before pushing)
 
 Not a tag kind: an event is the unique name of something that happened, so it has its own module and, later, its own
 top-level **Events** view (timeline by date and title). Decisions: quoted titles with spaces (straight or curly quotes, up to 120 characters, `!` must
@@ -49,7 +49,10 @@ the title needed).
   `eventAfterRename` (`events.ts`) lets the page follow the event to its new id (it may join a neighbour with the same
   new title). Tests: 2 in `db.test.ts`, 2 in `events.test.ts`; 411 total, `tsc` clean, lint 0 errors. Checked in the
   browser pane (prompt/confirm stubbed): both entries and the page updated, `#trip` untouched.
-- **Next:** 5 docs (DESIGN.md "Events", HISTORY, LIMITS), then ask the user about pushing.
+- **Step 5 done:** DESIGN.md "Events" (+ Events view bullet), docs/HISTORY.md rows, docs/LIMITS-AND-IDEAS.md (limits and
+  ideas), CLAUDE.md (code map, six tabs, rule 13: events are not tags).
+- **Next:** ask the user whether to push (publishes and redeploys). **Not verified on the user's real devices** (item 13
+  below, after a push).
 
 ## People and place tags: all 6 steps built, PUSHED and live 2026-11-12 (`cf88bea`, deploy #7 green; live bundle checked)
 
@@ -116,6 +119,11 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**13. Events** (not pushed yet; after a push and a reload on both devices): a. write `Went to !"Jack's 40th birthday" with
+@sam` (a straight or curly quote from the phone keyboard): shown as a blue "🎉 Jack's 40th birthday" chip; b. the Events
+tab lists it by month, the chip opens its page, Rename event fixes a typo; c. the six header tabs fit the phone without
+scrolling; d. with Dropbox, a renamed event shows renamed on the other device.
 
 **12. People and places on the real app** (pushed 2026-11-12; the user tested it and said **"seems to work"**, without
 reporting a, b and c one by one, so they are not individually confirmed; reload until both devices have the new version):

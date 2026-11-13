@@ -68,6 +68,25 @@ symbol (`@sarah_jones`, `~home`), so `#sarah`, `@sarah` and `~sarah` are three d
 Markdown files: the kind is just the symbol in the text. Dexie v3 recalculates `tags` for the entries already on a
 device without touching `dirty` or `updatedAt`, so the upgrade syncs nothing.
 
+**Events** are the name of something that happened (a party, a trip), written in an entry as `!"Jack's 40th birthday"`.
+They are deliberately **not a tag kind**: a tag is a label you reuse, an event title is mostly used once (or a few times
+around the same days), so events have no autocomplete, no counts of "most used" and no tag-style rename. Nothing new is
+stored (no Dexie change, no file-format change): the marker stays in the entry's text exactly as typed, and the list of
+events is computed from the text of the live entries (`computeEvents` in `src/lib/events.ts`, memoised in `App.tsx`).
+- **Syntax:** `!` then a straight or curly quote, a title of 1–120 characters (no quote marks inside, no line break; an
+  apostrophe is fine), a closing quote. The `!` must start the text or follow whitespace or `(`/`[`/`{`, so
+  `he said "stop!" and "go"`, `"What?!" she said`, `wow!"x"` and `!!"x"` are not events, and an unquoted `!word` is plain
+  text. Spacing and capitals are cleaned for display and ignored when comparing titles (`eventKey`).
+- **Identity:** entries with the same title belong to one event while each is within **7 days** of the one before
+  (`SAME_EVENT_DAYS`, by entry day); a longer gap starts a new event with the same title, so the same birthday a year
+  later is its own event and nobody needs a year in the title. An entry counts once per title. The shown title is the
+  spelling in the event's earliest entry. Event id = title key + `|` + the first entry's id.
+- **Not tags:** `extractTags` and `replaceTag` skip event markers (`blankEvents`, `eventSegments`), so a `#word` inside a
+  title is part of the title and is not in the Tags view.
+- **Search:** no new syntax; the title's words are in the text, so keywords and `"phrases"` find it.
+- **Rename** (`renameEvent` in `db.ts`, Events page): rewrites the markers with that title only in that event's entries,
+  keeping the quote marks typed, bumping `updatedAt` and marking them dirty so it syncs like any edit.
+
 Other local data lives in the Dexie `meta` table: `savedSearches`, `recentSearches`, `storage` (active backend id +
 config, e.g. a folder handle), `sync:<backendId>` (file revisions from the last sync), `images:<backendId>` (image
 paths confirmed in that storage), `originalsLimit` (the cache limit in bytes, 0 = none). `blobs` rows also carry `usedAt` (last opened, for the original cache). The theme and the journal layout (`journalLayout`: `cards` or `stream`) are in `localStorage`.
@@ -329,6 +348,13 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   with `hasPage`; plain tags still search straight away): entry count, first and last mention, a bar per month (click a
   bar to show only that month), "Search these entries", and the entries newest first. The page lives inside the Tags view
   (`TagPage.tsx`), not as a header tab.
+- **Events view** (header tab after Calendar): every event as a row (date or range such as "6–8 Feb 2026", title, number
+  of entries) under a heading per month of the day it started; a title filter, a year select (shown when events span
+  more than one year) and Newest / Oldest / A–Z sort (`lib/eventRows.ts` filters, sorts and groups; `EventsView.tsx`).
+  Clicking a row opens the **event page** inside the view: dates, entry count, **Rename event**, and its entries oldest
+  first. An event chip ("🎉 Jack's 40th birthday", blue `--event`) in any entry opens its event through
+  `OpenEventContext` (`components/eventNav.ts`, provided in `App.tsx`, read by `EntryItem`), which picks the event whose
+  entries include that entry. Six header tabs fit 375 px only with the tighter padding in the `max-width: 520px` block.
 - **Settings:** storage, **photos on this device**, theme, export, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The

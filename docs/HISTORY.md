@@ -50,6 +50,11 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | e78bbc4 | People and places 4/6: Tags view split into Tags / People / Places; per-kind rename and merge (`parseTagName`) |
 | 5bad3f0 | People and places 5/6: a page per person/place (`TagPage.tsx`: counts, first/last, month bars that filter, entries); `first` in `TagStat`, `hasPage` on `TagKind` |
 | cf88bea | People and places 6/6: final docs. **Pushed 2026-11-12 (deploy #7 green, live bundle checked)** |
+| 16947a9 | Events 1/5 (local, 2026-11-13): `lib/events.ts` reads `!"Title"` markers, groups entries with the same title within 7 days into one event; event titles skipped by `extractTags` / `replaceTag` |
+| 9322bf5 | Events 2/5: marker shown as a blue "🎉 title" chip (`--event`); entry-box hint mentions `!"event"` |
+| a9bfddf | Events 3/5: Events tab (`EventsView.tsx`, `lib/eventRows.ts`): rows by month, title filter, year, sort, event page; chips open their event via `OpenEventContext`; phone nav tightened for six tabs |
+| 457cb9b | Events 4/5: Rename event (`renameEvent` in `db.ts`, `eventAfterRename`) |
+| (events docs commit) | Events 5/5: DESIGN.md "Events", limits and ideas, code map |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

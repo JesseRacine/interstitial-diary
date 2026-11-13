@@ -20,7 +20,8 @@ Read these before changing anything substantial:
 **Status (2026-11-12):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
 **Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features, **hosting** and **Settings > Start
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
-"seems to work", item 12 in PROGRESS.md); 380 tests pass (`storage/manager.test.ts` shows how to test the manager
+"seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built locally and
+**not pushed** (2026-11-13); 411 tests pass (`storage/manager.test.ts` shows how to test the manager
 singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
@@ -107,14 +108,18 @@ base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (
                       (checked by src/deployWorkflow.test.ts; keep BASE_PATH there in step with the repo name)
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
-  main.tsx, App.tsx   entry point; views (Journal, Calendar, Photos, Tags, Settings), routing, keyboard shortcuts,
+  main.tsx, App.tsx   entry point; views (Journal, Calendar, Events, Photos, Tags, Settings), routing, keyboard shortcuts,
                       the photo viewer's history entry
   lib/                pure logic and the database
     entry.ts            Entry/ImageRef types, tag parsing (extractTags, replaceTag, tagSegments, tagBeingTyped), date
                         helpers (all local time), withDerived
     tagKinds.ts         the kinds of tag (`#`, `@` person, `~` place; one row each) + stored-key helpers (tagKindOf,
                         tagToken, displayName, tagLabel, parseTagName)
-    db.ts               Dexie schema (v3: entries, meta, thumbs, blobs; v3 recalculates tags) + add/update/delete/renameTag/setEntryImages;
+    events.ts           events (`!"Title"` in entry text, NOT a tag kind): eventSpans/eventSegments/blankEvents, eventKey,
+                        computeEvents (same title within 7 days = one event), parseEventTitle, renameEventInText,
+                        eventAfterRename; imports only a type from entry.ts (entry.ts imports it back)
+    eventRows.ts        Events page logic: eventDateLabel, filterEvents, sortEvents, groupEvents, eventYears
+    db.ts               Dexie schema (v3: entries, meta, thumbs, blobs; v3 recalculates tags) + add/update/delete/renameTag/renameEvent/setEntryImages;
                         cached originals (touchOriginal, saveFetchedOriginal, evictOriginals*, getOriginalsLimit),
                         photoUsage, localImageSizes, removeLocalImagesUnlessUsed
     markdown.ts         day file <-> entries (the on-disk format, see DESIGN.md)
@@ -159,7 +164,8 @@ src/
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
     Capture, JournalView, EntryItem, Results, SearchBar, CalendarView, TagsView (+ TagPage: one person/place), SettingsView,
-    text.tsx (tag display + autocomplete)
+    EventsView (list + event page + rename), eventNav.ts (OpenEventContext: event chips open their event),
+    text.tsx (tag and event display + tag autocomplete)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
     EntryImages.tsx     photos in a bubble
     Thumb.tsx + useThumbUrl.ts   thumbnails via the shared URL cache; "Not synced yet" from manager's missingImages
@@ -202,11 +208,14 @@ src/
    `w`/`h`, or the grid width) before anything decodes.
 9. TypeScript settings: `verbatimModuleSyntax` + `erasableSyntaxOnly`, so use `import type` for types and no `enum`s.
 10. Keep the UI working at phone width (375px) and in light and dark mode. Colours come from CSS variables in
-    `src/index.css`. The header's five tabs fit 375px only because of the tighter padding in the `max-width: 520px`
-    block; check it if you add a tab.
+    `src/index.css`. The header's six tabs fit 375px only because of the tighter padding in the `max-width: 520px`
+    block (checked 2026-11-13); check it if you add a tab.
 11. **A tag is a stored key, not a bare name:** `work`, `@sarah`, `~home` (`lib/tagKinds.ts`). Never build `#${tag}` or
     strip a `#` by hand: use `tagToken`, `tagName`, `displayName`, `tagLabel`. A new kind of tag = one row in `TAG_KINDS`
     (symbol, prefix, colour variable in `index.css`, a search-help row, tests).
+13. **Events are not tags** (`lib/events.ts`, DESIGN.md "Events"): `!"Title"` stays in the entry text, nothing extra is
+    stored, and the event list is computed. Never add `!` to `TAG_KINDS`. Any code that reads tags out of text must skip
+    event markers (`extractTags` and `replaceTag` do, via `blankEvents` / `eventSegments`).
 12. Anything that can only be wrong at the user's real folder, or on a second device, is **not verified** until the user
     confirms it; say so in PROGRESS.md.
 
