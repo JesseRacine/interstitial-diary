@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode, useMemo, useState } from 'react'
 import { tagBeingTyped, tagSegments } from '../lib/entry'
+import { EVENT_ICON, eventSegments } from '../lib/events'
 import { displayName, tagKindOf, tagLabel, tagName, tagToken } from '../lib/tagKinds'
 import type { TagStat } from '../search/engine'
 
@@ -13,6 +14,8 @@ function highlight(s: string, re: RegExp | null): ReactNode {
 /**
  * Entry text with clickable tags and highlighted search terms. `onTag` gets the tag's stored key (`work`, `@sarah`).
  * People and places show as an icon and a name ("👤 Sarah Jones"); the text as written is in the tooltip.
+ * Events (`!"Jack's party"`, see lib/events.ts) show as "🎉 Jack's party"; they are not tags, so tags inside a title
+ * are not clickable. Clicking an event does nothing yet (the Events page comes next).
  */
 export function EntryText({ text, terms, onTag }: { text: string; terms?: string[]; onTag?: (key: string) => void }) {
   const re = useMemo(() => {
@@ -21,14 +24,23 @@ export function EntryText({ text, terms, onTag }: { text: string; terms?: string
   }, [terms])
   return (
     <div className="entry-text">
-      {tagSegments(text).map((seg, i) => {
-        if (seg.key === undefined) return <Fragment key={i}>{highlight(seg.text, re)}</Fragment>
-        const kind = tagKindOf(seg.key)
-        return (
-          <button key={i} type="button" className={kind.className} title={kind.pretty ? seg.text : undefined} onClick={() => onTag?.(seg.key!)}>
-            {kind.pretty ? <><span aria-hidden="true">{kind.icon}</span> {highlight(displayName(seg.key), re)}</> : highlight(seg.text, re)}
-          </button>
-        )
+      {eventSegments(text).map((part, p) => {
+        if (part.title !== undefined) {
+          return (
+            <span key={p} className="tag tag-event" title={part.text}>
+              <span aria-hidden="true">{EVENT_ICON}</span> {highlight(part.title, re)}
+            </span>
+          )
+        }
+        return tagSegments(part.text).map((seg, i) => {
+          if (seg.key === undefined) return <Fragment key={`${p}.${i}`}>{highlight(seg.text, re)}</Fragment>
+          const kind = tagKindOf(seg.key)
+          return (
+            <button key={`${p}.${i}`} type="button" className={kind.className} title={kind.pretty ? seg.text : undefined} onClick={() => onTag?.(seg.key!)}>
+              {kind.pretty ? <><span aria-hidden="true">{kind.icon}</span> {highlight(displayName(seg.key), re)}</> : highlight(seg.text, re)}
+            </button>
+          )
+        })
       })}
     </div>
   )

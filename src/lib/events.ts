@@ -12,6 +12,9 @@ import type { Entry } from './entry'
 
 export const MAX_TITLE = 120
 
+/** Shown in front of an event's title. */
+export const EVENT_ICON = '🎉'
+
 /** How many days may pass between two entries with the same title for them to still be one event. */
 export const SAME_EVENT_DAYS = 7
 

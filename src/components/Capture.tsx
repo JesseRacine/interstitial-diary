@@ -76,7 +76,7 @@ export function Capture({ tagStats, onSaved, inputRef }: {
     >
       <div className="capture-head">
         <span className="time">{timeLabel(now)}</span>
-        <span className="muted">Enter to save · Shift+Enter for a new line · # tags · @ people · ~ places</span>
+        <span className="muted">Enter to save · Shift+Enter for a new line · # tags · @ people · ~ places · !"event"</span>
       </div>
       <div className="field">
         <textarea

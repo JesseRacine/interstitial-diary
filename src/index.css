@@ -10,6 +10,7 @@
   --accent-soft: #e2ece8;
   --person: #8a4f7d;
   --place: #9a5a1f;
+  --event: #2f6b9a;
   --danger: #b03a2e;
   --mark: #fbe7a1;
   --heat-0: #ece8e1;
@@ -35,6 +36,7 @@
     --accent-soft: #23332e;
     --person: #d49ac8;
     --place: #e0a86c;
+    --event: #8ec0ea;
     --danger: #e0786c;
     --mark: #5c4b12;
     --heat-0: #262421;
@@ -59,6 +61,7 @@
   --accent-soft: #23332e;
   --person: #d49ac8;
   --place: #e0a86c;
+  --event: #8ec0ea;
   --danger: #e0786c;
   --mark: #5c4b12;
   --heat-0: #262421;
@@ -235,6 +238,7 @@ button.tag { border: 0; padding: 0; background: none; color: var(--accent); font
 button.tag:hover { text-decoration: underline; }
 button.tag-person { color: var(--person); }
 button.tag-place { color: var(--place); }
+.tag-event { color: var(--event); font-weight: 500; }
 .edit { margin-top: 0.4rem; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .empty { color: var(--muted); text-align: center; padding: 2rem 0; }
