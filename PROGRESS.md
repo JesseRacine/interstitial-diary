@@ -8,14 +8,19 @@ them (index at the bottom)._
 - **Live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo:
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`). Every push to `main` runs the tests and
   redeploys (`.github/workflows/deploy.yml`). The user has installed the hosted app ("installed, works").
-- **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: built
-  2026-11-12, not yet verified across devices), photos (phases 1–3), installable PWA, data-safety features, hosting.
+- **Built:** journal, search, calendar, tags, export, three storage modules (folder, browser files, **Dropbox**: live
+  since 2026-11-12, working Windows ↔ Android per the user), photos (phases 1–3), installable PWA, data-safety features, hosting.
   327 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
-## NEXT: step 5a, Dropbox: built, waiting for the real checks (item 10) and a push
+## Step 5a, Dropbox: built, pushed, and working across devices (user, 2026-11-12)
+
+**Pushed and deployed 2026-11-12** (`22a834c`, deploy succeeded; the live bundle contains the Dropbox sign-in). After
+testing Windows ↔ Android on the hosted app the user said it **"appears to be working"**. Which parts were tried (a
+photo both ways, the offline edits, staying signed in after a restart) was not reported one by one: ask before
+calling those verified.
 
 All five sub-steps are built and committed locally (2026-11-12): 5a.1 sign-in helper (`oauth.ts`), 5a.2 the
 `FileStore` (`dropbox-store.ts`, tested against `fake-dropbox.ts`), 5a.3 the module and finishing the sign-in at
@@ -24,9 +29,7 @@ How it works and why: DESIGN.md "Dropbox notes"; the build log: [docs/CLOUD-STOR
 
 - **Confirmed for real (localhost:5173, the user's own browser):** sign-in, token exchange, browser (CORS) calls, the
   `""` root listing; Settings showed "Dropbox · Saved".
-- **Still to do:** the user's localhost checks (item 10 below), then **ask before pushing** (the push publishes the
-  Dropbox module on the hosted site), then the real Windows↔Android round trip on the hosted app. Only then is Dropbox
-  "verified" and the Android data-safety story changes (DESIGN.md "Platform plan").
+- **Still open:** the details of item 10 below that the user hasn't reported individually.
 - Testing note: the Claude browser pane can't use Dropbox passkeys; real sign-ins happen in the user's own browser.
 - 2026-11-12: the user added two entries (one with a photo) on localhost with Dropbox; the photo showed "Not synced
   yet" because the dev server had stopped (session restart), so the open tab couldn't load the image worker and made
@@ -44,7 +47,8 @@ change. Closes waiting item 7.
 
 ## Waiting on the user
 
-**10. Dropbox real checks** (asked 2026-11-12; the app "Interstitial Journal" exists and its key is in the code). In
+**10. Dropbox real checks** (asked 2026-11-12; overall "appears to be working" on Windows ↔ Android, 2026-11-12; a
+photo on localhost confirmed; the items below not confirmed one by one). In
 the user's own browser on `http://localhost:5173/` with Dropbox connected (the dev server must be running):
 - a. Add an entry; within a few seconds `Apps/Interstitial Journal/2026/2026-11-xx.md` appears on dropbox.com.
 - b. Attach a photo; after the next save `2026/images/` and `.thumbs/` hold a file each.

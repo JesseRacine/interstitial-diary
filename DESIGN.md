@@ -201,7 +201,7 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 |---|---|---|
 | `folder`: Folder on this computer | done | Text and images. File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
 | `browser`: Files inside this browser | done | Text and images; `insideBrowser`. OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
-| `dropbox`: Dropbox | built, **not verified across devices** (2026-11-12) | Text and images, in `Apps/<app name>/`. OAuth PKCE redirect with a refresh token. Works everywhere incl. Android. First real sign-in and sync worked on localhost; the Windows↔Android round trip is still to do. See "Dropbox notes" below and docs/CLOUD-STORAGE.md. |
+| `dropbox`: Dropbox | done (2026-11-12) | Text and images, in `Apps/<app name>/`. OAuth PKCE redirect with a refresh token. Works everywhere incl. Android. The user reported Windows ↔ Android on the hosted app "appears to be working" (details in PROGRESS.md item 10). See "Dropbox notes" below and docs/CLOUD-STORAGE.md. |
 | `pcloud` | planned, on hold | pCloud's app registration may need manual approval. See "pCloud notes" below. |
 | `github` | idea | Files in a private repo via the GitHub contents API (a token pasted into the app; free version history). |
 | `onedrive`, `gdrive` | ideas | OneDrive simple upload is 4 MB (photos need upload sessions); Google Drive has fiddly sign-in rules. |
@@ -334,8 +334,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   platform-specific pieces or storage modules.
 - **Browser data can be wiped** by: clearing site data, uninstalling with "clear data" ticked, Android "Clear storage"
   for Chrome, eviction under low disk (unless persistent storage was granted; the app requests it at startup), or the
-  app's address changing. This is why file storage matters. On Android the Dropbox module (built 2026-11-12, not yet
-  verified there) is the way out; without it, or native, the only copy is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
+  app's address changing. This is why file storage matters. On Android the Dropbox module (working there since
+  2026-11-12) keeps a copy outside the browser; without it, or native, the only copy is inside the browser. That includes photos, which take far more space (a phone photo is about 4 MB).
 - **The app says so** (`lib/dataSafety.ts`): with no storage chosen, or only "Files inside this browser" (same browser
   data, so not a backup), the Settings storage card shows a warning: "Entries are only in this browser", or "Entries and
   photos are only in this browser" with the photo count when the device holds any, suggesting a storage or Export. The
