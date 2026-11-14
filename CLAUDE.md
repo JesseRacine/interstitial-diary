@@ -22,7 +22,7 @@ Read these before changing anything substantial:
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
 "seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
 pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); 483 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+in PROGRESS.md); 494 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
@@ -136,6 +136,8 @@ src/
                         add a line) + hasCoarsePointer; hooks.ts also has useCoarsePointer
     journalRows.ts      entries -> flat chat rows (day headers + entries) for the virtualised journal
     photoRows.ts        entries -> day headers + rows of square tiles (and columnsFor(width)) for the Photos view
+    photoFilter.ts      the Photos tab's filter box: runs the search syntax over entries with photos (filterPhotoEntries),
+                        top tags / years for the chips, the in:YYYY year choice (yearOfQuery / setYearOfQuery)
     dataSafety.ts       "only in this browser" warning (when it applies, photo-aware wording), header-badge rule, persistent-
                         storage wording, backup-reminder rule/text and its `meta` keys (lastBackupAt, backupReminders, backupSnoozedUntil)
     images.ts           pure image helpers: SHA-256 name, type sniffing, paths, thumbnail size, formatBytes
@@ -180,7 +182,8 @@ src/
     EntryImages.tsx     photos in a bubble
     Thumb.tsx + useThumbUrl.ts   thumbnails via the shared URL cache; "Not synced yet" from manager's missingImages
     Lightbox.tsx        full-size viewer; opened/closed via history in App.tsx
-    PhotosView.tsx      Photos tab: virtualised grid of every photo, newest day first; tile -> lightbox
+    PhotosView.tsx      Photos tab: filter box + chips + year, then a virtualised grid of the photos, newest day first;
+                        tile -> lightbox
     StorageCard.tsx     storage choice + status badge + "only in this browser" warning
     useBrowserOnlyMode.ts  hook: is the data only in this browser (null until the saved storage is read: `restored`)
     DataSafetyCard.tsx  Settings: persistent-storage state, last backup, backup-reminder switch

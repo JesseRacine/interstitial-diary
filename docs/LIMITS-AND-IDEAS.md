@@ -48,7 +48,8 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   note or a "what went well" prompt; tags that are new this week.
 - Incremental search indexing if the journal gets very large.
 - GitHub storage module (see [CLOUD-STORAGE.md](CLOUD-STORAGE.md), "Other storage ideas").
-- Photos view: filter by tag/date range; jump to the entry from the lightbox.
+- Photos view: jump to the entry from the lightbox (filtering by tag, person, place, date or event is done, 2026-11-14);
+  remember the filter between visits; tag autocomplete in the filter box; a date-range picker instead of typing `from:`.
 - Clean up photos removed from live entries (needs a way to know nothing else uses the file).
 - People and places, next: on a person's/place's page show who or where they were mentioned together with; suggest a
   place from the device location (asks for permission, privacy-sensitive); turn an old `#sarah` into `@sarah` in one

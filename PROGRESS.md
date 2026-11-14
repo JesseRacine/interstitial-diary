@@ -12,7 +12,7 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 483 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 494 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
@@ -53,7 +53,12 @@ them (index at the bottom)._
    (its day is that date); a marker without a date joins the nearest dated event of its title within 7 days; chip shows
    "· 12 May 2026"; Rename/Merge keep the date; search unchanged. 483 tests, `tsc` clean, lint unchanged; checked in the pane
    (waiting item 19).
-5. **Photo filters** in the Photos tab, using the search syntax.
+5. **Photo filters in the Photos tab: built and committed locally 2026-11-14, not pushed.** A filter box with the search
+   syntax (`lib/photoFilter.ts` runs `parseQuery` + `runSearch`, so no second parser), quick chips for the top tags/people/
+   places among photos, a year choice, "N of M photos", errors, "No photos match / Clear the filter". 494 tests, `tsc`
+   clean, lint unchanged; checked in the pane with seeded photo entries (all, `#trip`, `#trip @sam`, year, event, no match,
+   bad word, chips on/off, 375px, no overflow). The grid showed empty tiles because the seeded photos have no files:
+   not looked at with real photos (waiting item 20). Not included: jump to the entry from the lightbox.
 6. **Quick capture on Android, stage 1 (PWA):** `?new=1` shortcut + fast start + text share target (photo share later).
 The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
 
@@ -156,6 +161,10 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**20. Photo filters** (step 5 above, once pushed): in the Photos tab, tap a chip such as a person or tag: only photos from
+entries with it remain and the count reads "N of M photos"; type `last:3m` or `#trip`; pick a year; "Clear the filter"
+brings everything back; it looks right on the phone with real thumbnails.
 
 **19. Event dates** (step 4c above, once pushed): write `Great night at !"Jack's 40th" (2026-05-12)` in an entry (and again
 in another entry weeks later with the same date): the Events tab lists one event on 12 May 2026 with both entries, and the

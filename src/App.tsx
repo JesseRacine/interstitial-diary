@@ -181,7 +181,7 @@ export default function App() {
           <EventsView events={events} entries={entries} selectedId={eventId} onSelect={setEventId} onSearch={searchTag} onSearchQuery={searchFor}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'photos' ? (
-          <PhotosView entries={entries} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
+          <PhotosView entries={entries} index={index} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
           <TagsView tagStats={tagStats} entries={entries} index={index} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />

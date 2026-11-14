@@ -378,6 +378,13 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   3 on a 375 px phone, 6 at full width). Tiles are squares sized from the grid width alone, so a row's height never
   depends on what has loaded. Clicking a tile opens the lightbox on that entry's photos; clicking a day's heading opens
   that day in the journal. A photo without a thumbnail shows the same placeholders as in a bubble.
+  **Filtering** (`lib/photoFilter.ts`): a box above the grid takes the same words as the search bar (`#trip @sam ~lisbon
+  from:2026-06 last:3m event:"Lisbon trip" tired`): it runs the search (`parseQuery` + `runSearch`) on the entries that have
+  photos and shows the matches, so there is no second parser and every search filter works here. Only entries with photos are
+  ever shown (`-has:image` changes nothing). Under the box: quick chips for the most used tags, people and places among
+  entries with photos (click to add or remove one, like the search chips) and, with photos from more than one year, a year
+  choice (it adds or replaces an `in:YYYY` word). The count reads "4 of 10 photos" while filtering. Misunderstood words
+  show an error; "No photos match" offers to clear the filter. The filter is not remembered between visits.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it. A third switch, **Week** (the weekly review), shows one
