@@ -17,10 +17,10 @@ them (index at the bottom)._
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
-- **Backup:** the newest dated archive was made 2026-11-13 at commit `03c54dc` (`archive-2026-11-13/` + zip in the Claude
-  session folder, restore tested, 417 tests passed on a fresh clone of its bundle): it includes Events and the touch-screen
-  Enter change, not the time edit (make a new one after big changes; offer it). The user was also advised to do one
-  Settings > Export (a Dropbox sync is not a backup); not confirmed done.
+- **Backup:** the newest dated archive was made 2026-11-14 at commit `794873f` (`archive-2026-11-14/` + zip in the Claude
+  session folder, restore tested, 504 tests passed on a fresh clone of its bundle): it includes the whole six-item plan (make
+  a new one after big changes; offer it). The user was also advised to do one Settings > Export (a Dropbox sync is not a
+  backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Current plan (agreed 2026-11-13): six improvements, one step per turn, in this order
