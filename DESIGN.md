@@ -81,10 +81,22 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   apostrophe is fine), a closing quote. The `!` must start the text or follow whitespace or `(`/`[`/`{`, so
   `he said "stop!" and "go"`, `"What?!" she said`, `wow!"x"` and `!!"x"` are not events, and an unquoted `!word` is plain
   text. Spacing and capitals are cleaned for display and ignored when comparing titles (`eventKey`).
-- **Identity:** entries with the same title belong to one event while each is within **7 days** of the one before
-  (`SAME_EVENT_DAYS`, by entry day); a longer gap starts a new event with the same title, so the same birthday a year
-  later is its own event and nobody needs a year in the title. An entry counts once per title. The shown title is the
-  spelling in the event's earliest entry. Event id = title key + `|` + the first entry's id.
+- **Its own date (optional):** the marker may be followed by the day the event happened in brackets, year-month-day only:
+  `!"Jack's 40th birthday" (2026-05-12)` (spaces or tabs before the bracket are fine, a line break is not). It is part of the
+  marker (blanked with it, shown as "🎉 Jack's 40th birthday · 12 May 2026", kept by Rename and Merge) and is not stored
+  anywhere else. A date that is not a real day (`2026-02-30`), another format (`12 May 2026`, `2026-5-12`) or one not right
+  after the marker is just plain text, and the marker counts as having no date. Entries written before this feature that
+  happened to have `(2026-05-12)` right after a marker now read as dated.
+- **Identity:** *without a date*, entries with the same title belong to one event while each is within **7 days** of the
+  one before (`SAME_EVENT_DAYS`, by entry day); a longer gap starts a new event with the same title, so the same birthday
+  a year later is its own event and nobody needs a year in the title. *With a date*, the title **and** the date name the
+  event: the same pair is one event however far apart the entries were written, and a different date is a different event
+  (also within a week). The event's day (`first` = `last`, what the list, sorting, years and the weekly review show) is
+  that date, not the days of the entries. A marker **without** a date joins the dated event of the same title whose date
+  is nearest to the day the entry was written, if within 7 days; otherwise it follows the undated rule. An entry counts
+  once per title and date, and an entry that dates a title is not also counted in the undated event of that title. The
+  shown title is the spelling in the event's earliest entry. Event id = title key (+ `|` + the date) + `|` + the first
+  entry's id. `eventOfMarker` finds the event a chip belongs to (it uses the marker's date).
 - **Not tags:** `extractTags` and `replaceTag` skip event markers (`blankEvents`, `eventSegments`), so a `#word` inside a
   title is part of the title and is not in the Tags view.
 - **Search:** the title's words are in the text, so keywords and `"phrases"` find it, and `event:"Title"` / `has:event`
@@ -94,9 +106,10 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   keeping the quote marks typed, bumping `updatedAt` and marking them dirty so it syncs like any edit.
 - **Merge into…** (event page): fixes a misspelt title by picking the right event from a list (every event with a
   different title, nearest in time first: `mergeTargets` in `lib/eventRows.ts`). It is the same rewrite as Rename with the
-  target's title, so nothing new is stored. Because identity is title plus the 7-day rule, entries more than 7 days from
-  the target's stay a **separate event with the same title**; the confirmation says so in advance (`eventAfterRename`
-  tells whether they join). A merge can be undone with Rename.
+  target's title, so nothing new is stored. Because identity is title plus the 7-day rule (or the date), entries more than
+  7 days from the target's, or with a different date, stay a **separate event with the same title**; the confirmation says
+  so in advance (`eventAfterRename` tells whether they join). A merge can be undone with Rename. To make two same-titled
+  events far apart one, give their entries the same date.
 
 **Editing an entry's time** (`src/lib/retime.ts`, `updateEntry(id, text, images, pickedTime)` in `db.ts`, the "When"
 field in the editor): the person picks a date and time to the minute; the entry keeps its own seconds (so entries in the

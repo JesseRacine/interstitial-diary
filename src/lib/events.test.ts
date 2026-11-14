@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blankEvents, computeEvents, eventAfterRename, eventKey, eventSegments, eventSpans, parseEventTitle, renameEventInText } from './events'
+import { blankEvents, computeEvents, eventAfterRename, eventKey, eventOfMarker, eventSegments, eventSpans, parseEventTitle, renameEventInText } from './events'
 import { extractTags, makeEntry, replaceTag } from './entry'
 import { parseDay, serializeDay } from './markdown'
 
@@ -60,6 +60,48 @@ describe('reading events', () => {
   })
   it('treats case and spacing as the same title', () => {
     expect(eventKey("  Jack's   PARTY ")).toBe(eventKey("jack's party"))
+  })
+})
+
+describe('an event’s own date', () => {
+  const dates = (text: string) => eventSpans(text).map((s) => [s.title, s.date])
+
+  it('reads (YYYY-MM-DD) right after the marker, with or without a space', () => {
+    expect(dates(`Great night at !"Jack's 40th" (2026-05-12) with @sam`)).toEqual([["Jack's 40th", '2026-05-12']])
+    expect(dates('!"Trip"(2026-05-12)')).toEqual([['Trip', '2026-05-12']])
+    expect(dates('!“Trip”   (2026-05-12) x')).toEqual([['Trip', '2026-05-12']])
+    expect(dates('!"One" (2026-01-02) and !"Two"')).toEqual([['One', '2026-01-02'], ['Two', undefined]])
+  })
+  it('does not take other things for a date: not a real day, no brackets, not right after, another line', () => {
+    expect(dates('!"Trip" (2026-02-30)')).toEqual([['Trip', undefined]])
+    expect(dates('!"Trip" (2026-13-01)')).toEqual([['Trip', undefined]])
+    expect(dates('!"Trip" 2026-05-12')).toEqual([['Trip', undefined]])
+    expect(dates('!"Trip" on (2026-05-12)')).toEqual([['Trip', undefined]])
+    expect(dates('!"Trip"\n(2026-05-12)')).toEqual([['Trip', undefined]])
+    expect(dates('!"Trip" (2026-5-12)')).toEqual([['Trip', undefined]])
+    expect(dates('!"Trip" (12 May 2026)')).toEqual([['Trip', undefined]])
+  })
+  it('an unreadable date stays plain text after the marker', () => {
+    const text = 'Went on !"Trip" (2026-02-30) today'
+    expect(eventSegments(text).map((s) => s.text)).toEqual(['Went on ', '!"Trip"', ' (2026-02-30) today'])
+  })
+  it('the marker includes its date, so the pieces still join back into the text', () => {
+    const text = 'a !"Trip" (2026-05-12) b !"Other" c'
+    const segs = eventSegments(text)
+    expect(segs.map((s) => s.text).join('')).toBe(text)
+    expect(segs.filter((s) => s.title).map((s) => [s.text, s.title, s.date])).toEqual([
+      ['!"Trip" (2026-05-12)', 'Trip', '2026-05-12'],
+      ['!"Other"', 'Other', undefined],
+    ])
+  })
+  it('is blanked with the marker, so nothing inside it is read as a tag', () => {
+    const text = 'a !"x" (2026-05-12) #y'
+    expect(blankEvents(text)).toBe('a ' + ' '.repeat(19 - 2) + ' #y')
+    expect(extractTags(text)).toEqual(['y'])
+  })
+  it('stays when the title is renamed', () => {
+    const text = 'Went on !"Trip" (2026-05-12) and !“trip” again, !"Other" (2026-01-01)'
+    expect(renameEventInText(text, eventKey('Trip'), 'Road trip')).toBe('Went on !"Road trip" (2026-05-12) and !“Road trip” again, !"Other" (2026-01-01)')
   })
 })
 
@@ -131,6 +173,87 @@ describe('computing events', () => {
   })
 })
 
+describe('computing events with their own date', () => {
+  it('the same title and date is one event however far apart the entries were written; its day is that date', () => {
+    const events = computeEvents([
+      entry('a', '2026-05-13', 'Back from !"Lisbon trip" (2026-05-12)'),
+      entry('b', '2026-07-30', 'Found photos of the !"Lisbon trip" (2026-05-12)'),
+    ])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ title: 'Lisbon trip', date: '2026-05-12', first: '2026-05-12', last: '2026-05-12', count: 2, entryIds: ['a', 'b'] })
+  })
+  it('the same title on different dates is two events, even a few days apart', () => {
+    const events = computeEvents([
+      entry('a', '2026-05-12', '!"Standup" (2026-05-12)'),
+      entry('b', '2026-05-13', '!"Standup" (2026-05-13)'),
+    ])
+    expect(events.map((e) => [e.date, e.entryIds])).toEqual([['2026-05-12', ['a']], ['2026-05-13', ['b']]])
+    expect(events[0].id).not.toBe(events[1].id)
+  })
+  it('one entry can name the same title on two dates: it is in both events, with different ids', () => {
+    const events = computeEvents([entry('a', '2026-06-01', '!"Trip" (2026-05-12) and !"Trip" (2026-05-20)')])
+    expect(events.map((e) => [e.date, e.entryIds])).toEqual([['2026-05-12', ['a']], ['2026-05-20', ['a']]])
+    expect(new Set(events.map((e) => e.id)).size).toBe(2)
+  })
+  it('a marker without a date joins the dated event of that title written within 7 days of its date', () => {
+    const events = computeEvents([
+      entry('a', '2026-05-12', '!"Lisbon trip" (2026-05-12)'),
+      entry('b', '2026-05-19', 'More of the !"Lisbon trip"'), // 7 days after the date: joins
+      entry('c', '2026-05-09', 'Packing for !"lisbon trip"'), // 3 days before: joins
+    ])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ date: '2026-05-12', first: '2026-05-12', last: '2026-05-12', count: 3, entryIds: ['c', 'a', 'b'] })
+  })
+  it('a marker without a date more than 7 days from the date is its own event, as before', () => {
+    const events = computeEvents([
+      entry('a', '2026-05-12', '!"Lisbon trip" (2026-05-12)'),
+      entry('b', '2026-05-20', 'Later !"Lisbon trip"'), // 8 days: does not join
+    ])
+    expect(events.map((e) => [e.date, e.first, e.entryIds])).toEqual([['2026-05-12', '2026-05-12', ['a']], [undefined, '2026-05-20', ['b']]])
+  })
+  it('a marker without a date joins the nearest of two dated events', () => {
+    const events = computeEvents([
+      entry('a', '2026-05-01', '!"Trip" (2026-05-01)'),
+      entry('b', '2026-05-12', '!"Trip" (2026-05-12)'),
+      entry('c', '2026-05-09', 'Packing for the !"Trip"'), // 8 days from the first date, 3 from the second
+    ])
+    expect(events.map((e) => [e.date, e.entryIds])).toEqual([['2026-05-01', ['a']], ['2026-05-12', ['c', 'b']]])
+  })
+  it('an entry that names a dated event is not also counted in an undated one of the same title', () => {
+    const events = computeEvents([entry('a', '2026-05-12', '!"Trip" (2026-05-12) and again !"Trip"')])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ date: '2026-05-12', count: 1 })
+  })
+  it('uses the spelling of the earliest entry, and leaves undated events as they were', () => {
+    const dated = computeEvents([entry('b', '2026-05-13', '!"my TRIP" (2026-05-12)'), entry('a', '2026-05-12', '!"My Trip" (2026-05-12)')])
+    expect(dated[0].title).toBe('My Trip')
+    const plain = computeEvents([entry('a', '2026-05-01', '!"Trip"')])
+    expect(plain[0].date).toBeUndefined()
+    expect('date' in plain[0]).toBe(false)
+  })
+})
+
+describe('the event a marker belongs to', () => {
+  const entries = [
+    entry('a', '2026-06-01', '!"Trip" (2026-05-12) and !"Trip" (2026-05-20)'),
+    entry('b', '2026-05-14', 'Later on the !"Trip"'),
+    entry('z', '2026-05-30', 'Nothing here'),
+  ]
+  const events = computeEvents(entries)
+  it('a marker with a date finds the event of that date', () => {
+    expect(eventOfMarker(events, 'a', 'Trip', '2026-05-20')?.date).toBe('2026-05-20')
+    expect(eventOfMarker(events, 'a', 'trip', '2026-05-12')?.date).toBe('2026-05-12')
+  })
+  it('a marker without a date finds the event its entry joined, and the first one when there are several', () => {
+    expect(eventOfMarker(events, 'b', 'Trip')?.date).toBe('2026-05-12')
+    expect(eventOfMarker(events, 'a', 'Trip')?.date).toBe('2026-05-12')
+  })
+  it('is undefined when the entry is in no such event', () => {
+    expect(eventOfMarker(events, 'z', 'Trip')).toBeUndefined()
+    expect(eventOfMarker(events, 'a', 'Other')).toBeUndefined()
+  })
+})
+
 describe('after a rename', () => {
   it('finds the renamed event, with its new id', () => {
     const entries = [entry('a', '2026-05-01', '!"Trip"'), entry('b', '2026-05-03', '!"Trip" again'), entry('z', '2026-05-02', '!"Other"')]
@@ -154,6 +277,12 @@ describe('after a rename', () => {
     expect(after.entryIds).toEqual(['t'])
     expect(after.entryIds.includes(target.entryIds[0])).toBe(false)
     expect(after.title).toBe('Weekend away')
+  })
+  it('finds the right dated event when the entry names the title on two dates', () => {
+    const entries = [entry('a', '2026-06-01', '!"Trip" (2026-05-12) and !"Trip" (2026-05-20)')]
+    const second = computeEvents(entries).find((e) => e.date === '2026-05-20')!
+    const after = eventAfterRename(entries, second, 'Road trip')!
+    expect(after).toMatchObject({ title: 'Road trip', date: '2026-05-20' })
   })
 })
 

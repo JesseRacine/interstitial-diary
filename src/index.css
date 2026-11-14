@@ -239,6 +239,7 @@ button.tag:hover { text-decoration: underline; }
 button.tag-person { color: var(--person); }
 button.tag-place { color: var(--place); }
 .tag-event, button.tag-event { color: var(--event); font-weight: 500; }
+.tag-event .event-date { font-weight: 400; opacity: 0.85; }
 .edit { margin-top: 0.4rem; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .edit .when input { padding: 0.25rem 0.5rem; font-size: 0.85rem; }

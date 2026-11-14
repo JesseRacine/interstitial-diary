@@ -73,6 +73,12 @@ describe('event filters', () => {
     expect(evIds('-has:event').sort()).toEqual(['v4', 'v6'])
     expect(evIds('has:event #travel')).toEqual(['v1'])
   })
+  it('a marker with its own date still matches by title', () => {
+    const dated = [makeEntry('Night out !"Jack\'s 40th" (2026-05-12) with @sam', at(2026, 11, 1, 9), 'd1'), makeEntry('Plain', at(2026, 11, 2, 9), 'd2')]
+    const run = (q: string) => runSearch(parseQuery(q, NOW), dated, buildIndex(dated)).map((h) => h.entry.id)
+    expect(run(`event:"Jack's 40th"`)).toEqual(['d1'])
+    expect(run('has:event')).toEqual(['d1'])
+  })
   it('a deleted entry is never found', () => {
     expect(evIds('event:"Lisbon trip"')).not.toContain('v7')
     expect(evIds('has:event')).not.toContain('v7')

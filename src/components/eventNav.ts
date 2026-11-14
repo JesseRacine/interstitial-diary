@@ -6,7 +6,7 @@ import type { Entry } from '../lib/entry'
  * everywhere an entry is shown (journal, search results, tag pages, event pages) without passing a prop through each.
  * Without a provider the chip is plain text.
  */
-export type OpenEvent = (entry: Entry, title: string) => void
+export type OpenEvent = (entry: Entry, title: string, date?: string) => void
 
 export const OpenEventContext = createContext<OpenEvent | null>(null)
 

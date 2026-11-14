@@ -18,7 +18,7 @@ import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
-import { computeEvents, eventKey } from './lib/events'
+import { computeEvents, eventOfMarker } from './lib/events'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
 
@@ -83,10 +83,9 @@ export default function App() {
     setLayoutState(l)
     try { localStorage.setItem('journalLayout', l) } catch { /* private mode */ }
   }
-  /** Open the page of the event that `title` names in this entry (the one whose entries include it). */
-  const openEvent = useCallback((entry: Entry, title: string) => {
-    const key = eventKey(title)
-    const found = events.find((ev) => ev.key === key && ev.entryIds.includes(entry.id))
+  /** Open the page of the event that `title` (and `date`, if the marker has one) names in this entry. */
+  const openEvent = useCallback((entry: Entry, title: string, date?: string) => {
+    const found = eventOfMarker(events, entry.id, title, date)
     if (!found) return
     setEventId(found.id)
     setView('events')

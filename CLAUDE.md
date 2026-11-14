@@ -22,7 +22,7 @@ Read these before changing anything substantial:
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
 "seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
 pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); 464 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+in PROGRESS.md); 483 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
@@ -116,8 +116,10 @@ src/
     tagKinds.ts         the kinds of tag (`#`, `@` person, `~` place; one row each) + stored-key helpers (tagKindOf,
                         tagToken, displayName, tagLabel, parseTagName)
     events.ts           events (`!"Title"` in entry text, NOT a tag kind): eventSpans/eventSegments/blankEvents, eventKey,
-                        computeEvents (same title within 7 days = one event), parseEventTitle, renameEventInText,
-                        eventAfterRename; imports only a type from entry.ts (entry.ts imports it back)
+                        computeEvents (same title within 7 days = one event; a marker may carry its own date
+                        `!"Title" (2026-05-12)`: same title + date = one event, its day is that date), eventOfMarker,
+                        parseEventTitle, renameEventInText (keeps the date), eventAfterRename; imports only a type from
+                        entry.ts (entry.ts imports it back)
     eventRows.ts        Events page logic: eventDateLabel, filterEvents, sortEvents, groupEvents, eventYears, mergeTargets
                         (+ eventGap) for "Merge into…"
     db.ts               Dexie schema (v3: entries, meta, thumbs, blobs; v3 recalculates tags) + add/update/delete/renameTag/renameEvent/setEntryImages;

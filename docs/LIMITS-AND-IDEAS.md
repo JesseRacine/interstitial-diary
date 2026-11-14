@@ -30,6 +30,10 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   but it shows in colour, in the Tags view and in search. Edit the text if that is unwanted.
 - A person or place name has no spaces (`@sarah_jones`); the app shows the underscore as a space. A tag, person and
   place of the same name (`#sarah`, `@sarah`, `~sarah`) are three different things; rename cannot change a tag's kind.
+- Event dates: only `(YYYY-MM-DD)` right after the marker, one real day (no range, no month-only, no `12 May 2026`); a
+  date typed any other way is plain text and the marker has no date. There is no date picker, so the date is typed by hand.
+  Two same-titled events far apart, or on different dates, stay two events (give their entries the same date to join them).
+  Merge into… on a dated event keeps its date, so it can only join an event with the same date.
 - Events: only the quoted form `!"Title"` counts (an unquoted `!word` is plain text), and a title cannot contain quote
   marks. There is no autocomplete, so the same event typed differently ("Jack's party" / "Jacks party") is two events
   until you use Rename event on one of them (spacing and capitals are ignored, spelling is not). Entries with the same
@@ -50,8 +54,8 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   place from the device location (asks for permission, privacy-sensitive); turn an old `#sarah` into `@sarah` in one
   go (a "convert to person/place" action); a page for plain tags too (`hasPage` on the `tag` kind); more kinds such as
   projects or moods (one row in `lib/tagKinds.ts`, plus colours and a search-help row).
-- Events, next: (`event:` search and `has:event` are done, 2026-11-13); give an event its own date (when it happened vs. when it was written about);
-  attach photos to an event; make the 7-day window a setting; merge two events that are more than 7 days apart (today
-  "Merge into…" only unifies spellings, see DESIGN.md "Events"); an events export (a list of
-  dates and titles).
+- Events, next: (`event:` search, `has:event`, "Merge into…" and an event's own date `!"Title" (2026-05-12)` are done,
+  2026-11-13); a date picker or a button that adds the `(date)` to a marker; a date range (`(2026-05-12..2026-05-15)`),
+  a month-only date, other date formats; an `event:` search that also takes a date; attach photos to an event; make the
+  7-day window a setting; an events export (a list of dates and titles).
 - Small polish: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.

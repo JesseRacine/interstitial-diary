@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode, useMemo, useState } from 'react'
 import { tagBeingTyped, tagSegments } from '../lib/entry'
+import { eventDateLabel } from '../lib/eventRows'
 import { EVENT_ICON, eventSegments } from '../lib/events'
 import { displayName, tagKindOf, tagLabel, tagName, tagToken } from '../lib/tagKinds'
 import type { TagStat } from '../search/engine'
@@ -15,9 +16,10 @@ function highlight(s: string, re: RegExp | null): ReactNode {
  * Entry text with clickable tags and highlighted search terms. `onTag` gets the tag's stored key (`work`, `@sarah`).
  * People and places show as an icon and a name ("👤 Sarah Jones"); the text as written is in the tooltip.
  * Events (`!"Jack's party"`, see lib/events.ts) show as "🎉 Jack's party"; they are not tags, so tags inside a title
- * are not clickable. `onEvent` gets the event's title and opens its page; without it the event is not clickable.
+ * are not clickable. A marker with a date (`!"Jack's party" (2026-05-12)`) also shows it: "🎉 Jack's party · 12 May 2026".
+ * `onEvent` gets the event's title (and date, if it has one) and opens its page; without it the event is not clickable.
  */
-export function EntryText({ text, terms, onTag, onEvent }: { text: string; terms?: string[]; onTag?: (key: string) => void; onEvent?: (title: string) => void }) {
+export function EntryText({ text, terms, onTag, onEvent }: { text: string; terms?: string[]; onTag?: (key: string) => void; onEvent?: (title: string, date?: string) => void }) {
   const re = useMemo(() => {
     const t = (terms ?? []).filter(Boolean).sort((a, b) => b.length - a.length)
     return t.length ? new RegExp(`(${t.map(escapeRe).join('|')})`, 'giu') : null
@@ -26,10 +28,11 @@ export function EntryText({ text, terms, onTag, onEvent }: { text: string; terms
     <div className="entry-text">
       {eventSegments(text).map((part, p) => {
         if (part.title !== undefined) {
-          const label = <><span aria-hidden="true">{EVENT_ICON}</span> {highlight(part.title, re)}</>
+          const date = part.date
+          const label = <><span aria-hidden="true">{EVENT_ICON}</span> {highlight(part.title, re)}{date && <span className="event-date"> · {eventDateLabel(date, date)}</span>}</>
           const title = part.title
           return onEvent ? (
-            <button key={p} type="button" className="tag tag-event" title={part.text} onClick={() => onEvent(title)}>{label}</button>
+            <button key={p} type="button" className="tag tag-event" title={part.text} onClick={() => onEvent(title, date)}>{label}</button>
           ) : (
             <span key={p} className="tag tag-event" title={part.text}>{label}</span>
           )

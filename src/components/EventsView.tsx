@@ -113,7 +113,8 @@ function EventPage({ event, events, entries, onBack, onSelect, onSearch, onSearc
     const joins = !!after && after.entryIds.includes(target.entryIds[0])
     const n = event.count
     const what = `Merge "${event.title}" into "${target.title}"? The title is rewritten in ${n} ${n === 1 ? 'entry' : 'entries'}.`
-    const note = joins ? '' : `\n\nThe two are more than ${SAME_EVENT_DAYS} days apart, so they will still be listed as two events with the same title.`
+    const why = event.date || target.date ? 'have different dates' : `are more than ${SAME_EVENT_DAYS} days apart`
+    const note = joins ? '' : `\n\nThe two ${why}, so they will still be listed as two events with the same title.`
     if (!confirm(what + note)) return
     await renameEvent(event.entryIds, event.key, target.title)
     setMerging(false)

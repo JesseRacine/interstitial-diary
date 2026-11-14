@@ -12,7 +12,7 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 464 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 483 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
@@ -47,8 +47,12 @@ them (index at the bottom)._
    unchanged; checked in the pane with seeded events; waiting item 17); **4b "Merge into…" on the event page: built and committed locally
    2026-11-13, not pushed** (pick the right event from a list, nearest in time first; it rewrites the title like Rename, and the
    confirmation warns when the entries are more than 7 days from the target's, so they stay a separate event with the same title;
-   464 tests, `tsc` clean, lint unchanged; checked in the pane, near and far cases and at 375px; waiting item 18); 4c an event's own
-   date (pick the syntax with the user first; it is also what would let two same-titled events far apart be one).
+   464 tests, `tsc` clean, lint unchanged; checked in the pane, near and far cases and at 375px; waiting item 18);
+   **4c an event's own date: built and committed locally 2026-11-13, not pushed.** The user chose `!"Title" (2026-05-12)`
+   (date in brackets, year-month-day only). Same title + date = one event however far apart the entries were written
+   (its day is that date); a marker without a date joins the nearest dated event of its title within 7 days; chip shows
+   "· 12 May 2026"; Rename/Merge keep the date; search unchanged. 483 tests, `tsc` clean, lint unchanged; checked in the pane
+   (waiting item 19).
 5. **Photo filters** in the Photos tab, using the search syntax.
 6. **Quick capture on Android, stage 1 (PWA):** `?new=1` shortcut + fast start + text share target (photo share later).
 The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
@@ -152,6 +156,10 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**19. Event dates** (step 4c above, once pushed): write `Great night at !"Jack's 40th" (2026-05-12)` in an entry (and again
+in another entry weeks later with the same date): the Events tab lists one event on 12 May 2026 with both entries, and the
+chip reads "🎉 Jack's 40th · 12 May 2026"; Rename keeps the `(2026-05-12)`; a wrong date such as `(2026-02-30)` just stays text.
 
 **18. Merge events** (step 4b above, once pushed): make a misspelt event (`!"Wekend away"` next to `!"Weekend away"`), open
 its page, Merge into… the right one: the entries now carry the right title and the page shows the joined event; with
