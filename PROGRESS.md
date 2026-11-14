@@ -34,7 +34,12 @@ this repo (ref in its `web.ref`, default `main`), runs the tests, builds once, t
 was green in about 8 minutes**: `windows-installer` 1.7 MB, `android-apk` 4.9 MB, signed with a throwaway key; **neither
 file has been installed or opened by anyone yet**). `gh` is installed and signed in in WSL. App id
 `io.github.jesseracine.interstitialdiary`; the app's origin is `https://tauri.localhost/`.
-- **Next:** an Android signing key (before the phone install), then the user installs both and tries Dropbox.
+- **Android signing key: done 2026-11-14** (the user ran scripts/make-android-key.sh; key in ~/interstitial-diary-keys/ and a copy in the Claude session folder; run 43633894357 green, APK signed with it; the script commit in the app repo is not pushed). **Next:** the user installs the APK and the Windows installer (both in the session folder uilds/) and tries Dropbox.
+- **Next after Android is confirmed (user, 2026-11-14): a portable Windows app.** No installer: one folder with the
+  `.exe`, and all data in a folder beside it (`journal-data` or similar); nothing in Windows AppData. Likely means: ship
+  a zip instead of NSIS, and point the WebView2 data folder at that folder (Tauri `data_directory`). The user decided (2026-11-14):
+  the folder may hold the webview's database rather than readable `.md` files, **as long as exporting to Markdown works
+  in the app** (Settings > Export; whether its Save dialog/download works inside the Tauri window is untried: check it).
 - **Known open points:** Dropbox needs
   `https://tauri.localhost/` as a redirect URI and the sign-in inside a webview is untried (passkeys may not work there);
   the PWA service worker and "install" hints still run inside the app (probably switch them off with a build flag);
