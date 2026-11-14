@@ -372,7 +372,7 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .event-page .back { margin-left: -0.45rem; }
 .event-page h2 { margin: 0.25rem 0; color: var(--event); }
 .event-page .summary { margin: 0.25rem 0 0.75rem; color: var(--muted); }
-.event-page-actions { margin-bottom: 0.75rem; }
+.event-page-actions { margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
 /* Settings */
 .settings h2 { margin-bottom: 0.75rem; }

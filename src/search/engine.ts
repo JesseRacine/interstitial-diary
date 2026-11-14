@@ -1,5 +1,6 @@
 import MiniSearch from 'minisearch'
 import type { Entry } from '../lib/entry'
+import { eventKey, eventSpans } from '../lib/events'
 import type { ParsedQuery } from './query'
 
 export type SearchIndex = MiniSearch<Entry>
@@ -48,6 +49,11 @@ export function runSearch(q: ParsedQuery, entries: Entry[], index: SearchIndex, 
     if (q.timeFrom !== undefined && q.timeTo !== undefined && !inTimeWindow(e.minute, q.timeFrom, q.timeTo)) continue
     if (q.weekdays && !q.weekdays.includes(e.weekday)) continue
     if (q.hasImages !== undefined && q.hasImages !== !!e.images?.length) continue
+    if (q.events.length || q.hasEvent !== undefined) {
+      const named = new Set(eventSpans(e.text).map((s) => eventKey(s.title)))
+      if (q.hasEvent !== undefined && q.hasEvent !== named.size > 0) continue
+      if (!q.events.every((k) => named.has(k))) continue
+    }
     if (!q.tags.every((t) => e.tags.includes(t))) continue
     if (!q.anyTags.every((g) => g.some((t) => e.tags.includes(t)))) continue
     if (q.excludeTags.some((t) => e.tags.includes(t))) continue

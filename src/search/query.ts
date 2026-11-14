@@ -1,4 +1,5 @@
 import { addDays, dayKey, pad } from '../lib/entry'
+import { eventKey } from '../lib/events'
 import { kindForSigil, tagKey } from '../lib/tagKinds'
 
 export interface ParsedQuery {
@@ -14,10 +15,13 @@ export interface ParsedQuery {
   timeTo?: number // minutes since midnight, exclusive; < timeFrom means wraps past midnight
   weekdays?: number[]
   hasImages?: boolean // true: only entries with photos (has:image); false: only entries without (-has:image)
+  events: string[] // event:"Jack's 40th": all required; each is an eventKey (cleaned title, lowercase), the WHOLE title must match
+  hasEvent?: boolean // true: only entries that name an event (has:event); false: only entries that do not (-has:event)
   errors: string[]
 }
 
 const IMAGE_WORDS = new Set(['image', 'images', 'photo', 'photos'])
+const EVENT_WORDS = new Set(['event', 'events'])
 
 const DAY_ALIASES: Record<string, number[]> = {
   sun: [0], mon: [1], tue: [2], wed: [3], thu: [4], fri: [5], sat: [6],
@@ -69,10 +73,13 @@ function relativeFrom(today: string, n: number, unit: string): string | null {
   return null
 }
 
-/** Split on whitespace, keeping "quoted phrases" (optionally prefixed with -) together. */
+/**
+ * Split on whitespace, keeping "quoted phrases" (optionally prefixed with -) together, and a filter whose value is quoted
+ * (`event:"Jack's 40th"`, straight or curly quotes) as one token.
+ */
 export function tokenize(input: string): string[] {
   const out: string[] = []
-  for (const m of input.matchAll(/(-?)"([^"]*)"?|(\S+)/g)) out.push(m[3] ?? `${m[1]}"${m[2]}"`)
+  for (const m of input.matchAll(/(-?)"([^"]*)"?|(-?[A-Za-z]+:["“”][^"“”]*["“”]?)|(\S+)/g)) out.push(m[3] ?? m[4] ?? `${m[1]}"${m[2]}"`)
   return out
 }
 
@@ -88,7 +95,7 @@ function tagKeyOfToken(t: string): string | null {
 }
 
 export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
-  const q: ParsedQuery = { terms: [], phrases: [], excludeTerms: [], tags: [], anyTags: [], excludeTags: [], errors: [] }
+  const q: ParsedQuery = { terms: [], phrases: [], excludeTerms: [], tags: [], anyTags: [], excludeTags: [], events: [], errors: [] }
   const today = dayKey(now)
   const narrowFrom = (d: string) => { if (!q.from || d > q.from) q.from = d }
   const narrowTo = (d: string) => { if (!q.to || d < q.to) q.to = d }
@@ -121,13 +128,18 @@ export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
     if (lower === 'yesterday') { const y = addDays(today, -1); narrowFrom(y); narrowTo(y); continue }
 
     // key:value filters
-    const kv = lower.match(/^(-?)(on|from|to|in|last|time|after|before|day|has):(.+)$/)
+    const kv = lower.match(/^(-?)(on|from|to|in|last|time|after|before|day|has|event):(.+)$/)
     if (kv && (!kv[1] || kv[2] === 'has')) { // only has: can be negated (-has:image)
       const [, neg, key, val] = kv
       let ok = true
       if (key === 'has') {
         if (IMAGE_WORDS.has(val)) q.hasImages = !neg
+        else if (EVENT_WORDS.has(val)) q.hasEvent = !neg
         else ok = false
+      } else if (key === 'event') {
+        // The title as in the entry: quotes around it are optional when it is one word (event:party).
+        const wanted = eventKey(val.replace(/^["“”]+|["“”]+$/g, ''))
+        if (wanted) q.events.push(wanted); else ok = false
       } else if (key === 'on' || key === 'in') {
         const r = dateRange(val)
         if (r) { narrowFrom(r[0]); narrowTo(r[1]) } else ok = false
@@ -175,7 +187,7 @@ export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
 export function isEmptyQuery(q: ParsedQuery): boolean {
   return !q.terms.length && !q.phrases.length && !q.excludeTerms.length && !q.tags.length && !q.anyTags.length &&
     !q.excludeTags.length && !q.from && !q.to && q.timeFrom === undefined && !q.weekdays &&
-    q.hasImages === undefined
+    q.hasImages === undefined && !q.events.length && q.hasEvent === undefined
 }
 
 /** Add the token if absent, remove it if present (used by filter chips). */

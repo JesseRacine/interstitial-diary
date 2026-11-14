@@ -87,7 +87,9 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   spelling in the event's earliest entry. Event id = title key + `|` + the first entry's id.
 - **Not tags:** `extractTags` and `replaceTag` skip event markers (`blankEvents`, `eventSegments`), so a `#word` inside a
   title is part of the title and is not in the Tags view.
-- **Search:** no new syntax; the title's words are in the text, so keywords and `"phrases"` find it.
+- **Search:** the title's words are in the text, so keywords and `"phrases"` find it, and `event:"Title"` / `has:event`
+  (see "Search") match the markers themselves. The event page has a **Search this event** button that runs `event:"Title"`
+  (all entries with that title, not only this event's dates).
 - **Rename** (`renameEvent` in `db.ts`, Events page): rewrites the markers with that title only in that event's entries,
   keeping the quote marks typed, bumping `updatedAt` and marking them dirty so it syncs like any edit.
 
@@ -326,6 +328,8 @@ One search bar; filter chips write the same syntax. Parser: `search/query.ts`. E
 | `time:09-12`, `time:22-05` (wraps midnight), `after:22:00`, `before:7` | time of day (end exclusive) |
 | `day:mon`, `day:weekend`, `day:mon,fri` | weekday |
 | `has:image` / `-has:image` | only entries with photos / only entries without (`has:photo`, `has:images`, `has:photos` work too) |
+| `event:"Jack's 40th"` / `event:party` | only entries that name this event, i.e. contain a `!"Jack's 40th"` marker whose **whole** title matches (capitals and spacing ignored; curly quotes are fine; quotes are optional for a one-word title). Several `event:` tokens must all match. It matches every event with that title, so a yearly birthday finds all its years: add `in:2026` to narrow. The title in plain prose, or a longer title that starts the same (`Lisbon trip dinner`), does not match |
+| `has:event` / `-has:event` | only entries that name any event / only entries that do not |
 
 Date filters intersect. Unknown `key:value` tokens are treated as words. Bad filter values show an error under the
 search bar. Results are sorted by relevance when there are keywords, otherwise newest first.

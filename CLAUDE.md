@@ -22,7 +22,7 @@ Read these before changing anything substantial:
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
 "seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
 pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); 444 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+in PROGRESS.md); 459 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
@@ -144,9 +144,10 @@ src/
     zoom.ts             lightbox zoom/pan maths
     exportZip.ts        export: planExport / writeExportZip (streamed, photos stored, <4 GB, per year)
   search/
-    query.ts            search syntax parser (incl. has:image; `#tag`, `@person`, `~place` tokens become stored keys via
-                        tagKeyOfToken)
-    engine.ts           MiniSearch full-text + filters, tag stats (count, first, last), day counts
+    query.ts            search syntax parser (incl. has:image, has:event, event:"Title" via eventKey; `#tag`, `@person`,
+                        `~place` tokens become stored keys via tagKeyOfToken)
+    engine.ts           MiniSearch full-text + filters (event filters read the markers with eventSpans), tag stats
+                        (count, first, last), day counts
   storage/              modular storage; knows nothing about the UI
     types.ts            FileStore (text + optional blob methods incl. removeBlob) / StorageBackend / LocalStore
     sync.ts             backend-agnostic sync engine (text: day files + tombstones)

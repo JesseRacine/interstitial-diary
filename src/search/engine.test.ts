@@ -34,6 +34,51 @@ const index = buildIndex(entries)
 const ids = (q: string, sort?: 'relevance' | 'newest' | 'oldest') =>
   runSearch(parseQuery(q, NOW), entries, index, sort).map((h) => h.entry.id)
 
+describe('event filters', () => {
+  const evs: Entry[] = [
+    makeEntry('Day one !"Lisbon trip" landed #travel', at(2026, 11, 1, 9), 'v1'),
+    makeEntry('Wrapped up !"lisbon   TRIP" with @sam', at(2026, 11, 3, 9), 'v2'), // same title, other spacing and capitals
+    makeEntry(`Birthday !"Jack's 40th" and again !"Lisbon trip"`, at(2026, 11, 4, 9), 'v3'), // names two events
+    makeEntry('Planning the Lisbon trip, nothing marked', at(2026, 11, 5, 9), 'v4'), // the words, but no marker
+    makeEntry('Dinner for !"Lisbon trip dinner"', at(2026, 11, 6, 9), 'v5'), // a longer title that starts the same
+    makeEntry('He said "stop!" and "go"', at(2026, 11, 7, 9), 'v6'), // quote marks, not an event
+    { ...makeEntry('Deleted !"Lisbon trip"', at(2026, 11, 2, 9), 'v7'), deleted: 1 as const },
+  ]
+  const evIndex = buildIndex(evs)
+  const evIds = (q: string) => runSearch(parseQuery(q, NOW), evs, evIndex).map((h) => h.entry.id)
+
+  it('event:"title" finds entries that name that event, newest first', () => {
+    expect(evIds('event:"Lisbon trip"')).toEqual(['v3', 'v2', 'v1'])
+    expect(evIds('EVENT:"lisbon trip"')).toEqual(['v3', 'v2', 'v1'])
+    expect(evIds(`event:"Jack's 40th"`)).toEqual(['v3'])
+  })
+  it('needs the whole title: plain words and longer titles do not match', () => {
+    expect(evIds('event:"Lisbon trip"')).not.toContain('v4')
+    expect(evIds('event:"Lisbon trip"')).not.toContain('v5')
+    expect(evIds('event:"Lisbon trip dinner"')).toEqual(['v5'])
+    expect(evIds('event:lisbon')).toEqual([])
+  })
+  it('several events: the entry must name them all', () => {
+    expect(evIds(`event:"Lisbon trip" event:"Jack's 40th"`)).toEqual(['v3'])
+    expect(evIds(`event:"Jack's 40th" event:"Lisbon trip dinner"`)).toEqual([])
+  })
+  it('combines with tags, words and dates', () => {
+    expect(evIds('event:"Lisbon trip" #travel')).toEqual(['v1'])
+    expect(evIds('event:"Lisbon trip" @sam')).toEqual(['v2'])
+    expect(evIds('event:"Lisbon trip" landed')).toEqual(['v1'])
+    expect(evIds('event:"Lisbon trip" from:2026-11-03')).toEqual(['v3', 'v2'])
+  })
+  it('has:event keeps entries that name any event; -has:event the others', () => {
+    expect(evIds('has:event').sort()).toEqual(['v1', 'v2', 'v3', 'v5'])
+    expect(evIds('-has:event').sort()).toEqual(['v4', 'v6'])
+    expect(evIds('has:event #travel')).toEqual(['v1'])
+  })
+  it('a deleted entry is never found', () => {
+    expect(evIds('event:"Lisbon trip"')).not.toContain('v7')
+    expect(evIds('has:event')).not.toContain('v7')
+  })
+})
+
 describe('runSearch', () => {
   it('keywords: all must match', () => expect(ids('report draft').sort()).toEqual(['k1', 'k4']))
   it('prefix match', () => expect(ids('meet').sort()).toEqual(['k2', 'k6']))

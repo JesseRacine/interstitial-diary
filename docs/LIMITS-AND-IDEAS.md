@@ -50,7 +50,7 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   place from the device location (asks for permission, privacy-sensitive); turn an old `#sarah` into `@sarah` in one
   go (a "convert to person/place" action); a page for plain tags too (`hasPage` on the `tag` kind); more kinds such as
   projects or moods (one row in `lib/tagKinds.ts`, plus colours and a search-help row).
-- Events, next: an `event:` search filter; give an event its own date (when it happened vs. when it was written about);
+- Events, next: (`event:` search and `has:event` are done, 2026-11-13); give an event its own date (when it happened vs. when it was written about);
   attach photos to an event; make the 7-day window a setting; merge two events by hand; an events export (a list of
   dates and titles).
 - Small polish: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.

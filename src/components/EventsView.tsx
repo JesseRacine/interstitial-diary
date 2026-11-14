@@ -12,12 +12,13 @@ const SORTS: [EventSort, string][] = [['newest', 'Newest'], ['oldest', 'Oldest']
  * sort. Clicking an event opens its page: the entries that carry it, oldest first. `selectedId` is kept by App so an
  * event chip anywhere in the app can open its page here.
  */
-export function EventsView({ events, entries, selectedId, onSelect, onSearch, onOpenDay, onOpenImage }: {
+export function EventsView({ events, entries, selectedId, onSelect, onSearch, onSearchQuery, onOpenDay, onOpenImage }: {
   events: EventStat[]
   entries: Entry[]
   selectedId: string | null
   onSelect: (id: string | null) => void
   onSearch: (tag: string) => void
+  onSearchQuery: (query: string) => void
   onOpenDay: (e: Entry) => void
   onOpenImage: (e: Entry, index: number) => void
 }) {
@@ -33,7 +34,8 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
   if (selectedId !== null) {
     return (
       <EventPage key={selectedId} event={events.find((e) => e.id === selectedId)} entries={entries}
-        onBack={() => onSelect(null)} onSelect={onSelect} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
+        onBack={() => onSelect(null)} onSelect={onSelect} onSearch={onSearch} onSearchQuery={onSearchQuery}
+        onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
   }
 
@@ -79,12 +81,13 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
 }
 
 /** One event: its dates and its entries, oldest first (the story in order). Its title can be changed (typos). */
-function EventPage({ event, entries, onBack, onSelect, onSearch, onOpenDay, onOpenImage }: {
+function EventPage({ event, entries, onBack, onSelect, onSearch, onSearchQuery, onOpenDay, onOpenImage }: {
   event: EventStat | undefined // undefined once it is gone (title renamed, entries edited or deleted while open)
   entries: Entry[]
   onBack: () => void
   onSelect: (id: string | null) => void
   onSearch: (tag: string) => void
+  onSearchQuery: (query: string) => void
   onOpenDay: (e: Entry) => void
   onOpenImage: (e: Entry, index: number) => void
 }) {
@@ -119,6 +122,10 @@ function EventPage({ event, entries, onBack, onSelect, onSearch, onOpenDay, onOp
           </p>
           <div className="event-page-actions">
             <button type="button" onClick={rename}>Rename event</button>
+            <button type="button" onClick={() => onSearchQuery(`event:"${event.title}"`)}
+              title="Search for every entry that names this title, with other words, tags and dates">
+              Search this event
+            </button>
           </div>
           <div className="timeline">
             {mine.map((e) => (

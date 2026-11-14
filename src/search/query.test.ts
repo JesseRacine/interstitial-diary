@@ -10,6 +10,56 @@ describe('tokenize', () => {
   })
 })
 
+describe('tokenize with a quoted filter value', () => {
+  it('keeps event:"a title" together, with straight or curly quotes', () => {
+    expect(tokenize(`a event:"Jack's 40th" -has:image b`)).toEqual(['a', `event:"Jack's 40th"`, '-has:image', 'b'])
+    expect(tokenize('event:“Lisbon trip” x')).toEqual(['event:“Lisbon trip”', 'x'])
+  })
+  it('leaves other words and phrases as before', () => {
+    expect(tokenize('on:2026-11-08 "a b" c:d')).toEqual(['on:2026-11-08', '"a b"', 'c:d'])
+  })
+})
+
+describe('event filters', () => {
+  it('event:"title" needs the whole title, ignoring capitals and spacing', () => {
+    expect(p(`event:"Jack's 40th birthday"`).events).toEqual(["jack's 40th birthday"])
+    expect(p('Event:"Lisbon   TRIP"').events).toEqual(['lisbon trip'])
+    expect(p('event:“Jack’s party”').events).toEqual(['jack’s party'])
+  })
+  it('quotes are optional for a one-word title', () => expect(p('event:party').events).toEqual(['party']))
+  it('several events are all required, and combine with other words and filters', () => {
+    const q = p('lunch event:"Lisbon trip" with #work event:party in:2026')
+    expect(q.events).toEqual(['lisbon trip', 'party'])
+    expect(q.terms).toEqual(['lunch', 'with'])
+    expect(q.tags).toEqual(['work'])
+    expect(q.from).toBe('2026-01-01')
+    expect(q.errors).toEqual([])
+  })
+  it('an empty title is reported', () => {
+    const q = p('event:""')
+    expect(q.events).toEqual([])
+    expect(q.errors).toHaveLength(1)
+  })
+  it('has:event and -has:event', () => {
+    expect(p('has:event').hasEvent).toBe(true)
+    expect(p('HAS:Events').hasEvent).toBe(true)
+    expect(p('-has:event').hasEvent).toBe(false)
+    expect(p('tired').hasEvent).toBeUndefined()
+    expect(p('has:event').errors).toEqual([])
+  })
+  it('both count as filters, so a query of only one of them is not empty', () => {
+    expect(isEmptyQuery(p('has:event'))).toBe(false)
+    expect(isEmptyQuery(p('-has:event'))).toBe(false)
+    expect(isEmptyQuery(p('event:party'))).toBe(false)
+    expect(isEmptyQuery(p(''))).toBe(true)
+  })
+  it('toggling a token works for them like for any other', () => {
+    expect(toggleToken('tired', 'has:event')).toBe('tired has:event')
+    expect(toggleToken('tired has:event', 'has:event')).toBe('tired')
+    expect(toggleToken(`event:"a b" x`, `event:"a b"`)).toBe('x')
+  })
+})
+
 describe('parseQuery', () => {
   it('keywords', () => expect(p('Report draft').terms).toEqual(['report', 'draft']))
   it('phrase', () => expect(p('"email triage"').phrases).toEqual(['email triage']))

@@ -74,10 +74,11 @@ export default function App() {
     setQuery(q)
     setBackQuery(null)
   }
-  const searchTag = (tag: string) => {
-    changeQuery(tagToken(tag))
+  const searchFor = (q: string) => {
+    changeQuery(q)
     searchRef.current?.focus()
   }
+  const searchTag = (tag: string) => searchFor(tagToken(tag))
   const setLayout = (l: JournalLayout) => {
     setLayoutState(l)
     try { localStorage.setItem('journalLayout', l) } catch { /* private mode */ }
@@ -178,7 +179,7 @@ export default function App() {
           <CalendarView entries={entries} events={events} onOpenDay={(d) => openDay(d)} onTag={searchTag}
             onOpenEvent={(id) => { setEventId(id); setView('events'); setQuery(''); setBackQuery(null) }} />
         ) : view === 'events' ? (
-          <EventsView events={events} entries={entries} selectedId={eventId} onSelect={setEventId} onSearch={searchTag}
+          <EventsView events={events} entries={entries} selectedId={eventId} onSelect={setEventId} onSearch={searchTag} onSearchQuery={searchFor}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'photos' ? (
           <PhotosView entries={entries} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
