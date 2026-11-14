@@ -49,11 +49,17 @@ file has been installed or opened by anyone yet**). `gh` is installed and signed
   built `0d1bb0b`; the bundle was not inspected); the new APK and Windows installer replaced the old ones in the session
   folder `builds/`. **The user tried it 2026-11-14: "definitely better, more responsive, happy with it"** (item 24
   closed; keyboard staying open not objected to). The keyboard now stays open after Save on phones (web app too); the user may prefer otherwise.
-- **Next after Android is confirmed (user, 2026-11-14): a portable Windows app.** No installer: one folder with the
-  `.exe`, and all data in a folder beside it (`journal-data` or similar); nothing in Windows AppData. Likely means: ship
-  a zip instead of NSIS, and point the WebView2 data folder at that folder (Tauri `data_directory`). The user decided (2026-11-14):
-  the folder may hold the webview's database rather than readable `.md` files, **as long as exporting to Markdown works
-  in the app** (Settings > Export; whether its Save dialog/download works inside the Tauri window is untried: check it).
+- **Portable Windows app: built and pushed 2026-11-14 (`b22c6d3` in the app repo, run 43654221469 green).** No
+  installer any more (the NSIS artifact is gone; the user asked for none): the `windows-portable` artifact is a folder
+  `Interstitial Diary\` with `Interstitial Diary.exe` (6.3 MB) and `Read me.txt`; a `v*` release zips it. On Windows
+  `lib.rs` opens the window itself (`tauri.windows.conf.json` has `"create": false`) with `data_directory` =
+  `journal-data` beside the `.exe` (falls back to AppData if that folder cannot be created). Uses the PC's own
+  WebView2 (not bundled; recommended to the user, who did not object). **Checked by Claude on the user's PC:** a
+  scratch copy started, the window opened, `journal-data\EBWebView\` appeared and nothing was written to
+  `AppData\Local` or `AppData\Roaming` under the app id. The folder is in the session folder `builds\Interstitial
+  Diary\` (the old installer `.exe` is still in `builds\` too). **Not checked (the user's turn, waiting item 25):**
+  writing entries, restart keeps them, Dropbox sign-in in the window, and **Settings > Export** (the user accepted a
+  database instead of readable `.md` files only as long as exporting to Markdown works in the app; untried).
 - **Known open points:** Dropbox needs
   `https://tauri.localhost/` as a redirect URI and the sign-in inside a webview is untried (passkeys may not work there);
   the PWA service worker and "install" hints still run inside the app (probably switch them off with a build flag);
@@ -232,6 +238,11 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**25. Portable Windows app** (built 2026-11-14): copy `builds\Interstitial Diary\` somewhere, run the `.exe`: a. write
+an entry, close, reopen: it is still there; b. Settings > Export: does a Save dialog or download appear and is the
+Markdown file written; c. Settings > Dropbox: does the sign-in work inside the window (needs `https://tauri.localhost/`
+as a redirect URI in the Dropbox app); d. move the whole folder elsewhere: the journal comes along.
 
 
 **21. Quick capture on Android** (step 6 above, once pushed; the installed app updates when reloaded, and Chrome reads the
