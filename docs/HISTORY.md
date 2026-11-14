@@ -63,6 +63,8 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | a65efbc | Plan step 4c: an event's own date `!"Title" (2026-05-12)` (`lib/events.ts`: same title + date = one event; `eventOfMarker`). **Steps 3, 4a, 4b, 4c pushed 2026-11-14 (deploy green)** |
 | 160afbf | Plan step 5: photo filters in the Photos tab (`lib/photoFilter.ts`, filter box, chips, year choice) |
 | 8cebc29 | Plan step 6: quick capture on Android, stage 1: `?new=1` shortcut, text share target (GET), `lib/launch.ts`, Settings tip; startup measured, unchanged. **Steps 5 and 6 pushed 2026-11-14 (deploy green)** |
+| 22c990a | Delete permanently (2026-11-13): Settings > Deleted entries (Restore, Delete permanently, Delete all); `lib/purge.ts` scrubs the row, `.meta/purged.json` makes other devices scrub theirs, `purgeDeleted` in `manager.ts` syncs first and removes only the photos these entries used; 18 new tests |
+| ee39282 | Manual (2026-11-13): Settings > Manual card (`ManualCard.tsx`); the search help table moved to `search/syntax.ts` (shared with the `?` help, every example parsed by a test). **Both pushed 2026-11-13 (deploy green)** |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

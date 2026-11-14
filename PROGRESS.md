@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-13. Kept short on purpose: read this file first, and open the `docs/` files only when you need
+_Last updated: 2026-11-13 (after Delete permanently and the Manual). Kept short on purpose: read this file first, and open the `docs/` files only when you need
 them (index at the bottom)._
 
 ## Where things stand
@@ -12,15 +12,17 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 504 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user), **Delete permanently** (Settings > Deleted entries) and an in-app **Manual** (Settings; both live
+  2026-11-13, see "Next plan" below). 524 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
-- **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
+- **Git state:** as of 2026-11-13 `main` equals `origin/main` at `ee39282` (Manual), apart from the docs commit that
+  follows it. `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest dated archive was made 2026-11-14 at commit `794873f` (`archive-2026-11-14/` + zip in the Claude
-  session folder, restore tested, 504 tests passed on a fresh clone of its bundle): it includes the whole six-item plan (make
-  a new one after big changes; offer it). The user was also advised to do one Settings > Export (a Dropbox sync is not a
-  backup); not confirmed done.
+  session folder, restore tested, 504 tests passed on a fresh clone of its bundle): it includes the whole six-item plan but
+  **predates Delete permanently and the Manual, which changed the sync code (`.meta/purged.json`)**: offer a new one. The
+  user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Current plan (agreed 2026-11-13): six improvements, one step per turn, in this order
@@ -72,9 +74,9 @@ them (index at the bottom)._
    built (needs a POST target and a custom service worker). Stage 2 (native widget) waits for Tauri.
 The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
 
-## Next plan (agreed 2026-11-13): permanent delete, then an in-app Manual
+## Permanent delete and the Manual (agreed 2026-11-13): both built, PUSHED and deployed (`ee39282`, deploy green; live bundle not checked)
 
-1. **Delete permanently + Deleted entries list: built 2026-11-13, committed locally, NOT pushed.** The user chose: Delete
+1. **Delete permanently + Deleted entries list: built and pushed 2026-11-13 (`22c990a`).** The user chose: Delete
    stays soft; Settings > **Deleted entries** lists soft-deleted entries with **Restore**, **Delete permanently…** (one,
    confirm) and **Delete all permanently…** (type DELETE FOREVER). Erasing scrubs the row (text/photos/tags gone,
    tombstone kept, local `purged: 1`) and lists its id in the new `.meta/purged.json` so other devices scrub theirs at
@@ -83,16 +85,16 @@ The full plan: the session's plan file; each step ends with tests, a commit and 
    two safeguards mutation-checked), `tsc` clean, lint unchanged; checked in the pane on an empty local copy (restore,
    erase one, erase-all confirm at 375px, text gone from IndexedDB). **Not tried with Dropbox or two devices** (waiting
    item 22).
-2. **Manual (Settings card): built 2026-11-13, committed locally, NOT pushed.** A "Manual" card at the top of Settings
+2. **Manual (Settings card): built and pushed 2026-11-13 (`ee39282`).** A "Manual" card at the top of Settings
    (hidden until "Show the manual"): writing and editing, tags/people/places, events, search, the tabs, your data
    (`ManualCard.tsx`, static text). The search table moved to `search/syntax.ts` (`SEARCH_SYNTAX`), shared with the `?`
    help, with a test that parses every example (524 tests, `tsc` clean, lint unchanged); added the missing `-"phrase"`
    row; the Settings shortcut list now says `t` = "Jump to the latest entry" (it never jumped to today). Checked in the
    pane (desktop and 375px, no overflow). Not read through by the user (waiting item 23).
 
-**23. Manual** (once pushed): Settings > Manual > Show the manual: read it; say what is wrong, unclear or missing.
+**23. Manual** (pushed): Settings > Manual > Show the manual: read it; say what is wrong, unclear or missing.
 
-**22. Delete permanently** (once pushed; reload both devices to the new version first): delete an entry, find it in
+**22. Delete permanently** (pushed; reload both devices to the new version first, an older version ignores `purged.json`): delete an entry, find it in
 Settings > Deleted entries, Restore it, delete it again and Delete permanently; with Dropbox its text leaves the day file
 (already gone) and `Apps/Interstitial Journal/.meta/purged.json` lists its id; on the other device it vanishes from
 Deleted entries after its next sync; a deleted entry with a photo: the photo files leave `images\` and `.thumbs\`.

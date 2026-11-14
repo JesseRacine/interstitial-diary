@@ -22,14 +22,18 @@ Read these before changing anything substantial:
 over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
 "seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
 pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); 504 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
+in PROGRESS.md); the six-item plan of 2026-11-13/14 (touch Enter, edit an entry's time, weekly review, event search/merge/
+dates, photo filters, Android quick capture) and then **Delete permanently** (Settings > Deleted entries, `.meta/purged.json`)
+and the Settings **Manual** are built and pushed (2026-11-13; device checks are items 14 to 23 in PROGRESS.md);
+524 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
 `JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
 (user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
 failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
 **Next:** nothing in progress; options are a separate Dropbox app for development (the dev server shares the real
 app's Dropbox folder: never connect Dropbox on localhost until then), pCloud (step 5, on hold: its app approval may be
 manual), native apps with Tauri (step 6), and the update-banner test (step 4.6, skipped on request, still open). The
-newest dated backup archive (2026-11-12) predates Events, so offer a new one. Ask the user which.
+newest dated backup archive (2026-11-14) predates Delete permanently and the Manual (which touched sync), so offer a
+new one. Ask the user which.
 
 **Lessons from real-device testing (2026-11-12):** the Claude browser pane can't use Dropbox passkeys, so real Dropbox
 sign-ins happen in the user's own browser; a stopped dev server makes an already-open localhost tab fail to make photo
