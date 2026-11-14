@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
 import { type Entry, type ImageRef, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 import { renameEventInText } from './events'
+import { scrubEntry } from './purge'
 import { isAllowedTime, retimeEntry, retimedCreatedAt } from './retime'
 
 export interface Meta {
@@ -113,6 +114,32 @@ export async function deleteEntry(id: string): Promise<void> {
   const e = await db.entries.get(id)
   if (!e) return
   await db.entries.put({ ...e, deleted: 1, updatedAt: nextStamp(e.updatedAt), dirty: 1 })
+}
+
+/**
+ * Bring a deleted entry back. The newer updatedAt beats its tombstone, so it comes back on every device. False when
+ * there is nothing to restore (not deleted, or already erased for good).
+ */
+export async function restoreEntry(id: string): Promise<boolean> {
+  const e = await db.entries.get(id)
+  if (!e || !e.deleted || e.purged) return false
+  await db.entries.put({ ...e, deleted: 0, updatedAt: nextStamp(e.updatedAt), dirty: 1 })
+  return true
+}
+
+/**
+ * Erase these deleted entries' text and photo references on this device for good (see purge.ts). Only entries that are
+ * deleted and not yet erased. With `requireSynced` (a storage is connected) also only ones whose deletion has already
+ * synced (`dirty: 0`): otherwise the tombstone would never reach the storage and another device would bring the entry
+ * back. The scrubbed rows are marked dirty so the next sync lists them in purged.json. Returns how many were erased.
+ * The caller removes the entries' photos first (storage/manager.ts), because afterwards nothing names them.
+ */
+export async function purgeLocal(ids: string[], requireSynced: boolean): Promise<number> {
+  return db.transaction('rw', db.entries, async () => {
+    const rows = (await db.entries.bulkGet(ids)).filter((e): e is Entry => !!e && !!e.deleted && !e.purged && !(requireSynced && e.dirty))
+    await db.entries.bulkPut(rows.map((e) => ({ ...scrubEntry(e), dirty: 1 as const })))
+    return rows.length
+  })
 }
 
 /** Rename (or merge into an existing) tag across all entries. Returns how many entries changed. */

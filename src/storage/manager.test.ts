@@ -322,6 +322,78 @@ describe('manager: start over', () => {
   })
 })
 
+describe('manager: delete permanently', () => {
+  const PHOTO = { hash: 'aaaaaaaaaaaaaaaa', ext: 'jpg', w: 4, h: 4 }
+  const row = (id: string) => dbm.db.entries.get(id)
+
+  async function connectedWith(entries: ReturnType<typeof makeEntry>[]) {
+    await load()
+    await dbm.setMeta('storage', { backendId: 'cloud', config: { account: 'A1' }, connectedAt: 1 })
+    for (const e of entries) await dbm.db.entries.put(e)
+    await load()
+    await m.initStorage()
+    return h.stores['cloud:A1']
+  }
+
+  it('syncs the deletion first, then erases the entry, lists it in purged.json and keeps the tombstone', async () => {
+    const store = await connectedWith([makeEntry('secret', DAY, 'e1'), makeEntry('keep', DAY + 1, 'e2')])
+    await dbm.deleteEntry('e1') // dirty: not in storage yet
+    expect(await m.purgeDeleted(['e1', 'e2'])).toBe(1) // e2 is live: untouched
+    await m.syncNow()
+    expect(await row('e1')).toMatchObject({ text: '', deleted: 1, purged: 1, dirty: 0 })
+    expect((await row('e2'))!.text).toBe('keep')
+    expect(JSON.parse(store.files.get('.meta/purged.json')!.content)).toEqual(['e1'])
+    expect(Object.keys(JSON.parse(store.files.get('.meta/tombstones.json')!.content))).toEqual(['e1'])
+    expect(JSON.stringify([...store.files.values()])).not.toContain('secret')
+  })
+
+  it('removes the photo files only these entries used, but keeps one another entry still uses', async () => {
+    const store = await connectedWith([
+      { ...makeEntry('mine', DAY, 'e1', [PHOTO]) },
+      { ...makeEntry('shared', DAY + 1, 'e2', [PHOTO, { ...PHOTO, hash: 'bbbbbbbbbbbbbbbb' }]) },
+    ])
+    store.blobs.set('2026/images/aaaaaaaaaaaaaaaa.jpg', new Blob(['a']))
+    store.blobs.set('2026/images/bbbbbbbbbbbbbbbb.jpg', new Blob(['b']))
+    await dbm.deleteEntry('e1')
+    await dbm.deleteEntry('e2') // deleted, but stays restorable
+    await m.purgeDeleted(['e1'])
+    expect([...store.blobs.keys()]).toEqual(['2026/images/aaaaaaaaaaaaaaaa.jpg', '2026/images/bbbbbbbbbbbbbbbb.jpg']) // e2 still uses both
+    expect((await row('e2'))!.images).toHaveLength(2)
+
+    await m.purgeDeleted(['e2'])
+    expect(store.blobs.size).toBe(0)
+  })
+
+  it('erases nothing when the storage can’t be reached or a photo can’t be removed', async () => {
+    const store = await connectedWith([makeEntry('secret', DAY, 'e1', [PHOTO])])
+    store.blobs.set('2026/images/aaaaaaaaaaaaaaaa.jpg', new Blob(['a']))
+    await dbm.deleteEntry('e1')
+    await m.syncNow()
+    const removeBlob = store.removeBlob
+    store.removeBlob = async () => { throw new Error('locked') }
+    await expect(m.purgeDeleted(['e1'])).rejects.toThrow(/nothing was erased: .*locked/)
+    expect((await row('e1'))!.text).toBe('secret')
+    store.removeBlob = removeBlob
+
+    h.openRefuses = true
+    await load()
+    await m.initStorage()
+    await expect(m.purgeDeleted(['e1'])).rejects.toThrow(/Allow access/)
+    expect((await row('e1'))!.text).toBe('secret')
+  })
+
+  it('without a storage it erases right away, and lists the id once a storage is connected', async () => {
+    await load()
+    await dbm.db.entries.put(makeEntry('secret', DAY, 'e1'))
+    await m.initStorage()
+    await dbm.deleteEntry('e1')
+    expect(await m.purgeDeleted(['e1'])).toBe(1)
+    expect(await row('e1')).toMatchObject({ text: '', purged: 1 })
+    await m.connect('local')
+    expect(JSON.parse(h.stores['local:L'].files.get('.meta/purged.json')!.content)).toEqual(['e1'])
+  })
+})
+
 describe('manager: connect and reconnect', () => {
   it('connect saves the storage with connectedAt, resets its sync state and syncs', async () => {
     await load()

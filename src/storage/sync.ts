@@ -1,6 +1,7 @@
 import { type Entry, sameImages } from '../lib/entry'
 import { dayFilePath, parseDay, serializeDay } from '../lib/markdown'
 import { merge, type Tombstones } from '../lib/merge'
+import { parsePurged, purgedIds } from '../lib/purge'
 import type { FileStore, LocalStore, SyncReport, SyncState } from './types'
 
 /*
@@ -20,6 +21,8 @@ import type { FileStore, LocalStore, SyncReport, SyncState } from './types'
  */
 
 export const TOMBSTONES_PATH = '.meta/tombstones.json'
+/** Ids of entries erased for good (see lib/purge.ts): other devices scrub their copy of these. */
+export const PURGED_PATH = '.meta/purged.json'
 const DAY_PATH_RE = /^(\d{4})\/((\d{4})-\d{2}-\d{2})\.md$/
 
 export function dayFromPath(path: string): string | null {
@@ -31,7 +34,7 @@ export const emptySyncState = (): SyncState => ({ revs: {} })
 
 /** Same content as far as the files and the UI are concerned; anything else must be saved locally. */
 export const sameVersion = (a: Entry, b: Entry) =>
-  a.updatedAt === b.updatedAt && a.deleted === b.deleted && a.text === b.text && sameImages(a, b)
+  a.updatedAt === b.updatedAt && a.deleted === b.deleted && a.text === b.text && sameImages(a, b) && !a.purged === !b.purged
 
 function stableJson(t: Tombstones): string {
   const sorted: Tombstones = {}
@@ -56,6 +59,14 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
     tombText = await store.read(TOMBSTONES_PATH)
     report.read++
     try { remoteTombs = JSON.parse(tombText ?? '{}') as Tombstones } catch { remoteTombs = {} }
+  }
+
+  let purgedText: string | null = null
+  let remotePurged: string[] = []
+  if (remote.has(PURGED_PATH)) {
+    purgedText = await store.read(PURGED_PATH)
+    report.read++
+    remotePurged = parsePurged(purgedText)
   }
 
   const pulled = new Map<string, string>() // day -> file text as read
@@ -84,8 +95,9 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
     }
   }
 
-  // 2. Merge
-  const { entries: merged, tombstones } = merge(snapshot, remoteEntries, remoteTombs)
+  // 2. Merge. Entries erased for good (here or on another device) end up scrubbed, whatever version turns up.
+  const purged = purgedIds(snapshot, remotePurged)
+  const { entries: merged, tombstones } = merge(snapshot, remoteEntries, remoteTombs, new Set(purged))
 
   // 3. Push
   const liveByDay = new Map<string, Entry[]>()
@@ -124,6 +136,13 @@ export async function syncOnce(local: LocalStore, store: FileStore, prev: SyncSt
   const newTombText = stableJson(tombstones)
   if (Object.keys(tombstones).length && newTombText !== tombText) {
     await store.write(TOMBSTONES_PATH, newTombText)
+    report.written++
+  }
+
+  // Ids only, never text. Written only when the list grew, and never shortened (like the tombstones).
+  const newPurgedText = `${JSON.stringify(purged, null, 1)}\n`
+  if (purged.length && newPurgedText !== purgedText) {
+    await store.write(PURGED_PATH, newPurgedText)
     report.written++
   }
 

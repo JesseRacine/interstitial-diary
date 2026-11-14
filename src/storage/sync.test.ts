@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { type Entry, type ImageRef, makeEntry } from '../lib/entry'
+import { scrubEntry } from '../lib/purge'
 import { retimeEntry } from '../lib/retime'
 import { memoryLocal, memoryStore } from './memory'
-import { dayFromPath, emptySyncState, sameVersion, syncOnce, TOMBSTONES_PATH } from './sync'
+import { dayFromPath, emptySyncState, PURGED_PATH, sameVersion, syncOnce, TOMBSTONES_PATH } from './sync'
 import type { FileStore, SyncState } from './types'
 
 const at = (d: number, h: number, m = 0) => new Date(2026, 10, d, h, m).getTime()
@@ -346,6 +347,92 @@ describe('syncOnce', () => {
       await a.sync(store)
       expect(store.files.get(OLD_DAY)!.content).not.toContain('id:e1')
       expect(store.files.has(NEW_DAY)).toBe(false)
+    })
+  })
+
+  describe('delete permanently (purge)', () => {
+    /** What purgeLocal does on the device that erases the entry. */
+    const purge = (d: ReturnType<typeof device>, id: string) =>
+      d.local.entries.set(id, { ...scrubEntry(d.local.entries.get(id)!), dirty: 1 })
+    const dayPath = '2026/2026-11-08.md'
+
+    /** a wrote 'secret' and deleted it; b and c (stale) synced before; b also saw the deletion. */
+    async function setup() {
+      const store = memoryStore()
+      const a = device()
+      const b = device()
+      const c = device()
+      a.add('secret', at(8, 9), 'e1')
+      a.add('keep', at(8, 10), 'e2')
+      await a.sync(store)
+      await b.sync(store)
+      await c.sync(store)
+      const oldDayFile = store.files.get(dayPath)!.content
+      a.remove('e1', S(1))
+      await a.sync(store)
+      await b.sync(store)
+      return { store, a, b, c, oldDayFile }
+    }
+
+    it('lists the id in purged.json, keeps the tombstone, and the other device erases its copy', async () => {
+      const { store, a, b } = await setup()
+      expect(b.local.entries.get('e1')!.text).toBe('secret') // a plain delete leaves the text on other devices
+      purge(a, 'e1')
+      await a.sync(store)
+      expect(JSON.parse(store.files.get(PURGED_PATH)!.content)).toEqual(['e1'])
+      expect(JSON.parse(store.files.get(TOMBSTONES_PATH)!.content)).toEqual({ e1: S(1) })
+      await b.sync(store)
+      const got = b.local.entries.get('e1')!
+      expect(got.text).toBe('')
+      expect(got.deleted).toBe(1)
+      expect(got.purged).toBe(1)
+      expect(b.live()).toEqual(['keep'])
+      expect(JSON.stringify([...store.files.values()])).not.toContain('secret')
+    })
+
+    it('a stale device that still has it live, even edited after the deletion, ends up erased too', async () => {
+      const { store, a, c } = await setup()
+      c.edit('e1', 'secret, edited later', S(50)) // newer than the tombstone: a plain delete would lose to this edit
+      purge(a, 'e1')
+      await a.sync(store)
+      await c.sync(store)
+      expect(c.local.entries.get('e1')).toMatchObject({ text: '', deleted: 1, purged: 1 })
+      await a.sync(store)
+      expect(a.live()).toEqual(['keep'])
+      expect(JSON.stringify([...store.files.values()])).not.toContain('edited later')
+    })
+
+    it('an old copy of the day file coming back does not bring the entry back', async () => {
+      const { store, a, oldDayFile } = await setup()
+      purge(a, 'e1')
+      await a.sync(store)
+      store.files.set(dayPath, { content: oldDayFile, rev: 'restored-by-a-sync-app' })
+      await a.sync(store)
+      expect(a.live()).toEqual(['keep'])
+      expect(store.files.get(dayPath)!.content).not.toContain('secret')
+    })
+
+    it('purged.json is a growing list and nothing is written when nothing changed', async () => {
+      const { store, a, b } = await setup()
+      purge(a, 'e1')
+      await a.sync(store)
+      b.add('second', at(9, 9), 'e3')
+      await b.sync(store)
+      b.remove('e3', S(60))
+      await b.sync(store)
+      purge(b, 'e3')
+      await b.sync(store)
+      expect(JSON.parse(store.files.get(PURGED_PATH)!.content)).toEqual(['e1', 'e3'])
+      await a.sync(store)
+      // (it still reads tombstones.json and purged.json each time, like any sync; it writes and changes nothing)
+      expect(await a.sync(store)).toMatchObject({ written: 0, removed: 0, updatedLocally: 0 })
+      expect(a.local.entries.has('e3')).toBe(false) // a never had it, and a purged id creates no row
+      expect(a.live()).toEqual(['keep'])
+    })
+
+    it('a plain delete does not write purged.json', async () => {
+      const { store } = await setup()
+      expect(store.files.has(PURGED_PATH)).toBe(false)
     })
   })
 

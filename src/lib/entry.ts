@@ -28,9 +28,14 @@ export interface Entry {
    * Sync rewrites that day's file too, so no stale copy stays behind (see retime.ts). Cleared once synced.
    */
   prevDay?: string
+  /**
+   * Local only, never written to a day file: this deleted entry was erased for good, so its text and photos are gone
+   * and only the tombstone remains (see purge.ts). Its id is listed in `.meta/purged.json` so other devices erase theirs.
+   */
+  purged?: 1
 }
 
-type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty' | 'images' | 'prevDay'>
+type CoreFields = Pick<Entry, 'id' | 'createdAt' | 'updatedAt' | 'text' | 'deleted' | 'dirty' | 'images' | 'prevDay' | 'purged'>
 
 /** An entry's images; treats a missing field as none. */
 export const entryImages = (e: Pick<Entry, 'images'>): ImageRef[] => e.images ?? []
@@ -173,6 +178,7 @@ export function withDerived(e: CoreFields): Entry {
   }
   if (e.images?.length) out.images = e.images.map((i) => ({ hash: i.hash, ext: i.ext, w: i.w, h: i.h }))
   if (e.prevDay) out.prevDay = e.prevDay
+  if (e.purged) out.purged = 1
   return out
 }
 

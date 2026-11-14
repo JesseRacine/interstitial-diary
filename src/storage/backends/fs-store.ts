@@ -1,7 +1,7 @@
 import { BlobCollisionError, type FileStore, type StoredFile, isAppFolder } from '../types'
 
 /** Only these files belong to the diary; anything else in the folder is ignored. */
-export const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json'
+export const isDiaryFile = (path: string) => /^\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(path) || path === '.meta/tombstones.json' || path === '.meta/purged.json'
 
 /** Image files (originals and thumbnails): the only paths removeBlob may delete, so a typo never reaches a day file. */
 export const isImagePath = (path: string) => /^(\d{4}\/images|\.thumbs)\/[0-9a-f]{8,64}\.[a-z0-9]{1,5}$/.test(path)

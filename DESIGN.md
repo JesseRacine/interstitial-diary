@@ -54,6 +54,7 @@ Entry {
   dirty: 0 | 1        // changed since last successful sync
   images?: ImageRef[] // missing = none; only small references, never image bytes
   prevDay?: string    // local only, never in a file: the day last synced, while a time edit hasn't synced yet
+  purged?: 1          // local only: erased for good (text and images gone, `deleted: 1`); see "Delete permanently"
 }
 ImageRef { hash: string /* 16 hex chars of SHA-256, file name stem */, ext: string, w: number, h: number /* 0 = unknown */ }
 ```
@@ -133,6 +134,7 @@ paths confirmed in that storage), `originalsLimit` (the cache limit in bytes, 0 
 <root>/
   2026/2026-11-08.md        one file per day that has entries
   .meta/tombstones.json     { "<id>": <deletedAt ms>, ... }
+  .meta/purged.json         ["<id>", ...]   entries erased for good; ids only, sorted, never shortened
 ```
 
 Day file, oldest entry first:
@@ -168,7 +170,9 @@ Each run:
 2. **Detect hand edits:** a file entry whose `updated` stamp equals the local one but whose text differs was edited
    outside the app. It gets a fresh `updatedAt` so it wins. Images count too (`sameImages`): adding or removing an
    image line by hand is an edit, so a removed line is not written back.
-3. **Merge** by id: newest `updatedAt` wins; on a tie, a deletion wins; a tombstone beats any version not edited after it.
+3. **Merge** by id: newest `updatedAt` wins; on a tie, a deletion wins; a tombstone beats any version not edited after it;
+   an id listed in `.meta/purged.json` (or purged on this device) always ends as a scrubbed deleted entry, whatever
+   version turns up (also one edited after the deletion).
 4. **Write** day files that have dirty local entries (and the `prevDay` of an entry whose time was edited, so the day it
    left is rewritten without it), that changed after merging, or that are missing from storage
    (so a new empty folder gets everything). Remove files for days left with no live entries. Write tombstones if changed.
@@ -181,6 +185,22 @@ If anything throws, nothing is marked synced and the next run retries.
 - **Removing an entry from a file by hand does not delete it**: it is written back. Sync apps (pCloud Drive,
   Syncthing) can briefly deliver a stale copy of a file, and treating "missing" as "deleted" would wipe real entries
   on every device. Deletions go through the app (tombstones).
+
+### Delete permanently (`lib/purge.ts`, `purgeDeleted` in `storage/manager.ts`, Settings > Deleted entries)
+
+Delete is soft: the entry waits in Settings > **Deleted entries**, where it can be restored (`restoreEntry`: `deleted: 0`
+with a newer `updatedAt`, which beats the tombstone everywhere) or erased for good. Erasing never removes the tombstone;
+it scrubs the row instead (`scrubEntry`: `text: ''`, no images, no tags, `deleted: 1`, `purged: 1`, `updatedAt`
+unchanged) and lists its id in `.meta/purged.json`. Order, so nothing can come back or be orphaned:
+1. sync first (the tombstone must be in storage; with a storage connected only rows with `dirty: 0` are erased; with
+   no storage they are erased directly, and `purged.json` is written when one is connected later);
+2. remove the photo files only these entries use (`removeUnusedImages`; a photo a live entry or a restorable deleted
+   entry still uses stays; if a file can't be removed nothing is erased), because afterwards nothing names them;
+3. scrub the rows (`purgeLocal`, marked dirty so the next sync writes `purged.json`).
+Other devices read `purged.json` at their next sync and scrub their copy (a tombstone alone leaves a deleted entry's
+text on the device that holds it). A device still running an older app version ignores the list and keeps its deleted
+copy (its tombstone handling still stops it from reviving the entry).
+Cloud storage may keep file versions of its own (Dropbox: about 30 days); the app can't erase those.
 - If the same entry is edited in a file *and* in the app before a sync runs, the app's version wins.
 
 ### Images in a sync run (`storage/syncAll.ts`, `storage/attachments.ts`)

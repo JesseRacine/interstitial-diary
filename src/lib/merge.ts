@@ -1,4 +1,5 @@
 import type { Entry } from './entry'
+import { scrubEntry } from './purge'
 
 /** id -> time it was deleted (ms). Stored remotely in .meta/tombstones.json */
 export type Tombstones = Record<string, number>
@@ -10,9 +11,10 @@ export interface MergeResult {
 
 /**
  * Union local and remote entries by id. The version with the newest updatedAt wins;
- * on a tie, a deletion wins. A tombstone beats any version not edited after it.
+ * on a tie, a deletion wins. A tombstone beats any version not edited after it. An id in `purged` (erased for good,
+ * see purge.ts) always ends up as a scrubbed deleted entry, whatever version of it turns up, so it cannot come back.
  */
-export function merge(local: Entry[], remote: Entry[], remoteTombstones: Tombstones): MergeResult {
+export function merge(local: Entry[], remote: Entry[], remoteTombstones: Tombstones, purged: ReadonlySet<string> = new Set()): MergeResult {
   const byId = new Map<string, Entry>()
   const consider = (e: Entry) => {
     const cur = byId.get(e.id)
@@ -26,6 +28,11 @@ export function merge(local: Entry[], remote: Entry[], remoteTombstones: Tombsto
   for (const [id, at] of Object.entries(remoteTombstones)) {
     const cur = byId.get(id)
     if (cur && !cur.deleted && at >= cur.updatedAt) byId.set(id, { ...cur, deleted: 1, updatedAt: at })
+  }
+
+  for (const id of purged) {
+    const cur = byId.get(id)
+    if (cur && !cur.purged) byId.set(id, scrubEntry(cur))
   }
 
   const tombstones: Tombstones = { ...remoteTombstones }

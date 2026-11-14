@@ -133,6 +133,8 @@ src/
                         tags/people/places, events of the week, vs the week before), compareLabel
     retime.ts           editing an entry's time/date: retimedCreatedAt, isAllowedTime, retimeEntry (sets the local-only
                         `prevDay` that sync uses to rewrite the old day's file), datetime-local helpers
+    purge.ts            delete permanently: scrubEntry, restorable (the Deleted entries list), purgedIds/parsePurged
+                        (`.meta/purged.json`); merge.ts takes the purged ids; manager.ts `purgeDeleted` orders the steps
     hooks.ts            useLive: a Dexie liveQuery as React state
     dom.ts              isTyping (keyboard shortcuts ignore typing); enterAction (Enter saves or adds a line; touch screens
                         add a line) + hasCoarsePointer; hooks.ts also has useCoarsePointer
@@ -177,7 +179,8 @@ src/
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
     Capture, JournalView, EntryItem, Results, SearchBar, CalendarView (Month | Year | Week; WeekReview.tsx is the weekly
-    review, its logic is lib/weekReview.ts), TagsView (+ TagPage: one person/place), SettingsView,
+    review, its logic is lib/weekReview.ts), TagsView (+ TagPage: one person/place), SettingsView (+ DeletedEntriesCard:
+    restore or delete permanently),
     EventsView (list + event page + rename), eventNav.ts (OpenEventContext: event chips open their event),
     text.tsx (tag and event display + tag autocomplete)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
@@ -215,7 +218,9 @@ src/
 4. **The Markdown file format is a public contract.** Users edit these files by hand and older files must keep
    parsing. Changing it needs backward-compatible parsing and tests.
 5. **Every edit/delete must bump `updatedAt` (use `nextStamp` in db.ts) and set `dirty: 1`.** Deletes are soft
-   (`deleted: 1`) so they sync as tombstones. `withDerived` must carry every core field (`images` included).
+   (`deleted: 1`) so they sync as tombstones; only "Delete permanently" (Settings > Deleted entries) scrubs the text, and
+   it never removes the tombstone (DESIGN.md "Delete permanently"). `withDerived` must carry every core field (`images`,
+   `purged` included).
 6. **Do not treat an entry missing from a file as deleted.** This is deliberate (see DESIGN.md, "Sync rules").
 7. **Search syntax lives in three places:** `search/query.ts` (parser), the `SYNTAX` table in
    `components/SearchBar.tsx`, and DESIGN.md. Keep them in step, and add parser tests for new syntax.

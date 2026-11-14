@@ -135,6 +135,40 @@ describe('db with images', () => {
     expect(got?.images).toEqual([IMG_A])
   })
 
+  it('restoreEntry brings a deleted entry back with a newer stamp, marked for sync', async () => {
+    const e = await m.addEntry('oops #keep', [IMG_A])
+    await m.deleteEntry(e!.id)
+    const deleted = await m.db.entries.get(e!.id)
+    expect(await m.restoreEntry(e!.id)).toBe(true)
+    const got = await m.db.entries.get(e!.id)
+    expect(got).toMatchObject({ deleted: 0, dirty: 1, text: 'oops #keep', images: [IMG_A] })
+    expect(got!.updatedAt).toBeGreaterThan(deleted!.updatedAt)
+    expect(await m.restoreEntry(e!.id)).toBe(false) // not deleted now
+  })
+
+  it('purgeLocal erases a deleted entry’s text and photos but keeps the tombstone row', async () => {
+    const e = await m.addEntry('secret #private', [IMG_A])
+    await m.deleteEntry(e!.id)
+    expect(await m.purgeLocal([e!.id], false)).toBe(1)
+    const got = await m.db.entries.get(e!.id)
+    expect(got).toMatchObject({ id: e!.id, text: '', tags: [], deleted: 1, purged: 1, dirty: 1 })
+    expect('images' in got!).toBe(false)
+    expect(await m.restoreEntry(e!.id)).toBe(false) // erased for good
+    expect(await m.purgeLocal([e!.id], false)).toBe(0) // already done
+  })
+
+  it('purgeLocal never touches a live entry, and with a storage waits for the deletion to sync', async () => {
+    const live = await m.addEntry('still here')
+    const gone = await m.addEntry('gone, not synced yet')
+    await m.deleteEntry(gone!.id) // dirty: the tombstone has not reached the storage
+    expect(await m.purgeLocal([live!.id, gone!.id], true)).toBe(0)
+    expect((await m.db.entries.get(live!.id))!.text).toBe('still here')
+    expect((await m.db.entries.get(gone!.id))!.text).toBe('gone, not synced yet')
+    await m.db.entries.update(gone!.id, { dirty: 0 }) // synced
+    expect(await m.purgeLocal([live!.id, gone!.id], true)).toBe(1)
+    expect((await m.db.entries.get(gone!.id))!.text).toBe('')
+  })
+
   it('setEntryImages replaces images, bumps updatedAt and marks dirty', async () => {
     const e = await m.addEntry('x', [IMG_A])
     await m.db.entries.update(e!.id, { dirty: 0 })

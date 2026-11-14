@@ -72,6 +72,24 @@ them (index at the bottom)._
    built (needs a POST target and a custom service worker). Stage 2 (native widget) waits for Tauri.
 The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
 
+## Next plan (agreed 2026-11-13): permanent delete, then an in-app Manual
+
+1. **Delete permanently + Deleted entries list: built 2026-11-13, committed locally, NOT pushed.** The user chose: Delete
+   stays soft; Settings > **Deleted entries** lists soft-deleted entries with **Restore**, **Delete permanently…** (one,
+   confirm) and **Delete all permanently…** (type DELETE FOREVER). Erasing scrubs the row (text/photos/tags gone,
+   tombstone kept, local `purged: 1`) and lists its id in the new `.meta/purged.json` so other devices scrub theirs at
+   their next sync; the manager syncs first, removes the photos only those entries used (keeps shared ones), then
+   scrubs (DESIGN.md "Delete permanently"; `lib/purge.ts`, `purgeDeleted`, `DeletedEntriesCard.tsx`). 522 tests (18 new,
+   two safeguards mutation-checked), `tsc` clean, lint unchanged; checked in the pane on an empty local copy (restore,
+   erase one, erase-all confirm at 375px, text gone from IndexedDB). **Not tried with Dropbox or two devices** (waiting
+   item 22).
+2. **Manual (Settings card): not started** (explains tags, formats and search; reuse the `SYNTAX` table, see the plan).
+
+**22. Delete permanently** (once pushed; reload both devices to the new version first): delete an entry, find it in
+Settings > Deleted entries, Restore it, delete it again and Delete permanently; with Dropbox its text leaves the day file
+(already gone) and `Apps/Interstitial Journal/.meta/purged.json` lists its id; on the other device it vanishes from
+Deleted entries after its next sync; a deleted entry with a photo: the photo files leave `images\` and `.thumbs\`.
+
 ## Events (`!"Jack's 40th birthday"`): all 5 steps built, PUSHED and live 2026-11-13 (`0995008`, deploy #10 green; live bundle checked)
 
 Not a tag kind: an event is the unique name of something that happened, so it has its own module and its own

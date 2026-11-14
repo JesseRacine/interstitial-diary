@@ -1,10 +1,10 @@
 import { liveQuery } from 'dexie'
 import { useSyncExternalStore } from 'react'
 import {
-  db, eraseLocalJournal, evictOriginalsToLimit, getMeta, localImageSizes, removeLocalImagesUnlessUsed, saveFetchedOriginal,
+  db, eraseLocalJournal, evictOriginalsToLimit, getMeta, localImageSizes, purgeLocal, removeLocalImagesUnlessUsed, saveFetchedOriginal,
   setMeta, touchOriginal,
 } from '../lib/db'
-import type { ImageRef } from '../lib/entry'
+import { type ImageRef, entryImages } from '../lib/entry'
 import { makeThumbnail } from '../lib/imageClient'
 import { KeySet } from '../lib/keySet'
 import { isDisplayable, typeForExt } from '../lib/images'
@@ -252,6 +252,37 @@ export async function removeImagesOfDeletedEntries(approved: string[]): Promise<
   })
   void syncNow() // anything a sync asked for while this ran, and any photo that turned out to be in use again
   return result
+}
+
+/**
+ * "Delete permanently": erase these deleted entries for good, on this device and, at their next sync, on the others
+ * (see lib/purge.ts). Order matters: the deletion is synced first (so the tombstone is in storage), then photos only
+ * these entries used are removed (afterwards nothing would name them), then the entries are scrubbed. A photo another
+ * entry (live or still restorable) uses stays. Throws, erasing nothing, when the storage can't be reached or a photo
+ * can't be removed. Can't be undone (call only after the user confirmed). Returns how many entries were erased.
+ */
+export async function purgeDeleted(ids: string[]): Promise<number> {
+  await bringEntriesUpToDate()
+  const synced = !!state.backendId
+  const count = await exclusive(async () => {
+    const all = await db.entries.toArray()
+    const wanted = new Set(ids)
+    const target = all.filter((e) => wanted.has(e.id) && e.deleted && !e.purged && !(synced && e.dirty))
+    if (!target.length) return 0
+    const keep = new Set<string>() // photos a restorable deleted entry (not in this purge) still uses
+    for (const e of all) if (e.deleted && !e.purged && !wanted.has(e.id)) for (const i of entryImages(e)) keep.add(i.hash)
+    const approved = new Set(target.flatMap((e) => entryImages(e).map((i) => i.hash)).filter((h) => !keep.has(h)))
+    if (approved.size) {
+      const id = state.backendId
+      const confirmed = new Set(id ? await getMeta<string[]>(imagesKey(id), []) : [])
+      const r = await removeUnusedImages(dexieCleanup, store, approved, confirmed)
+      if (id) await setMeta(imagesKey(id), [...r.confirmed])
+      if (r.errors.length) throw new Error(`A photo could not be removed, so nothing was erased: ${r.errors[0]}`)
+    }
+    return purgeLocal(target.map((e) => e.id), synced)
+  })
+  void syncNow() // lists them in purged.json
+  return count
 }
 
 /** Originals on screen (the photo viewer), never dropped while shown. hash -> number of holders. */

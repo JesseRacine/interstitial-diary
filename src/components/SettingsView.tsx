@@ -1,5 +1,6 @@
 import type { Entry } from '../lib/entry'
 import { DataSafetyCard } from './DataSafetyCard'
+import { DeletedEntriesCard } from './DeletedEntriesCard'
 import { ExportCard } from './ExportCard'
 import { PhotoStorageCard } from './PhotoStorageCard'
 import { StartOverCard } from './StartOverCard'
@@ -35,6 +36,8 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
       </div>
 
       <ExportCard entries={entries} tagCount={tagCount} />
+
+      <DeletedEntriesCard />
 
       <StartOverCard entries={entries} />
 
