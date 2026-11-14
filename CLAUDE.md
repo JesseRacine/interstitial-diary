@@ -1,8 +1,8 @@
 # CLAUDE.md: Interstitial Diary
 
 An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, `@people` and `~places`,
-strong search, photos, and Markdown files as the durable copy. Targets **Windows and Android**: an installable PWA first, then native
-apps via Tauri built from the same code.
+strong search, photos, and Markdown files as the durable copy. Targets **Windows and Android**: an installable PWA
+(this repo), and native apps that wrap the same build with Tauri (a second repo, see "Native apps" below).
 
 Read these before changing anything substantial:
 - **[DESIGN.md](DESIGN.md)**: how it works and why (data model, file format, sync rules, storage modules, search syntax,
@@ -15,25 +15,21 @@ Read these before changing anything substantial:
   history in HISTORY.md and new plans in their own `docs/` file.
 - **[images-plan.md](images-plan.md)**: the photo feature's plan, with a build log of every step's decisions (phases 1–3
   built; phase 4 = images on the cloud modules). [android-capture-plan.md](android-capture-plan.md): quick capture on
-  Android (not started).
+  Android (stage 1 built; stage 2, a native widget, not started).
 
-**Status (2026-11-13):** journal, search, calendar, tags, export, three storage modules (folder, browser files,
-**Dropbox**), photos (phases 1–3), the installable PWA, the data-safety features, **hosting** and **Settings > Start
-over** are built and live, and so are **people and places** (`@sarah_jones`, `~home`; pushed 2026-11-12, the user said
-"seems to work", item 12 in PROGRESS.md); **events** (`!"Jack's 40th birthday"`, an Events tab) are built and
-pushed (2026-11-13; the user tried it on an empty local copy: "it works"; phone and Dropbox sync not confirmed, item 13
-in PROGRESS.md); the six-item plan of 2026-11-13/14 (touch Enter, edit an entry's time, weekly review, event search/merge/
-dates, photo filters, Android quick capture) and then **Delete permanently** (Settings > Deleted entries, `.meta/purged.json`)
-and the Settings **Manual** are built and pushed (2026-11-13; device checks are items 14 to 23 in PROGRESS.md);
-524 tests pass (`storage/manager.test.ts` shows how to test the manager singleton). **Live on GitHub Pages: https://jesseracine.github.io/interstitial-diary/** (repo
-`JesseRacine/interstitial-diary`, public; the user has installed it on Windows and Android). **Dropbox (step 5a)** works between the user's Windows PC and Android phone
-(user report; individual checks in PROGRESS.md item 10). **Start over** erases the journal everywhere; its first real try
-failed (a phone that updated late re-uploaded its copy), was fixed, and the second try worked per the user (item 11).
-**Next:** nothing in progress; options are a separate Dropbox app for development (the dev server shares the real
-app's Dropbox folder: never connect Dropbox on localhost until then), pCloud (step 5, on hold: its app approval may be
-manual), native apps with Tauri (step 6), and the update-banner test (step 4.6, skipped on request, still open). The
-newest dated backup archive (2026-11-14) predates Delete permanently and the Manual (which touched sync), so offer a
-new one. Ask the user which.
+**Status:** this file does not track status; **PROGRESS.md does** (what is built, what is next, what the user still
+has to check). In one line (2026-11-14): everything in the code map below is built and **live on GitHub Pages,
+https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public); Dropbox sync works
+between the user's Windows PC and Android phone per the user; 524 tests pass. **Never connect Dropbox on localhost:**
+the dev server shares the real app's Dropbox folder.
+
+**Native apps (second repo, started 2026-11-14):** `~/projects/interstitial-diary-app` (public,
+`JesseRacine/interstitial-diary-app`) is a Tauri 2 shell around this repo's build: an Android APK and a portable
+Windows folder (no installer; data in `journal-data` beside the `.exe`). It is built **only in GitHub Actions** (no
+Rust or Android tools here), from this repo's pushed `main`, so a change here reaches the apps only after a push here
+and a new build there. Read that repo's `README.md` before working on it. The same rules apply (public, noreply
+identity, ask before every push). The apps run this web app at `https://tauri.localhost/`, so anything that depends on
+the page's address (the Dropbox redirect, the service worker, share target) behaves differently there.
 
 **Lessons from real-device testing (2026-11-12):** the Claude browser pane can't use Dropbox passkeys, so real Dropbox
 sign-ins happen in the user's own browser; a stopped dev server makes an already-open localhost tab fail to make photo
@@ -45,8 +41,10 @@ and deploys the site). Keep it free of personal data: no machine paths, personal
 before pushing: `git grep -n -I -i -E "@gmail|/home/[a-z]|C:.Users|wsl.localhost" -- . ':!package-lock.json'` should show
 only generic mentions). Commits use the GitHub noreply address (the repo's local git identity). **Ask the user before every
 push** (it publishes and redeploys); `main` may be ahead of `origin/main` with unpushed docs commits (`git status -sb`).
-`gh` is at `~/.local/bin/gh` in WSL (not on PATH); push with `git -c credential.helper= -c "credential.helper=!$HOME/.local/bin/gh
+`gh` is at `~/.local/bin/gh` in WSL. In an interactive shell (`bash -ic`) plain `git push origin main` and `gh run list`
+worked on 2026-11-14; if a push asks for a password, use `git -c credential.helper= -c "credential.helper=!$HOME/.local/bin/gh
 auth git-credential" push origin main` (the user signed in themself with `gh auth login`; never handle a token or password).
+To wait for a run without polling: `gh run watch <id> --exit-status` as a background command.
 Rewriting pushed history is no longer safe. For cloud-storage sign-ins (OAuth): the **app key / client id is public**, but
 never commit an app secret, access token or refresh token.
 
@@ -56,9 +54,10 @@ never commit an app secret, access token or refresh token.
   through the `\\wsl.localhost\Ubuntu\...` network path (the exact path is in the Claude session folder's own
   `CLAUDE.md`, which is not part of this repo).
 - **Claude session folder (Windows, outside this repo):** holds `.claude/launch.json` (dev servers `interstitial-dev`
-  5173, `interstitial-preview` 4173, `interstitial-preview-sub` 4174), a pointer `CLAUDE.md`, and **read-only backups**
-  (the newest `archive-2026-11-12/` + zip, older dated ones, and the oldest `archive/` + zip of f4ef4d9, which still has the old identity in
-  its history: keep it private): source snapshot, full git history as a `.bundle`, Claude's notes. No working code lives
+  5173, `interstitial-preview` 4173, `interstitial-preview-sub` 4174), a pointer `CLAUDE.md`, the newest native builds
+  (`builds\`), and **read-only backups** (dated `archive-YYYY-MM-DD/` folders + zips, listed in that pointer file, and
+  the oldest `archive/` + zip of f4ef4d9, which still has the old identity in its history: keep it private): source
+  snapshot, full git history as a `.bundle`, Claude's notes. No working code lives
   there; never edit or build in a snapshot. To refresh the backup after more work, make a new dated archive (`git archive
   HEAD` for the source, `git bundle create ... --all` for the history: test a clone of the bundle).
 - **Claude's own memory notes** (outside the repo, in the user's Claude profile) are a short summary of this file and
@@ -240,11 +239,13 @@ src/
 11. **A tag is a stored key, not a bare name:** `work`, `@sarah`, `~home` (`lib/tagKinds.ts`). Never build `#${tag}` or
     strip a `#` by hand: use `tagToken`, `tagName`, `displayName`, `tagLabel`. A new kind of tag = one row in `TAG_KINDS`
     (symbol, prefix, colour variable in `index.css`, a search-help row, tests).
-13. **Events are not tags** (`lib/events.ts`, DESIGN.md "Events"): `!"Title"` stays in the entry text, nothing extra is
+12. **Events are not tags** (`lib/events.ts`, DESIGN.md "Events"): `!"Title"` stays in the entry text, nothing extra is
     stored, and the event list is computed. Never add `!` to `TAG_KINDS`. Any code that reads tags out of text must skip
     event markers (`extractTags` and `replaceTag` do, via `blankEvents` / `eventSegments`).
-12. Anything that can only be wrong at the user's real folder, or on a second device, is **not verified** until the user
-    confirms it; say so in PROGRESS.md.
+13. Anything that can only be wrong at the user's real folder, on a second device or inside the native apps is **not
+    verified** until the user confirms it; say so in PROGRESS.md.
+14. **The entry box keeps the focus after Save** (`Capture.tsx`): the Save button must not take the focus (it is
+    disabled once the box is empty, and a disabled button drops the focus, which closes the phone keyboard).
 
 ## Testing
 
