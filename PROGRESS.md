@@ -53,14 +53,14 @@ them (index at the bottom)._
    (its day is that date); a marker without a date joins the nearest dated event of its title within 7 days; chip shows
    "· 12 May 2026"; Rename/Merge keep the date; search unchanged. 483 tests, `tsc` clean, lint unchanged; checked in the pane
    (waiting item 19).
-5. **Photo filters in the Photos tab: built and committed locally 2026-11-14, not pushed.** A filter box with the search
+5. **Photo filters in the Photos tab: built, PUSHED and deployed 2026-11-14 (with step 6, `8cebc29`, deploy green).** A filter box with the search
    syntax (`lib/photoFilter.ts` runs `parseQuery` + `runSearch`, so no second parser), quick chips for the top tags/people/
    places among photos, a year choice, "N of M photos", errors, "No photos match / Clear the filter". 494 tests, `tsc`
    clean, lint unchanged; checked in the pane with seeded photo entries (all, `#trip`, `#trip @sam`, year, event, no match,
    bad word, chips on/off, 375px, no overflow). The grid showed empty tiles because the seeded photos have no files:
    not looked at with real photos (waiting item 20). Not included: jump to the entry from the lightbox.
-6. **Quick capture on Android, stage 1 (PWA): built and committed locally 2026-11-14, not pushed** (all six steps of the
-   plan are now built). `?new=1` (the shortcut) opens the journal on the entry box; Android's Share sheet sends title, text
+6. **Quick capture on Android, stage 1 (PWA): built, PUSHED and deployed 2026-11-14 (`8cebc29`, deploy green; live bundle not
+   checked)** (all six steps of the plan are now built and live; what remains is the user's device checks, items 14 to 21). `?new=1` (the shortcut) opens the journal on the entry box; Android's Share sheet sends title, text
    and link as a GET (manifest `share_target`) into the box, caret at the end, nothing saved until you save; the address is
    cleaned after reading; a Settings tip explains pinning the icon and sharing. **Startup was measured and left alone**
    (box first, 20,000 entries: ~60 ms read, ~80 ms index; DOMContentLoaded 21 ms with the service worker; details in
