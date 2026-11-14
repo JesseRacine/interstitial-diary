@@ -373,6 +373,8 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .event-page h2 { margin: 0.25rem 0; color: var(--event); }
 .event-page .summary { margin: 0.25rem 0 0.75rem; color: var(--muted); }
 .event-page-actions { margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.event-merge { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: -0.25rem 0 0.75rem; }
+.event-merge select { min-width: 0; max-width: 100%; flex: 1 1 12rem; }
 
 /* Settings */
 .settings h2 { margin-bottom: 0.75rem; }

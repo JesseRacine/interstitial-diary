@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { eventDateLabel, eventYears, filterEvents, groupEvents, sortEvents } from './eventRows'
+import { eventDateLabel, eventGap, eventYears, filterEvents, groupEvents, mergeTargets, sortEvents } from './eventRows'
 import type { EventStat } from './events'
 
 const ev = (id: string, title: string, first: string, last = first, count = 1): EventStat => ({
@@ -19,6 +19,40 @@ describe('event date labels', () => {
     expect(eventDateLabel('2026-11-08', '2026-11-10')).toBe('8–10 Nov 2026')
     expect(eventDateLabel('2026-11-30', '2026-12-02')).toBe('30 Nov – 2 Dec 2026')
     expect(eventDateLabel('2026-12-30', '2027-01-02')).toBe('30 Dec 2026 – 2 Jan 2027')
+  })
+})
+
+describe('merging events', () => {
+  const lisbon = ev('l1', 'Lisbon trip', '2026-11-08', '2026-11-10', 3)
+  const near = ev('l2', 'Lisbon tripp', '2026-11-11') // a misspelling, the day after
+  const far = ev('l3', 'Lisbon holiday', '2026-06-01')
+  const sameTitleLater = { ...ev('l4', 'Lisbon trip', '2027-05-01'), key: lisbon.key } // same name, another year
+  const sameDay = ev('l5', 'Aardvark', '2026-11-09') // overlaps the event itself
+
+  it('measures the gap between two date ranges, zero when they overlap or touch', () => {
+    expect(eventGap(lisbon, near)).toBe(1)
+    expect(eventGap(near, lisbon)).toBe(1)
+    expect(eventGap(lisbon, sameDay)).toBe(0)
+    expect(eventGap(lisbon, ev('x', 'x', '2026-11-10'))).toBe(0)
+    expect(eventGap(lisbon, far)).toBe(160) // 1 Jun to 8 Nov
+  })
+
+  it('offers every other title, the nearest in time first', () => {
+    const all = [far, lisbon, near, sameDay, sameTitleLater]
+    expect(mergeTargets(all, lisbon).map((e) => e.id)).toEqual(['l5', 'l2', 'l3'])
+  })
+
+  it('never offers the event itself or the same title again, and an empty list is fine', () => {
+    expect(mergeTargets([lisbon, sameTitleLater], lisbon)).toEqual([])
+    expect(mergeTargets([], lisbon)).toEqual([])
+  })
+
+  it('breaks ties by title, and does not change its input', () => {
+    const a = ev('a', 'Beta', '2026-11-12')
+    const b = ev('b', 'Alpha', '2026-11-12')
+    const input = [a, b, lisbon]
+    expect(mergeTargets(input, lisbon).map((e) => e.title)).toEqual(['Alpha', 'Beta'])
+    expect(input).toEqual([a, b, lisbon])
   })
 })
 

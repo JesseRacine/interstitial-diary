@@ -1,5 +1,5 @@
 import { MONTH_NAMES, parseDayKey } from './entry'
-import type { EventStat } from './events'
+import { type EventStat, dayNumber } from './events'
 
 /** What the Events page lists, filtered, sorted and grouped: pure functions so they can be tested. */
 
@@ -35,6 +35,24 @@ export function sortEvents(events: readonly EventStat[], sort: EventSort): Event
   if (sort === 'name') return l.sort((a, b) => a.title.localeCompare(b.title) || a.first.localeCompare(b.first) || byId(a, b))
   const dir = sort === 'newest' ? -1 : 1
   return l.sort((a, b) => dir * (a.first.localeCompare(b.first) || a.last.localeCompare(b.last)) || byId(a, b))
+}
+
+/** Whole days between two events' date ranges (0 when they overlap or touch). */
+export function eventGap(a: EventStat, b: EventStat): number {
+  return Math.max(0, dayNumber(a.first) - dayNumber(b.last), dayNumber(b.first) - dayNumber(a.last))
+}
+
+/**
+ * The events `event` could be merged into: every event with a different title (the same title in another year is
+ * already the same name, merging would change nothing), nearest in time first, because a misspelt title is usually
+ * written about around the same days as the right one. Ties go by title.
+ */
+export function mergeTargets(events: readonly EventStat[], event: EventStat): EventStat[] {
+  return events
+    .filter((e) => e.id !== event.id && e.key !== event.key)
+    .map((e) => ({ e, gap: eventGap(event, e) }))
+    .sort((a, b) => a.gap - b.gap || a.e.title.localeCompare(b.e.title) || byId(a.e, b.e))
+    .map(({ e }) => e)
 }
 
 export interface EventGroup {

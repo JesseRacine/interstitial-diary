@@ -127,7 +127,7 @@ export interface EventStat {
 }
 
 /** Whole days since 1970 for a YYYY-MM-DD key, so differences ignore daylight saving. */
-const dayNumber = (k: string): number => {
+export const dayNumber = (k: string): number => {
   const [y, m, d] = k.split('-').map(Number)
   return Date.UTC(y, m - 1, d) / 86_400_000
 }

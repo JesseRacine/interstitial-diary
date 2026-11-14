@@ -58,7 +58,8 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | 03c54dc | Plan step 1 (2026-11-13): Enter adds a line on touch screens (`enterAction` in `lib/dom.ts`); hint lines follow the device |
 | ad749ae | Plan step 2: edit an entry's time and date (`lib/retime.ts`, "When" field, local-only `Entry.prevDay` so sync rewrites the old day's file). **Steps 1 and 2 pushed 2026-11-13 (deploy green)** |
 | e8119ea | Plan step 3 (local): weekly review in the Calendar tab (`lib/weekReview.ts`, `WeekReview.tsx`) |
-| (next commit) | Plan step 4a (local): `event:"Title"` and `has:event` search, "With events" chip, "Search this event" button |
+| 7f71cb0 | Plan step 4a (local): `event:"Title"` and `has:event` search, "With events" chip, "Search this event" button |
+| (next commit) | Plan step 4b (local): "Merge into…" on the event page (`mergeTargets` in `lib/eventRows.ts`, reuses `renameEvent`) |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

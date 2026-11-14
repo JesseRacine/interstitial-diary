@@ -12,7 +12,7 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 459 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 464 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
@@ -44,8 +44,11 @@ them (index at the bottom)._
 4. **Events/people:** **4a `event:` search filter and `has:event`: built and committed locally 2026-11-13, not pushed**
    (`search/query.ts` keeps `event:"Title"` together as one token, whole-title match on the markers, plus `-has:event`, a
    "With events" chip, syntax help, and a **Search this event** button on the event page; 459 tests, `tsc` clean, lint
-   unchanged; checked in the pane with seeded events; waiting item 17); 4b merge an event into an existing one; 4c an event's own
-   date (pick the syntax with the user first).
+   unchanged; checked in the pane with seeded events; waiting item 17); **4b "Merge into…" on the event page: built and committed locally
+   2026-11-13, not pushed** (pick the right event from a list, nearest in time first; it rewrites the title like Rename, and the
+   confirmation warns when the entries are more than 7 days from the target's, so they stay a separate event with the same title;
+   464 tests, `tsc` clean, lint unchanged; checked in the pane, near and far cases and at 375px; waiting item 18); 4c an event's own
+   date (pick the syntax with the user first; it is also what would let two same-titled events far apart be one).
 5. **Photo filters** in the Photos tab, using the search syntax.
 6. **Quick capture on Android, stage 1 (PWA):** `?new=1` shortcut + fast start + text share target (photo share later).
 The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
@@ -149,6 +152,10 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**18. Merge events** (step 4b above, once pushed): make a misspelt event (`!"Wekend away"` next to `!"Weekend away"`), open
+its page, Merge into… the right one: the entries now carry the right title and the page shows the joined event; with
+Dropbox the change shows on the other device. A merge into an event more than 7 days away says so before it does it.
 
 **17. Event search** (step 4a above, once pushed): search `event:"<one of your event titles>"`: it finds the entries
 that name it (not entries that only mention the words); `has:event` lists every entry with an event; on an event's page,

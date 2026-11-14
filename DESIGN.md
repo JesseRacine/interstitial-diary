@@ -92,6 +92,11 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   (all entries with that title, not only this event's dates).
 - **Rename** (`renameEvent` in `db.ts`, Events page): rewrites the markers with that title only in that event's entries,
   keeping the quote marks typed, bumping `updatedAt` and marking them dirty so it syncs like any edit.
+- **Merge into…** (event page): fixes a misspelt title by picking the right event from a list (every event with a
+  different title, nearest in time first: `mergeTargets` in `lib/eventRows.ts`). It is the same rewrite as Rename with the
+  target's title, so nothing new is stored. Because identity is title plus the 7-day rule, entries more than 7 days from
+  the target's stay a **separate event with the same title**; the confirmation says so in advance (`eventAfterRename`
+  tells whether they join). A merge can be undone with Rename.
 
 **Editing an entry's time** (`src/lib/retime.ts`, `updateEntry(id, text, images, pickedTime)` in `db.ts`, the "When"
 field in the editor): the person picks a date and time to the minute; the entry keeps its own seconds (so entries in the

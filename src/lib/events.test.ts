@@ -146,6 +146,15 @@ describe('after a rename', () => {
     expect(after.entryIds).toEqual(['n', 't'])
     expect(after.first).toBe('2026-05-01')
   })
+  it('stays a separate event with the same title when the neighbour is more than 7 days away (what a merge warns about)', () => {
+    const entries = [entry('n', '2026-05-01', '!"Weekend away"'), entry('t', '2026-05-20', '!"Wekend away"')]
+    const typo = computeEvents(entries).find((e) => e.key === 'wekend away')!
+    const target = computeEvents(entries).find((e) => e.key === 'weekend away')!
+    const after = eventAfterRename(entries, typo, 'Weekend away')!
+    expect(after.entryIds).toEqual(['t'])
+    expect(after.entryIds.includes(target.entryIds[0])).toBe(false)
+    expect(after.title).toBe('Weekend away')
+  })
 })
 
 describe('events in day files', () => {

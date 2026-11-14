@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { renameEvent } from '../lib/db'
 import type { Entry } from '../lib/entry'
-import { type EventSort, eventDateLabel, eventYears, filterEvents, groupEvents, sortEvents } from '../lib/eventRows'
-import { EVENT_ICON, type EventStat, eventAfterRename, parseEventTitle } from '../lib/events'
+import { type EventSort, eventDateLabel, eventYears, filterEvents, groupEvents, mergeTargets, sortEvents } from '../lib/eventRows'
+import { EVENT_ICON, type EventStat, SAME_EVENT_DAYS, eventAfterRename, parseEventTitle } from '../lib/events'
 import { EntryItem } from './EntryItem'
 
 const SORTS: [EventSort, string][] = [['newest', 'Newest'], ['oldest', 'Oldest'], ['name', 'A–Z']]
@@ -33,7 +33,7 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
 
   if (selectedId !== null) {
     return (
-      <EventPage key={selectedId} event={events.find((e) => e.id === selectedId)} entries={entries}
+      <EventPage key={selectedId} event={events.find((e) => e.id === selectedId)} events={events} entries={entries}
         onBack={() => onSelect(null)} onSelect={onSelect} onSearch={onSearch} onSearchQuery={onSearchQuery}
         onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
@@ -81,8 +81,9 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
 }
 
 /** One event: its dates and its entries, oldest first (the story in order). Its title can be changed (typos). */
-function EventPage({ event, entries, onBack, onSelect, onSearch, onSearchQuery, onOpenDay, onOpenImage }: {
+function EventPage({ event, events, entries, onBack, onSelect, onSearch, onSearchQuery, onOpenDay, onOpenImage }: {
   event: EventStat | undefined // undefined once it is gone (title renamed, entries edited or deleted while open)
+  events: EventStat[] // all events, for the merge list
   entries: Entry[]
   onBack: () => void
   onSelect: (id: string | null) => void
@@ -95,6 +96,30 @@ function EventPage({ event, entries, onBack, onSelect, onSearch, onSearchQuery, 
     const ids = new Set(event?.entryIds)
     return entries.filter((e) => ids.has(e.id))
   }, [event, entries])
+
+  const [merging, setMerging] = useState(false)
+  const [targetId, setTargetId] = useState('')
+  const targets = useMemo(() => (event ? mergeTargets(events, event) : []), [events, event])
+  const target = targets.find((t) => t.id === targetId) ?? null
+
+  /**
+   * Merge this event into another: the target's title is written in this event's entries (the same rewrite as Rename, so
+   * a misspelling becomes the right title in one step). If the entries are within a week of the target's they join it;
+   * if not they stay a separate event with the same title, and the confirmation says so.
+   */
+  const merge = async () => {
+    if (!event || !target) return
+    const after = eventAfterRename(entries, event, target.title)
+    const joins = !!after && after.entryIds.includes(target.entryIds[0])
+    const n = event.count
+    const what = `Merge "${event.title}" into "${target.title}"? The title is rewritten in ${n} ${n === 1 ? 'entry' : 'entries'}.`
+    const note = joins ? '' : `\n\nThe two are more than ${SAME_EVENT_DAYS} days apart, so they will still be listed as two events with the same title.`
+    if (!confirm(what + note)) return
+    await renameEvent(event.entryIds, event.key, target.title)
+    setMerging(false)
+    setTargetId('')
+    if (after) onSelect(after.id)
+  }
 
   /** Rewrites the title in this event's entries only; the page then follows the event to its new id. */
   const rename = async () => {
@@ -126,7 +151,24 @@ function EventPage({ event, entries, onBack, onSelect, onSearch, onSearchQuery, 
               title="Search for every entry that names this title, with other words, tags and dates">
               Search this event
             </button>
+            <button type="button" onClick={() => setMerging(!merging)} aria-expanded={merging} disabled={targets.length === 0}
+              title={targets.length === 0 ? 'There is no other event to merge with' : 'Fix a misspelt title by merging into the right event'}>
+              Merge into…
+            </button>
           </div>
+          {merging && (
+            <div className="event-merge" role="group" aria-label="Merge into another event">
+              <label htmlFor="merge-target" className="muted">Merge into</label>
+              <select id="merge-target" value={targetId} onChange={(e) => setTargetId(e.target.value)}>
+                <option value="">Choose an event…</option>
+                {targets.map((t) => (
+                  <option key={t.id} value={t.id}>{t.title} · {eventDateLabel(t.first, t.last)}</option>
+                ))}
+              </select>
+              <button type="button" className="primary" onClick={merge} disabled={!target}>Merge</button>
+              <button type="button" onClick={() => { setMerging(false); setTargetId('') }}>Cancel</button>
+            </div>
+          )}
           <div className="timeline">
             {mine.map((e) => (
               <EntryItem key={e.id} entry={e} showDate onTag={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
