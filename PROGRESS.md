@@ -39,11 +39,13 @@ file has been installed or opened by anyone yet**). `gh` is installed and signed
   `src-tauri/android/MainActivity.kt` pads the web view by the status bar, cutout, navigation bar and keyboard. The user
   installed it: **"the app works fine"** (overlap not mentioned again; not confirmed point by point).
 - **OPEN, start here next session (user, 2026-11-14, Android app only):** after sending an entry **the entry box loses
-  focus (keyboard closes) and it is hard to tap it to get focus back** for 2 to 5 seconds. Earlier described as "can't
-  type while it syncs"; the cause was not found by reading the code (the box is never disabled; sync is async). First
-  idea, not built, to agree with the user: in `Capture.tsx` `save()` put the focus back in the box after saving (on
-  touch the Save button takes the focus), and look at why taps are ignored (possibly the layout moving when the
-  keyboard closes and the list scrolls to the bottom). A web-repo change: it also changes the web app on phones.
+  focus (keyboard closes) and it is hard to tap it to get focus back** for 2 to 5 seconds. Likely cause: tapping Save
+  gave the button the focus, the button is disabled right after saving (empty box), a disabled button drops the focus,
+  so the keyboard closed and the page resized while the list scrolled. **Fix built 2026-11-14, committed, NOT pushed:**
+  in `Capture.tsx` the Save button no longer takes the focus (`onMouseDown` preventDefault) and `save()` focuses the
+  box again. 524 tests, `tsc` clean; checked in the pane with the phone preset (after Save the box has the focus and
+  typing goes straight in). **Not tried on the real phone**: needs a push (web app) and, for the Android app, a new
+  build of the app repo (its workflow builds this repo's `main`). The keyboard now stays open after Save on phones.
 - **Next after Android is confirmed (user, 2026-11-14): a portable Windows app.** No installer: one folder with the
   `.exe`, and all data in a folder beside it (`journal-data` or similar); nothing in Windows AppData. Likely means: ship
   a zip instead of NSIS, and point the WebView2 data folder at that folder (Tauri `data_directory`). The user decided (2026-11-14):

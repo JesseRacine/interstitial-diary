@@ -62,6 +62,7 @@ export function Capture({ tagStats, onSaved, inputRef, initialText = '', onPrefi
     setCaret(0)
     draft.reset()
     onSaved()
+    focus() // stay ready for the next entry (see the Save button's onMouseDown)
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -113,7 +114,9 @@ export function Capture({ tagStats, onSaved, inputRef, initialText = '', onPrefi
         <AttachButton draft={draft} onPicked={focus} />
         <span className="spacer" />
         {draft.busy && <span className="muted small">Preparing photos…</span>}
-        <button type="submit" className="primary" disabled={!canSave} title={!text.trim() && draft.images.length ? 'Write a few words to save the photos with' : undefined}>
+        {/* The button must not take the focus: it is disabled right after saving, and a disabled button drops the
+            focus, which on a phone closes the keyboard and moves the whole page while you try to tap the box again. */}
+        <button type="submit" className="primary" disabled={!canSave} onMouseDown={(e) => e.preventDefault()} title={!text.trim() && draft.images.length ? 'Write a few words to save the photos with' : undefined}>
           Save
         </button>
       </div>
