@@ -12,7 +12,7 @@ them (index at the bottom)._
   tab; live 2026-11-13, see its section below), export, three
   storage modules (folder, browser files, **Dropbox**: live since 2026-11-12, working Windows ↔ Android per the user),
   photos (phases 1–3), installable PWA, data-safety features, hosting, Settings > **Start over** (live 2026-11-12, works
-  per the user). 494 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
+  per the user). 504 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` now has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
 - **Git state:** `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
@@ -59,7 +59,17 @@ them (index at the bottom)._
    clean, lint unchanged; checked in the pane with seeded photo entries (all, `#trip`, `#trip @sam`, year, event, no match,
    bad word, chips on/off, 375px, no overflow). The grid showed empty tiles because the seeded photos have no files:
    not looked at with real photos (waiting item 20). Not included: jump to the entry from the lightbox.
-6. **Quick capture on Android, stage 1 (PWA):** `?new=1` shortcut + fast start + text share target (photo share later).
+6. **Quick capture on Android, stage 1 (PWA): built and committed locally 2026-11-14, not pushed** (all six steps of the
+   plan are now built). `?new=1` (the shortcut) opens the journal on the entry box; Android's Share sheet sends title, text
+   and link as a GET (manifest `share_target`) into the box, caret at the end, nothing saved until you save; the address is
+   cleaned after reading; a Settings tip explains pinning the icon and sharing. **Startup was measured and left alone**
+   (box first, 20,000 entries: ~60 ms read, ~80 ms index; DOMContentLoaded 21 ms with the service worker; details in
+   android-capture-plan.md). 504 tests, `tsc` clean, lint unchanged; checked in the pane (dev and production build: manifest
+   has the shortcut and share target, share-style address prefills, reload/back start empty, `?view=` still works; the
+   hosted sub-path build `/interstitial-diary/`: share action and shortcut resolve inside the scope, prefill works). **Not
+   verified:** everything that needs the phone (waiting item 21); the pane cannot test offline navigation at all (even a plain
+   reload failed with the server stopped), so offline share rests on reading the service worker's code. Photo sharing is not
+   built (needs a POST target and a custom service worker). Stage 2 (native widget) waits for Tauri.
 The full plan: the session's plan file; each step ends with tests, a commit and a question before the next.
 
 ## Events (`!"Jack's 40th birthday"`): all 5 steps built, PUSHED and live 2026-11-13 (`0995008`, deploy #10 green; live bundle checked)
@@ -161,6 +171,13 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**21. Quick capture on Android** (step 6 above, once pushed; the installed app updates when reloaded, and Chrome reads the
+new manifest at its next check, so a reinstall may be needed for the Share list): a. long-press the app icon: "New entry"
+is there; drag it to the home screen; tapping it opens the app on the entry box, and say whether the keyboard comes up by
+itself; b. in Chrome on any page tap Share > Interstitial: a new entry opens with the page title and link in the box, you
+add a note and Save; c. the same in airplane mode; d. reloading the app afterwards does not bring the shared text back;
+e. does it start fast enough?
 
 **20. Photo filters** (step 5 above, once pushed): in the Photos tab, tap a chip such as a person or tag: only photos from
 entries with it remain and the count reads "N of M photos"; type `last:3m` or `#trip`; pick a year; "Clear the filter"

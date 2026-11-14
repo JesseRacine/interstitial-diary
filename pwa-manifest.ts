@@ -17,14 +17,23 @@ export const manifest: Partial<ManifestOptions> = {
     { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
     { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
   ],
-  // Long-press the installed icon: jump straight to the journal with the capture box focused (it autofocuses).
+  // Long-press the installed icon (or drag this shortcut onto the home screen): open the journal with the entry box ready.
+  // `?new=1` is read by lib/launch.ts.
   shortcuts: [
     {
       name: 'New entry',
       short_name: 'New entry',
       description: 'Open the journal and start typing',
-      url: './?view=journal',
+      url: './?new=1',
       icons: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
     },
   ],
+  // "Share > Interstitial" from another app (Android Chrome, Edge): the page address and any text arrive as
+  // `?new=1&title=...&text=...&url=...`, which lib/launch.ts puts into a new entry. A plain GET needs no service-worker
+  // code. Sharing photos would need a POST target and a custom service worker: not done.
+  share_target: {
+    action: './?new=1',
+    method: 'GET',
+    params: { title: 'title', text: 'text', url: 'url' },
+  },
 }

@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { manifest } from '../pwa-manifest'
+import { parseLaunch } from './lib/launch'
 
 const root = new URL('../', import.meta.url)
 const publicFile = (p: string) => new URL(`public/${p}`, root)
@@ -39,10 +40,24 @@ describe('PWA manifest', () => {
     expect((manifest.icons ?? []).some((i) => i.purpose === 'maskable')).toBe(true)
   })
 
-  it('has a "New entry" shortcut that opens the journal', () => {
+  it('has a "New entry" shortcut that opens the entry box (?new=1)', () => {
     const s = manifest.shortcuts?.find((x) => x.name === 'New entry')
-    expect(s?.url).toBe('./?view=journal')
+    expect(s?.url).toBe('./?new=1')
     for (const icon of s?.icons ?? []) expect(existsSync(publicFile(icon.src)), icon.src).toBe(true)
+  })
+
+  it('has a share target that sends the shared title, text and link to the entry box', () => {
+    const t = manifest.share_target
+    expect(t?.method).toBe('GET') // a GET needs no service-worker code; photos would need a POST target
+    expect(t?.action).toBe('./?new=1') // relative, so it works from a sub-path; inside scope
+    expect(t?.params).toEqual({ title: 'title', text: 'text', url: 'url' })
+  })
+
+  it('the share target and the shortcut name words that lib/launch.ts reads', () => {
+    // Whatever the manifest asks the browser to send must be something parseLaunch understands.
+    const shared = new URL(`https://x.test/app/${manifest.share_target!.action.slice(2)}&title=T&text=X&url=https%3A%2F%2Fe.test`)
+    expect(parseLaunch(shared.search)).toEqual({ newEntry: true, text: 'T\nX\nhttps://e.test' })
+    expect(parseLaunch(new URL(`https://x.test/app/${manifest.shortcuts![0].url.slice(2)}`).search).newEntry).toBe(true)
   })
 })
 

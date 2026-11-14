@@ -30,6 +30,11 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   but it shows in colour, in the Tags view and in search. Edit the text if that is unwanted.
 - A person or place name has no spaces (`@sarah_jones`); the app shows the underscore as a space. A tag, person and
   place of the same name (`#sarah`, `@sarah`, `~sarah`) are three different things; rename cannot change a tag's kind.
+- Quick capture (PWA): sharing into the app works for text and links only, not photos (needs a POST share target and a
+  custom service worker). A shared link such as `https://site/@name` makes a person tag from `@name`, like any text. A
+  long share is cut at 2000 characters. On Android the keyboard may not rise by itself when the app opens from the icon
+  (a browser rule for a script focus): the first tap on the box does it. There is no widget or Quick Settings tile (that
+  needs the native app; see android-capture-plan.md stage 2).
 - Event dates: only `(YYYY-MM-DD)` right after the marker, one real day (no range, no month-only, no `12 May 2026`); a
   date typed any other way is plain text and the marker has no date. There is no date picker, so the date is typed by hand.
   Two same-titled events far apart, or on different dates, stay two events (give their entries the same date to join them).

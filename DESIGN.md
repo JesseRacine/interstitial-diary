@@ -407,7 +407,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   first. An event chip ("🎉 Jack's 40th birthday", blue `--event`) in any entry opens its event through
   `OpenEventContext` (`components/eventNav.ts`, provided in `App.tsx`, read by `EntryItem`), which picks the event whose
   entries include that entry. Six header tabs fit 375 px only with the tighter padding in the `max-width: 520px` block.
-- **Settings:** storage, **photos on this device**, theme, export, shortcuts. The photos card (`PhotoStorageCard`) lists
+- **Settings:** storage, **photos on this device**, theme, export, a short "Quick entry from your phone or taskbar" tip, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The
   limit says in words when it does nothing: no storage connected, "Files inside this browser" (not a separate copy),
@@ -421,9 +421,24 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 - **Now:** an installable PWA (docs/HISTORY.md step 2). Data lives in the browser and, optionally, a storage module.
   - `pwa-manifest.ts` is the web app manifest: standalone display, relative `start_url`/`scope` (so a sub-path host such
-    as GitHub Pages works), 192/512 icons plus a maskable one, and a "New entry" shortcut (`./?view=journal`, which
-    opens the journal; the capture box autofocuses). `scripts/make-icons.mjs` generates the icons and favicon
-    (`npm run icons`); replace the files in `public/` to use other artwork.
+    as GitHub Pages works), 192/512 icons plus a maskable one, a "New entry" shortcut (`./?new=1`) and a **share
+    target**. `scripts/make-icons.mjs` generates the icons and favicon (`npm run icons`); replace the files in `public/`
+    to use other artwork.
+  - **Quick capture** (`src/lib/launch.ts`, [android-capture-plan.md](android-capture-plan.md) stage 1): `?new=1` opens the
+    journal with the entry box focused (long-press the installed icon, or drag the "New entry" shortcut to the Android home
+    screen; on Windows the taskbar icon's jump list). The share target is a plain **GET** to the same address
+    (`./?new=1&title=...&text=...&url=...`), so "Share > Interstitial" from another app puts the title, text and link
+    on separate lines in the entry box, caret at the end, for the person to finish and save: nothing is saved by sharing.
+    A piece another piece already contains is dropped (Android repeats the link in `text` and `url`), shared text is cut
+    at 2000 characters, and the launch words are taken out of the address once read (so reloading does not bring the text
+    back) and the text is used only the first time the box appears. No service-worker code is involved (the cached app
+    shell answers the address, query string and all: the worker's `NavigationRoute` has no restrictions); sharing
+    **photos** would need a POST target and a custom service worker and is not done. A shared `https://site/@name` becomes
+    a person tag like any `@name` in text.
+  - **Startup** was measured (2026-11-14) rather than changed: the entry box is the first thing rendered (entries load
+    after, in the background) and the work after load is small (20,000 entries: raw load about 60 ms off the main thread,
+    search index about 80 ms in dev, tag stats and events a few ms; a few thousand entries is about a tenth of that), so
+    nothing was deferred. A phone is several times slower than the dev machine; revisit with real numbers if it feels slow.
   - `vite-plugin-pwa` (`generateSW`, `registerType: 'prompt'`) precaches the whole build, **including the image worker
     chunk**, so the app opens and photos can be attached offline. `components/UpdatePrompt.tsx` registers the worker and
     shows "A new version is ready. Reload": a new version is never applied on its own, so a half-written entry is never

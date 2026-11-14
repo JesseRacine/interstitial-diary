@@ -17,13 +17,17 @@ function useClock() {
   return now
 }
 
-export function Capture({ tagStats, onSaved, inputRef }: {
+export function Capture({ tagStats, onSaved, inputRef, initialText = '', onPrefilled }: {
   tagStats: TagStat[]
   onSaved: () => void
   inputRef: React.RefObject<HTMLTextAreaElement | null>
+  /** Text to start with (shared from another app); only read when the box first appears. */
+  initialText?: string
+  /** Called once the box has taken `initialText`, so the owner can forget it (coming back later starts empty). */
+  onPrefilled?: () => void
 }) {
-  const [text, setText] = useState('')
-  const [caret, setCaret] = useState(0)
+  const [text, setText] = useState(initialText)
+  const [caret, setCaret] = useState(initialText.length)
   const now = useClock()
   const coarse = useCoarsePointer()
   const ac = useTagAutocomplete(text, caret, tagStats)
@@ -31,7 +35,8 @@ export function Capture({ tagStats, onSaved, inputRef }: {
   const focus = () => inputRef.current?.focus()
   const input = useImageInput(draft, focus)
 
-  const pending = useRef<number | null>(null)
+  const pending = useRef<number | null>(initialText ? initialText.length : null) // caret at the end of shared text
+  useEffect(() => { if (initialText) onPrefilled?.() }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (pending.current !== null && inputRef.current) {
       inputRef.current.setSelectionRange(pending.current, pending.current)

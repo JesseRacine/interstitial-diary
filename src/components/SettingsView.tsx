@@ -39,6 +39,19 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
       <StartOverCard entries={entries} />
 
       <div className="card">
+        <h3>Quick entry from your phone or taskbar</h3>
+        <p className="muted">With the app installed:</p>
+        <ul>
+          <li><strong>Android home screen:</strong> long-press the app icon, then drag <strong>New entry</strong> onto the home
+            screen. One tap opens the app ready to type.</li>
+          <li><strong>From another app:</strong> tap Share, then <strong>Interstitial</strong> (Chrome, Maps and most apps). The
+            text or link lands in a new entry for you to finish and save. If Interstitial is not in the list, reinstall the app
+            once. Photos cannot be shared in yet.</li>
+          <li><strong>Windows:</strong> right-click the app icon in the taskbar and choose <strong>New entry</strong>.</li>
+        </ul>
+      </div>
+
+      <div className="card">
         <h3>Keyboard shortcuts</h3>
         <table>
           <tbody>

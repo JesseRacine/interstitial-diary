@@ -1,7 +1,7 @@
 # Plan: quick capture on Android (widget and friends)
 
-_Status: early plan, not started. Written 2026-11-08. Depends on hosting (PROGRESS step 4) for the PWA parts and on
-Tauri (step 6) for the native parts._
+_Status: **stage 1 (the PWA) built 2026-11-14, not yet tried on a phone** (see the build log at the end); stage 2 (native
+widget) not started. Written 2026-11-08. Stage 2 depends on Tauri (PROGRESS step 6) for the native parts._
 
 Goal: adding an entry on Android should take one tap from the home screen, then type and save, in about two seconds.
 That fits the product principle "Capture in seconds" (DESIGN.md).
@@ -67,6 +67,29 @@ journal and syncs; it works offline and with the app closed.
 
 Already planned: the PWA `shortcuts` entry, and in Tauri a global hotkey plus a tray icon that open the same capture
 pop-up. The `?new=1` route and the inbox import serve both platforms.
+
+## Stage 1 build log (2026-11-14)
+
+- **1. Open straight to capture: done.** `src/lib/launch.ts` reads `?new=1` (and the share words below); `App.tsx` opens the
+  journal on the entry box (it autofocuses), then removes the words from the address. The manifest shortcut is now
+  `./?new=1`; Settings has a short "Quick entry" tip.
+- **2. Fast start: measured, nothing changed.** The entry box is the first thing drawn and the post-load work is small:
+  20,000 entries took ~60 ms to read (off the main thread), ~80 ms to index (dev build), a few ms for tag stats and events.
+  Production build with the service worker: DOMContentLoaded at 21 ms, box present and focused. Not measured on a phone; the
+  pane's long-task observer did not work (it missed a task provoked on purpose), so the numbers are component timings.
+  If it feels slow on the phone, defer building the search index until it is needed (App.tsx).
+- **3. Share target, text only: done as a GET.** `share_target` in the manifest: `action ./?new=1`, `method GET`, params
+  `title`, `text`, `url`. A GET needs no service-worker code, which is why it is first; the title, text and link are put on
+  separate lines (a piece another contains is dropped) and nothing is saved until the person saves. **Photos are not shared
+  in**: that needs `method: POST`, `enctype: multipart/form-data`, a custom service worker (`injectManifest` instead of the
+  generated one) that stores the files, and a way to hand them to the entry box; left for a later step because it changes how
+  the offline worker is built.
+- **4. Docs: done** (Settings tip, DESIGN.md "Quick capture").
+- **Not verified (needs the phone):** the pinned icon opens with the keyboard up (Android may not raise it for a script
+  focus; the first tap on the box does), the app appears in the Share list (Chrome reads the manifest when the app is
+  installed or updated; a reinstall may be needed), and a share works in airplane mode. The pane cannot install an app, open
+  the Share sheet or test offline (even a plain reload fails offline there). The service worker's code answers any address
+  with the cached app shell, so offline should work.
 
 ## Open questions (decide later)
 

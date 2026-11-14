@@ -18,6 +18,7 @@ import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
+import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker } from './lib/events'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
@@ -41,7 +42,14 @@ export default function App() {
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
   const events = useMemo(() => computeEvents(entries), [entries])
 
-  const [view, setView] = useState<View>(() => (new URLSearchParams(location.search).get('view') as View | null) ?? 'journal')
+  // How the app was opened: the "New entry" shortcut or Android's Share sheet (see lib/launch.ts).
+  const [launch] = useState(() => parseLaunch(location.search))
+  const [prefill, setPrefill] = useState(launch.text) // shared text for the entry box, used once
+  const [view, setView] = useState<View>(() => (launch.newEntry ? 'journal' : (new URLSearchParams(location.search).get('view') as View | null) ?? 'journal'))
+  useEffect(() => {
+    // Read once; take the launch words out of the address so a reload does not bring the shared text back.
+    if (launch.newEntry) history.replaceState(history.state, '', cleanLaunchUrl(location.href))
+  }, [launch])
   const [eventId, setEventId] = useState<string | null>(null) // the event whose page is open in the Events view
   const [jump, setJump] = useState<Jump | null>(null)
   const [bottomTick, setBottomTick] = useState(0)
@@ -172,7 +180,8 @@ export default function App() {
           <>
             <JournalView entries={entries} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
               onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
-            <Capture tagStats={tagStats} inputRef={captureRef} onSaved={() => setBottomTick((t) => t + 1)} />
+            <Capture tagStats={tagStats} inputRef={captureRef} initialText={prefill} onPrefilled={() => setPrefill('')}
+              onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
           <CalendarView entries={entries} events={events} onOpenDay={(d) => openDay(d)} onTag={searchTag}
