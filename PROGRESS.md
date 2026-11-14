@@ -25,6 +25,19 @@ them (index at the bottom)._
   user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed done.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
+## Native apps, Windows and Android (started 2026-11-14; no new storage, Dropbox stays)
+
+The user chose: a **new public repo `interstitial-diary-app`** holding only a Tauri 2 shell; its workflow checks out
+this repo (ref in its `web.ref`, default `main`), runs the tests, builds once, then makes the Windows installer (NSIS
+`.exe`) and a signed Android APK; a `v*` tag makes a GitHub Release. Local copy: `~/projects/interstitial-diary-app`
+(first commit `8a2207a`, **not pushed, the GitHub repo does not exist yet, the workflow has never run**). App id
+`io.github.jesseracine.interstitialdiary`; the app's origin is `https://tauri.localhost/`.
+- **Waiting on the user:** install `gh` in WSL and `gh auth login`; then create the repo and push (ask first).
+- **Expect to fix after the first run:** the workflow is untested. Known open points: Dropbox needs
+  `https://tauri.localhost/` as a redirect URI and the sign-in inside a webview is untried (passkeys may not work there);
+  the PWA service worker and "install" hints still run inside the app (probably switch them off with a build flag);
+  an Android signing key (README of the app repo); share target and the "New entry" shortcut do not exist natively yet.
+
 ## Current plan (agreed 2026-11-13): six improvements, one step per turn, in this order
 
 1. **Enter adds a line on touch screens: built, PUSHED and deployed 2026-11-13** (with step 2, `ad749ae`, deploy green; the
