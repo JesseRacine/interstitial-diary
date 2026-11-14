@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { setMeta } from '../lib/db'
 import type { TagStat } from '../search/engine'
 import { hasToken, toggleToken } from '../search/query'
+import { SEARCH_SYNTAX } from '../search/syntax'
 import { tagLabel, tagToken } from '../lib/tagKinds'
 import { Suggestions, useTagAutocomplete } from './text'
 
@@ -17,25 +18,6 @@ const QUICK: [label: string, token: string][] = [
   ['Weekends', 'day:weekend'],
   ['With photos', 'has:image'],
   ['With events', 'has:event'],
-]
-
-const SYNTAX: [string, string][] = [
-  ['report draft', 'all of these words (also matches “drafting”, small typos)'],
-  ['"email triage"', 'this exact phrase'],
-  ['#work #tired', 'has both tags'],
-  ['#work|#personal', 'has either tag'],
-  ['@sarah  ~home', 'mentions a person / a place (names with spaces: @sarah_jones)'],
-  ['@sarah|@tom  #work|~home', 'either one (#, @ and ~ can be mixed)'],
-  ['-#personal  -@sarah  -meeting', 'leave out a tag, person, place or word'],
-  ['on:2026-11-08', 'a specific day'],
-  ['from:2026-11-01 to:2026-11-07', 'a date range (dates, months or years)'],
-  ['in:2026-11  in:2026', 'a month or year'],
-  ['today  yesterday  last:7d  last:3m', 'relative dates (d, w, m, y)'],
-  ['time:09-12  after:22:00  before:7', 'time of day'],
-  ['day:mon  day:weekend  day:mon,fri', 'day of the week'],
-  ['has:image  -has:image', 'entries with photos / without photos (has:photo works too)'],
-  ['event:"Jack\'s 40th"  event:party', 'entries that name this event (its whole title; capitals and spacing do not matter)'],
-  ['has:event  -has:event', 'entries that name an event / that do not'],
 ]
 
 export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, onCommit }: {
@@ -136,7 +118,7 @@ export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, 
         <div className="help">
           <table>
             <tbody>
-              {SYNTAX.map(([q, d]) => (
+              {SEARCH_SYNTAX.map(([q, d]) => (
                 <tr key={q}><td><code>{q}</code></td><td>{d}</td></tr>
               ))}
             </tbody>

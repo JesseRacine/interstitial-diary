@@ -2,6 +2,7 @@ import type { Entry } from '../lib/entry'
 import { DataSafetyCard } from './DataSafetyCard'
 import { DeletedEntriesCard } from './DeletedEntriesCard'
 import { ExportCard } from './ExportCard'
+import { ManualCard } from './ManualCard'
 import { PhotoStorageCard } from './PhotoStorageCard'
 import { StartOverCard } from './StartOverCard'
 import { StorageCard } from './StorageCard'
@@ -17,6 +18,8 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
   return (
     <section className="settings">
       <h2>Settings</h2>
+
+      <ManualCard />
 
       <StorageCard />
 
@@ -61,7 +64,7 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
             <tr><td><kbd>n</kbd></td><td>Write a new entry</td></tr>
             <tr><td><kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Search</td></tr>
             <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next day</td></tr>
-            <tr><td><kbd>t</kbd></td><td>Jump to today</td></tr>
+            <tr><td><kbd>t</kbd></td><td>Jump to the latest entry</td></tr>
             <tr><td><kbd>Esc</kbd></td><td>Clear search</td></tr>
             <tr><td>Photo viewer</td><td><kbd>←</kbd> <kbd>→</kbd> other photos · <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> zoom · <kbd>Esc</kbd> close</td></tr>
           </tbody>

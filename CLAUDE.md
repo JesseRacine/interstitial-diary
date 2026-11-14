@@ -133,6 +133,7 @@ src/
                         tags/people/places, events of the week, vs the week before), compareLabel
     retime.ts           editing an entry's time/date: retimedCreatedAt, isAllowedTime, retimeEntry (sets the local-only
                         `prevDay` that sync uses to rewrite the old day's file), datetime-local helpers
+    (search/syntax.ts   SEARCH_SYNTAX: the search help table, shared by SearchBar and the Manual)
     purge.ts            delete permanently: scrubEntry, restorable (the Deleted entries list), purgedIds/parsePurged
                         (`.meta/purged.json`); merge.ts takes the purged ids; manager.ts `purgeDeleted` orders the steps
     hooks.ts            useLive: a Dexie liveQuery as React state
@@ -222,8 +223,10 @@ src/
    it never removes the tombstone (DESIGN.md "Delete permanently"). `withDerived` must carry every core field (`images`,
    `purged` included).
 6. **Do not treat an entry missing from a file as deleted.** This is deliberate (see DESIGN.md, "Sync rules").
-7. **Search syntax lives in three places:** `search/query.ts` (parser), the `SYNTAX` table in
-   `components/SearchBar.tsx`, and DESIGN.md. Keep them in step, and add parser tests for new syntax.
+7. **Search syntax lives in three places:** `search/query.ts` (parser), the `SEARCH_SYNTAX` table in
+   `search/syntax.ts` (shown by the `?` help and by the Settings Manual; `syntax.test.ts` parses every example), and
+   DESIGN.md. Keep them in step, add parser tests for new syntax, and update `ManualCard.tsx` (static text) when a
+   feature or shortcut changes.
 8. **Virtualised lists must not change row height after render** (journal, Photos grid). Size boxes from data (stored
    `w`/`h`, or the grid width) before anything decodes.
 9. TypeScript settings: `verbatimModuleSyntax` + `erasableSyntaxOnly`, so use `import type` for types and no `enum`s.

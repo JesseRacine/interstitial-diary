@@ -377,6 +377,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 - **Header:** app name, views (Journal, Calendar, Photos, Tags, Settings), storage status badge. With no storage chosen
   the badge is hidden, except a red "⚠ Photos only in this browser" once the device holds photos.
 - **Search bar** (always visible): tag autocomplete, chips, saved (★) and recent searches, `?` syntax help.
+- **Manual** (Settings, top card, hidden until "Show the manual"): short static text on writing, tags/people/places,
+  events, search (the same `SEARCH_SYNTAX` table as the `?` help), the tabs and where data lives (`ManualCard.tsx`).
 - **Journal:** a chat. One continuous scroll through all days, oldest at the top and newest at the bottom, with the
   capture bar pinned at the bottom. Entries are left-aligned bubbles (time underneath; Edit/Delete on hover, always
   visible on touch screens). A faint divider shows the gap since the previous entry when it is an hour or more.

@@ -83,7 +83,14 @@ The full plan: the session's plan file; each step ends with tests, a commit and 
    two safeguards mutation-checked), `tsc` clean, lint unchanged; checked in the pane on an empty local copy (restore,
    erase one, erase-all confirm at 375px, text gone from IndexedDB). **Not tried with Dropbox or two devices** (waiting
    item 22).
-2. **Manual (Settings card): not started** (explains tags, formats and search; reuse the `SYNTAX` table, see the plan).
+2. **Manual (Settings card): built 2026-11-13, committed locally, NOT pushed.** A "Manual" card at the top of Settings
+   (hidden until "Show the manual"): writing and editing, tags/people/places, events, search, the tabs, your data
+   (`ManualCard.tsx`, static text). The search table moved to `search/syntax.ts` (`SEARCH_SYNTAX`), shared with the `?`
+   help, with a test that parses every example (524 tests, `tsc` clean, lint unchanged); added the missing `-"phrase"`
+   row; the Settings shortcut list now says `t` = "Jump to the latest entry" (it never jumped to today). Checked in the
+   pane (desktop and 375px, no overflow). Not read through by the user (waiting item 23).
+
+**23. Manual** (once pushed): Settings > Manual > Show the manual: read it; say what is wrong, unclear or missing.
 
 **22. Delete permanently** (once pushed; reload both devices to the new version first): delete an entry, find it in
 Settings > Deleted entries, Restore it, delete it again and Delete permanently; with Dropbox its text leaves the day file
