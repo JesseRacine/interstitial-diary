@@ -47,7 +47,8 @@ file has been installed or opened by anyone yet**). `gh` is installed and signed
   typing goes straight in). **Not tried on the real phone** (the cause is a diagnosis from the code, not reproduced). The Android app needs a new
   build of the app repo (its workflow builds this repo's `main`): run 43652915552 green 2026-11-14 (started after the push, so it
   built `0d1bb0b`; the bundle was not inspected); the new APK and Windows installer replaced the old ones in the session
-  folder `builds/`. Not installed by the user yet. The keyboard now stays open after Save on phones (web app too); the user may prefer otherwise.
+  folder `builds/`. **The user tried it 2026-11-14: "definitely better, more responsive, happy with it"** (item 24
+  closed; keyboard staying open not objected to). The keyboard now stays open after Save on phones (web app too); the user may prefer otherwise.
 - **Next after Android is confirmed (user, 2026-11-14): a portable Windows app.** No installer: one folder with the
   `.exe`, and all data in a folder beside it (`journal-data` or similar); nothing in Windows AppData. Likely means: ship
   a zip instead of NSIS, and point the WebView2 data folder at that folder (Tauri `data_directory`). The user decided (2026-11-14):
@@ -232,9 +233,6 @@ both devices, then Start over once more (item 11).
 
 ## Waiting on the user
 
-**24. Focus after Save** (pushed 2026-11-14): on the phone (web app after a reload, and the Android app after installing
-the new APK), write an entry and tap Save: the keyboard stays up, the cursor is in the box and the next entry can be
-typed at once; say whether the keyboard staying open is wanted.
 
 **21. Quick capture on Android** (step 6 above, once pushed; the installed app updates when reloaded, and Chrome reads the
 new manifest at its next check, so a reinstall may be needed for the Share list): a. long-press the app icon: "New entry"
