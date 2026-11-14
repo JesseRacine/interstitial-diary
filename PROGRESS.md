@@ -45,8 +45,9 @@ file has been installed or opened by anyone yet**). `gh` is installed and signed
   in `Capture.tsx` the Save button no longer takes the focus (`onMouseDown` preventDefault) and `save()` focuses the
   box again. 524 tests, `tsc` clean; checked in the pane with the phone preset (after Save the box has the focus and
   typing goes straight in). **Not tried on the real phone** (the cause is a diagnosis from the code, not reproduced). The Android app needs a new
-  build of the app repo (its workflow builds this repo's `main`): run 43652915552 started 2026-11-14, result and APK
-  not recorded here yet. The keyboard now stays open after Save on phones (web app too); the user may prefer otherwise.
+  build of the app repo (its workflow builds this repo's `main`): run 43652915552 green 2026-11-14 (started after the push, so it
+  built `0d1bb0b`; the bundle was not inspected); the new APK and Windows installer replaced the old ones in the session
+  folder `builds/`. Not installed by the user yet. The keyboard now stays open after Save on phones (web app too); the user may prefer otherwise.
 - **Next after Android is confirmed (user, 2026-11-14): a portable Windows app.** No installer: one folder with the
   `.exe`, and all data in a folder beside it (`journal-data` or similar); nothing in Windows AppData. Likely means: ship
   a zip instead of NSIS, and point the WebView2 data folder at that folder (Tauri `data_directory`). The user decided (2026-11-14):
