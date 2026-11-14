@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-13 (after Delete permanently and the Manual). Kept short on purpose: read this file first, and open the `docs/` files only when you need
+_Last updated: 2026-11-14 (after the focus-after-Save fix was pushed). Kept short on purpose: read this file first, and open the `docs/` files only when you need
 them (index at the bottom)._
 
 ## Where things stand
@@ -16,7 +16,7 @@ them (index at the bottom)._
   2026-11-13, see "Next plan" below). 524 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings). `storage/manager.ts` has tests too
   (`manager.test.ts`, 2026-11-12: a fresh copy per test with fake-indexeddb, a fake page and mocked modules; covers
   the sign-in return, another tab's storage, connect/reconnect/disconnect).
-- **Git state:** as of 2026-11-13 `main` equals `origin/main` at `ee39282` (Manual), apart from the docs commit that
+- **Git state:** as of 2026-11-14 `main` equals `origin/main` at `0d1bb0b` (focus after Save), apart from the docs commit that
   follows it. `main` is usually **ahead of `origin/main` by local docs-only commits that are not pushed.** A push
   publishes the public repo and redeploys the site, so **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest dated archive was made 2026-11-14 at commit `794873f` (`archive-2026-11-14/` + zip in the Claude
@@ -38,14 +38,15 @@ file has been installed or opened by anyone yet**). `gh` is installed and signed
 - **Android inset fix: pushed 2026-11-14 (`03939c1` in the app repo, run 43636005600 green);** our own
   `src-tauri/android/MainActivity.kt` pads the web view by the status bar, cutout, navigation bar and keyboard. The user
   installed it: **"the app works fine"** (overlap not mentioned again; not confirmed point by point).
-- **OPEN, start here next session (user, 2026-11-14, Android app only):** after sending an entry **the entry box loses
+- **Focus after Save: fix PUSHED 2026-11-14, waiting for the user's phone check (reported for the Android app):** after sending an entry **the entry box loses
   focus (keyboard closes) and it is hard to tap it to get focus back** for 2 to 5 seconds. Likely cause: tapping Save
   gave the button the focus, the button is disabled right after saving (empty box), a disabled button drops the focus,
-  so the keyboard closed and the page resized while the list scrolled. **Fix built 2026-11-14, committed, NOT pushed:**
+  so the keyboard closed and the page resized while the list scrolled. **Fix built and pushed 2026-11-14 (`0d1bb0b`, deploy run 43652830340 green; live bundle not checked):**
   in `Capture.tsx` the Save button no longer takes the focus (`onMouseDown` preventDefault) and `save()` focuses the
   box again. 524 tests, `tsc` clean; checked in the pane with the phone preset (after Save the box has the focus and
-  typing goes straight in). **Not tried on the real phone**: needs a push (web app) and, for the Android app, a new
-  build of the app repo (its workflow builds this repo's `main`). The keyboard now stays open after Save on phones.
+  typing goes straight in). **Not tried on the real phone** (the cause is a diagnosis from the code, not reproduced). The Android app needs a new
+  build of the app repo (its workflow builds this repo's `main`): run 43652915552 started 2026-11-14, result and APK
+  not recorded here yet. The keyboard now stays open after Save on phones (web app too); the user may prefer otherwise.
 - **Next after Android is confirmed (user, 2026-11-14): a portable Windows app.** No installer: one folder with the
   `.exe`, and all data in a folder beside it (`journal-data` or similar); nothing in Windows AppData. Likely means: ship
   a zip instead of NSIS, and point the WebView2 data folder at that folder (Tauri `data_directory`). The user decided (2026-11-14):
@@ -229,6 +230,10 @@ phone). It can't help a device still *running* the old version. Recovery for the
 both devices, then Start over once more (item 11).
 
 ## Waiting on the user
+
+**24. Focus after Save** (pushed 2026-11-14): on the phone (web app after a reload, and the Android app after installing
+the new APK), write an entry and tap Save: the keyboard stays up, the cursor is in the box and the next entry can be
+typed at once; say whether the keyboard staying open is wanted.
 
 **21. Quick capture on Android** (step 6 above, once pushed; the installed app updates when reloaded, and Chrome reads the
 new manifest at its next check, so a reinstall may be needed for the Share list): a. long-press the app icon: "New entry"
