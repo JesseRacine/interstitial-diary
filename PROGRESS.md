@@ -30,10 +30,12 @@ them (index at the bottom)._
 The user chose: a **new public repo `interstitial-diary-app`** holding only a Tauri 2 shell; its workflow checks out
 this repo (ref in its `web.ref`, default `main`), runs the tests, builds once, then makes the Windows installer (NSIS
 `.exe`) and a signed Android APK; a `v*` tag makes a GitHub Release. Local copy: `~/projects/interstitial-diary-app`
-(first commit `8a2207a`, **not pushed, the GitHub repo does not exist yet, the workflow has never run**). App id
+(first commit `8a2207a`, **pushed 2026-11-14 to https://github.com/JesseRacine/interstitial-diary-app; the first run
+was green in about 8 minutes**: `windows-installer` 1.7 MB, `android-apk` 4.9 MB, signed with a throwaway key; **neither
+file has been installed or opened by anyone yet**). `gh` is installed and signed in in WSL. App id
 `io.github.jesseracine.interstitialdiary`; the app's origin is `https://tauri.localhost/`.
-- **Waiting on the user:** install `gh` in WSL and `gh auth login`; then create the repo and push (ask first).
-- **Expect to fix after the first run:** the workflow is untested. Known open points: Dropbox needs
+- **Next:** an Android signing key (before the phone install), then the user installs both and tries Dropbox.
+- **Known open points:** Dropbox needs
   `https://tauri.localhost/` as a redirect URI and the sign-in inside a webview is untried (passkeys may not work there);
   the PWA service worker and "install" hints still run inside the app (probably switch them off with a build flag);
   an Android signing key (README of the app repo); share target and the "New entry" shortcut do not exist natively yet.
