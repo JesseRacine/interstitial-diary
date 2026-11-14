@@ -60,7 +60,7 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | e8119ea | Plan step 3 (local): weekly review in the Calendar tab (`lib/weekReview.ts`, `WeekReview.tsx`) |
 | 7f71cb0 | Plan step 4a (local): `event:"Title"` and `has:event` search, "With events" chip, "Search this event" button |
 | f7b8c24 | Plan step 4b (local): "Merge into…" on the event page (`mergeTargets` in `lib/eventRows.ts`, reuses `renameEvent`) |
-| (next commit) | Plan step 4c (local): an event's own date `!"Title" (2026-05-12)` (`lib/events.ts`: same title + date = one event; `eventOfMarker`) |
+| a65efbc | Plan step 4c: an event's own date `!"Title" (2026-05-12)` (`lib/events.ts`: same title + date = one event; `eventOfMarker`). **Steps 3, 4a, 4b, 4c pushed 2026-11-14 (deploy green)** |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old

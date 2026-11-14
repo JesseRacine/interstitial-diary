@@ -36,19 +36,19 @@ them (index at the bottom)._
    mutation-checked, + db and retime tests); checked in the pane, including a real sync to "files inside this browser":
    the moved entry left the old day's file and the other entry stayed. **Not tried on the real Windows folder or with
    Dropbox on two devices** (waiting item 15).
-3. **Weekly review inside the Calendar tab (Month | Year | Week): built and committed locally 2026-11-13, not pushed.**
+3. **Weekly review inside the Calendar tab (Month | Year | Week): built, PUSHED and deployed 2026-11-14 (with steps 4a to 4c,
+   `a65efbc`, deploy green; the live bundle was not checked).**
    `lib/weekReview.ts` + `WeekReview.tsx` (10 tests; 444 total, `tsc` clean, lint unchanged). Checked in the pane with
    seeded weeks (dark and light, 375px, no overflow): the numbers match the data, ‹ › / This week / empty week, a tag chip
    searches, a day bar opens the day, the event link opens the event. Not looked at on the real phone or with real data
    (waiting item 16).
-4. **Events/people:** **4a `event:` search filter and `has:event`: built and committed locally 2026-11-13, not pushed**
+4. **Events/people (4a, 4b, 4c all PUSHED and deployed 2026-11-14, `a65efbc`, deploy green):** **4a `event:` search filter and `has:event`: built 2026-11-13**
    (`search/query.ts` keeps `event:"Title"` together as one token, whole-title match on the markers, plus `-has:event`, a
    "With events" chip, syntax help, and a **Search this event** button on the event page; 459 tests, `tsc` clean, lint
-   unchanged; checked in the pane with seeded events; waiting item 17); **4b "Merge into…" on the event page: built and committed locally
-   2026-11-13, not pushed** (pick the right event from a list, nearest in time first; it rewrites the title like Rename, and the
+   unchanged; checked in the pane with seeded events; waiting item 17); **4b "Merge into…" on the event page: built 2026-11-13** (pick the right event from a list, nearest in time first; it rewrites the title like Rename, and the
    confirmation warns when the entries are more than 7 days from the target's, so they stay a separate event with the same title;
    464 tests, `tsc` clean, lint unchanged; checked in the pane, near and far cases and at 375px; waiting item 18);
-   **4c an event's own date: built and committed locally 2026-11-13, not pushed.** The user chose `!"Title" (2026-05-12)`
+   **4c an event's own date: built 2026-11-13.** The user chose `!"Title" (2026-05-12)`
    (date in brackets, year-month-day only). Same title + date = one event however far apart the entries were written
    (its day is that date); a marker without a date joins the nearest dated event of its title within 7 days; chip shows
    "· 12 May 2026"; Rename/Merge keep the date; search unchanged. 483 tests, `tsc` clean, lint unchanged; checked in the pane
