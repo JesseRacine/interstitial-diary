@@ -16,8 +16,8 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Numbers:** 580 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-15):** `origin/main` is at `207c392` (the new header, Tracking step 1). Local `main` is ahead by
-  the Tracking step 2, 3 and 4 commits (not pushed). A push publishes and redeploys: **ask the user before every push**.
+- **Git state (2026-11-15):** `origin/main` is at `17eadef` (Tracking steps 1 to 4, pushed on the user's request and
+  deployed: run 43755480124 green). Local `main` may be ahead by docs-only commits. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
 - **Backup:** the newest dated archive is `archive-2026-11-14b/` + zip in the Claude session folder, made 2026-11-14:
   **both repos** (web `c901186`, app `b22c6d3`), restore tested (both bundles cloned with matching heads; 524 tests
@@ -60,8 +60,9 @@ name, note, one photo; Star, Done, Delete; stored as a marker in an ordinary ent
 per turn. **Step 1 (header: Settings gear, Events inside Calendar): built, pushed 2026-11-15, the user approved it.
 Step 2 (the marker and its list, `src/lib/tracking.ts`): built 2026-11-15. Step 3 (the Tracking tab,
 `TrackingView.tsx`, plus a two-row phone header): built 2026-11-15, 572 tests, committed locally, not pushed**; the user
-has not tried it (check 27). **Step 4 (the Track button and the journal chips): built 2026-11-15, 580 tests, committed
-locally, not pushed** (check 28). **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
+has not tried it (check 27). **Step 4 (the Track button and the journal chips): built 2026-11-15, 580 tests** (check 28).
+**Steps 1 to 4 are pushed and live** (2026-11-15, the user asked for it because they were away from the dev server); not
+yet tried by the user on a device. **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
 
 Other things, when the user wants them:
 
