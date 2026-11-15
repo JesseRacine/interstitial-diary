@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-15 (Tracking finished, pushed and working on the phone; the native apps not rebuilt yet). Kept short on purpose:
+_Last updated: 2026-11-15 (Tracking finished, pushed and working on the phone; the native apps rebuilt with it, not yet tried). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -33,8 +33,12 @@ holding only a Tauri 2 shell. Its workflow checks out this repo (ref in its `web
 builds once, then makes the Windows folder and a signed Android APK (about 8 minutes; a `v*` tag makes a Release).
 **Nothing can be built locally** (no Rust or Android tools): every try is a push to that repo and a wait. Its
 `README.md` explains the rest. `origin/main` there is at `b22c6d3`, nothing unpushed. A web-app change reaches the
-apps only through a new build there (`gh workflow run 'Build apps' --ref main`). **The newest builds (2026-11-14,
-`b22c6d3`) do not have Tracking or the new header: they need a new build** (what next, item 1). App id
+apps only through a new build there (`gh workflow run 'Build apps' --ref main`). **Rebuilt 2026-11-15 on the user's
+request (run 43756770687 green, web `main` at `b084a7c`, app repo unchanged at `b22c6d3`): the new APK and portable
+Windows folder have Tracking and the new header** and replaced the old ones in `builds\` (APK 10,222,271 bytes, `.exe`
+6,320,640). Claude checked only that the new `.exe` starts from a scratch copy (window titled "Interstitial Diary",
+`journal-data` created beside it); **installing the APK and using either app is the user's to check** (check 29).
+Both builds are version 0.1.0 as before; if Android ever refuses to install over the old app, raise the version (README). App id
 `io.github.jesseracine.interstitialdiary`; the app's origin is `https://tauri.localhost/`. The newest builds are copied
 to the Claude session folder, `builds\`.
 
@@ -62,9 +66,10 @@ Nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-pla
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
-1. **Rebuild the native apps** so they get Tracking and the new header (`gh workflow run 'Build apps' --ref main` in
-   `~/projects/interstitial-diary-app`, about 5 to 8 minutes, then `gh run download <run id>` into the session folder's
-   `builds\`, replacing the old ones). Not done yet (asked 2026-11-15, waiting for the user's yes).
+1. **Try the rebuilt native apps** (check 29). (Rebuilding after any later web change: `gh workflow run 'Build apps'
+   --ref main` in `~/projects/interstitial-diary-app`, about 5 minutes, then `gh run download <run id> --dir <an empty
+   scratch folder>` and copy into the session folder's `builds\`. Run the download from a script file: quoting a `$` or a
+   path through `wsl ... bash -ic "..."` once made it write into a folder named with a space inside the app repo.)
 2. **The open details of the portable Windows app** (item 25: Export and Dropbox in the window), if the user wants
    them confirmed.
 3. **Tidy the apps:** switch off the PWA service worker and "install" hints inside the native apps (see open points).
@@ -81,6 +86,12 @@ again, Delete, Restore, the photo on a card, the one-photo limit and the sort. A
 Everything below is built and pushed. Until the user reports a check it is **not verified**; general remarks ("it
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
+
+**29. The rebuilt apps** (2026-11-15, `builds\`): a. Android: install `Interstitial-Diary-0.1.0.apk` over the old app (it
+should keep its data; if Android refuses, say so); the header has the gear and the five tabs on two rows, the Track
+button is next to Photo; b. Windows: run the new `Interstitial Diary\Interstitial Diary.exe` (it is a new folder: the old
+copy's `journal-data` stays with the old folder, so connect Dropbox again or copy `journal-data` over if you want your
+entries); c. in either app try Track, Star, Done, Delete; d. Settings > Export still works in the Windows app (item 25).
 
 **26. Tracking and the new header** (pushed 2026-11-15; **the user confirmed on the phone: the header with the gear, the
 Track button, chips, Star, Done, Track again, Delete, Restore, the photo on a card, the one-photo limit, the sort**; the

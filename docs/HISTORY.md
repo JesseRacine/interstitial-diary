@@ -107,7 +107,9 @@ photos, search, export and delete are the entry's own. States are in the marker:
   name; a curly one too); tested in the app and added to the Manual.
 - **The user's checks (phone, hosted site):** "i think it works" (a screenshot of the header, the Track button and a chip),
   then "sort and star button works", "photo, done, track again, and delete work", "these all work" (tapping a chip, the
-  one-photo limit, Restore). The native apps were **not** rebuilt, so they do not have Tracking yet.
+  one-photo limit, Restore). The native apps were rebuilt afterwards on the user's request (2026-11-15, run 43756770687
+  green, web `main` at `b084a7c`): `builds\` holds the new APK and Windows folder; only the Windows program's start was
+  checked by Claude, the rest is the user's (PROGRESS check 29).
 - **Limits and ideas:** docs/LIMITS-AND-IDEAS.md.
 
 ## Completed steps
