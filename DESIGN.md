@@ -113,7 +113,7 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   events far apart one, give their entries the same date.
 
 **Tracking** (things to keep an eye on: a product, a film; plan and decisions in [tracking-plan.md](tracking-plan.md); the
-marker and list logic are built in `src/lib/tracking.ts`, the pages and the Track button are later steps) works like events:
+logic is in `src/lib/tracking.ts`, the page in `TrackingView.tsx`, the Track form in `Capture.tsx`) works like events:
 a tracked item is an ordinary entry with a marker in its text, nothing new is stored (no Dexie change, no file-format
 change) and the list is computed from the text of the live entries (`computeTracking`). Not a tag kind: a tracked name has
 spaces and is used once.
@@ -467,8 +467,17 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   active group) whatever the sort. All shows two groups, Active and Done, with headings when both have items. The name
   opens the item's page (inside the view, "← Tracking"): the same buttons and the entry as the journal shows it (full text,
   every photo, Edit with the time and photo fields, Delete); deleting there returns to the list. There is no filter box and
-  no manual order on purpose. The page's choices are not remembered between visits. Until the Track button and the journal
-  chips exist (step 4 of tracking-plan.md) items are made by typing the marker, and the journal shows it as plain text.
+  no manual order on purpose. The page's choices are not remembered between visits.
+- **Track form and chips** (step 4): next to Photo in the capture box a **📌 Track** button turns the box into a tracked item:
+  a name field above the note (the box itself; the note is optional), one photo at most (`useDraftImages(…, 1)`: a second photo
+  is left out with a message and the Photo button is disabled; the button is disabled while the draft holds more than one
+  photo), Save or Enter in the name field. The name is checked like an event's title (`parseTrackingTitle`: no quote marks,
+  at most 120 characters, the error shows under the field) and the entry written is `trackingEntryText(name, note)`,
+  `+"Name" note`, so it is an ordinary entry; the form then closes and the box keeps the focus. In journal text, results,
+  tag and event pages the first tracking marker of an entry is a chip (`markerSegments` in `lib/markers.ts`, which also
+  cuts event markers; `EntryText`): "📌 Name", "★ Name" starred, "✓ Name · 10 Nov 2026" done, in the `--track` colour
+  (muted when done); a click opens the item's page on the Tracking tab (`OpenTrackingContext` in `eventNav.ts`, provided
+  by `App.tsx`, which keeps the open item's id like it keeps the open event's). A second marker in one entry stays plain text.
 - **Settings:** storage, **photos on this device**, theme, export, a short "Quick entry from your phone or taskbar" tip, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { type AttachResult, attachImage } from '../lib/attach'
 import type { ImageRef } from '../lib/entry'
-import { WARN_BYTES_PER_ENTRY, fitImageLimit, formatBytes } from '../lib/images'
+import { MAX_IMAGES_PER_ENTRY, WARN_BYTES_PER_ENTRY, fitImageLimit, formatBytes } from '../lib/images'
 
 /** A photo on an entry draft (a new entry, or one being edited). */
 export interface DraftImage {
@@ -19,8 +19,9 @@ const fromRefs = (refs: ImageRef[]): DraftImage[] =>
 /**
  * The photos on a draft. Each new file is saved to the database as soon as it is added (attachImage), so only the
  * references live here; losing the draft never loses a photo. Thumbnails are shown through the shared cache (Thumb).
+ * `max` is how many photos fit (10 for an entry, 1 while a tracked item is being written).
  */
-export function useDraftImages(initial: ImageRef[] = []) {
+export function useDraftImages(initial: ImageRef[] = [], max = MAX_IMAGES_PER_ENTRY) {
   const [images, setImages] = useState<DraftImage[]>(() => fromRefs(initial))
   const [notice, setNotice] = useState<string | null>(null)
   // The current list, kept outside React so async attach callbacks never work on a stale copy.
@@ -32,7 +33,7 @@ export function useDraftImages(initial: ImageRef[] = []) {
 
   const add = useCallback(async (files: File[]) => {
     if (!files.length) return
-    const { take, message } = fitImageLimit(list.current.length, files.length)
+    const { take, message } = fitImageLimit(list.current.length, files.length, max)
     const notes: string[] = message ? [message] : []
     const chosen = files.slice(0, take)
     const placeholders: DraftImage[] = chosen.map((f) => ({ key: nextKey++, name: f.name || 'Pasted image', status: 'working', size: f.size }))
@@ -67,7 +68,7 @@ export function useDraftImages(initial: ImageRef[] = []) {
     if (total > WARN_BYTES_PER_ENTRY) notes.push(`These photos add up to ${formatBytes(total)}, which is a lot for one entry.`)
     commit(out)
     setNotice(notes.length ? notes.join(' ') : null)
-  }, [commit])
+  }, [commit, max])
 
   const remove = useCallback((key: number) => {
     commit(list.current.filter((i) => i.key !== key))
@@ -82,7 +83,7 @@ export function useDraftImages(initial: ImageRef[] = []) {
 
   const busy = images.some((i) => i.status === 'working')
   const refs = images.flatMap((i) => (i.ref ? [i.ref] : []))
-  return { images, refs, busy, notice, add, remove, reset }
+  return { images, refs, busy, notice, max, add, remove, reset }
 }
 
 export type DraftImages = ReturnType<typeof useDraftImages>

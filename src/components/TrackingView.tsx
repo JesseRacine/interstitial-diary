@@ -103,29 +103,31 @@ function ItemPage({ item, entry, onBack, onTag, onOpenDay, onOpenImage }: {
  * starred first; Done what is finished; All both. Newest first unless another order is picked. Star, Done, Track again and
  * Delete are on each card; the name opens the item with its entry (Edit, every photo).
  */
-export function TrackingView({ entries, items, onTag, onOpenDay, onOpenImage }: {
+export function TrackingView({ entries, items, openId, onOpenId, onTag, onOpenDay, onOpenImage }: {
   entries: Entry[]
   items: TrackingItem[]
+  /** The item whose page is open (an entry's id); kept by App so a chip in the journal can open it. */
+  openId: string | null
+  onOpenId: (id: string | null) => void
   onTag: (tag: string) => void
   onOpenDay: (e: Entry) => void
   onOpenImage: (e: Entry, index: number) => void
 }) {
   const [show, setShow] = useState<Show>('active')
   const [sort, setSort] = useState<TrackingSort>('newest')
-  const [openId, setOpenId] = useState<string | null>(null)
 
   const { active, done } = useMemo(() => splitTracking(items, sort), [items, sort])
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries])
 
   if (openId !== null) {
     return (
-      <ItemPage item={items.find((i) => i.id === openId)} entry={byId.get(openId)} onBack={() => setOpenId(null)} onTag={onTag}
+      <ItemPage item={items.find((i) => i.id === openId)} entry={byId.get(openId)} onBack={() => onOpenId(null)} onTag={onTag}
         onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
   }
 
   const counts: Record<Show, number> = { active: active.length, done: done.length, all: items.length }
-  const card = (i: TrackingItem) => <Card key={i.id} item={i} entry={byId.get(i.id)} onOpen={setOpenId} onTag={onTag} onOpenImage={onOpenImage} />
+  const card = (i: TrackingItem) => <Card key={i.id} item={i} entry={byId.get(i.id)} onOpen={onOpenId} onTag={onTag} onOpenImage={onOpenImage} />
 
   return (
     <section className="tracking">
@@ -145,8 +147,8 @@ export function TrackingView({ entries, items, onTag, onOpenDay, onOpenImage }: 
       </div>
       {items.length === 0 ? (
         <p className="empty">
-          Nothing tracked yet. Write an entry that starts a name with a plus, like <code>+&quot;Dyson V15&quot; $450 on Amazon</code>, and it
-          appears here. A photo in the entry shows on its card.
+          Nothing tracked yet. On the Journal tab, tap <strong>Track</strong> next to Photo, give it a name, and it appears here. A photo
+          shows on its card. (Typing <code>+&quot;Dyson V15&quot; $450 on Amazon</code> in the entry box does the same.)
         </p>
       ) : show === 'active' ? (
         active.length ? active.map(card) : <p className="empty">Nothing is being tracked right now. Finished items are under Done.</p>

@@ -11,3 +11,13 @@ export type OpenEvent = (entry: Entry, title: string, date?: string) => void
 export const OpenEventContext = createContext<OpenEvent | null>(null)
 
 export const useOpenEvent = (): OpenEvent | null => useContext(OpenEventContext)
+
+/**
+ * The same for a tracking chip (`+"Dyson V15"`, see lib/tracking.ts): it opens that item on the Tracking page. App provides
+ * it; EntryItem reads it. Without a provider the chip is plain text.
+ */
+export type OpenTracking = (entry: Entry) => void
+
+export const OpenTrackingContext = createContext<OpenTracking | null>(null)
+
+export const useOpenTracking = (): OpenTracking | null => useContext(OpenTrackingContext)

@@ -15,9 +15,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   Settings > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut + text share), editing
   an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
-- **Numbers:** 572 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 580 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `207c392` (the new header, Tracking step 1). Local `main` is ahead by
-  the Tracking step 2 and 3 commits (not pushed). A push publishes and redeploys: **ask the user before every push**.
+  the Tracking step 2, 3 and 4 commits (not pushed). A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
 - **Backup:** the newest dated archive is `archive-2026-11-14b/` + zip in the Claude session folder, made 2026-11-14:
   **both repos** (web `c901186`, app `b22c6d3`), restore tested (both bundles cloned with matching heads; 524 tests
@@ -60,8 +60,8 @@ name, note, one photo; Star, Done, Delete; stored as a marker in an ordinary ent
 per turn. **Step 1 (header: Settings gear, Events inside Calendar): built, pushed 2026-11-15, the user approved it.
 Step 2 (the marker and its list, `src/lib/tracking.ts`): built 2026-11-15. Step 3 (the Tracking tab,
 `TrackingView.tsx`, plus a two-row phone header): built 2026-11-15, 572 tests, committed locally, not pushed**; the user
-has not tried it (check 27). Until step 4 an item is made by typing `+"Name" note` in the entry box, and the journal shows the
-marker as plain text. **Next: step 4** (the Track button in the capture box, and the chips in the journal).
+has not tried it (check 27). **Step 4 (the Track button and the journal chips): built 2026-11-15, 580 tests, committed
+locally, not pushed** (check 28). **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
 
 Other things, when the user wants them:
 
@@ -80,6 +80,13 @@ Other things, when the user wants them:
 Everything below is built and pushed. Until the user reports a check it is **not verified**; general remarks ("it
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
+
+**28. Track button and chips** (step 4, built 2026-11-15, not pushed: try it on `localhost:5173`, an empty local copy): a. on
+the Journal tab, **Track** sits next to Photo; tapping it shows a name field above the note; b. a name, a note and one photo
+saved make an item on the Tracking tab, the box is plain again and still has the focus; c. Enter in the name field saves
+an item with no note; d. a second photo is refused with a message; e. a name with quote marks shows an error and cannot be
+saved; f. in the journal the entry shows an amber chip (📌 tracking, ★ starred, ✓ done) and tapping it opens the item on the
+Tracking tab; g. `@sarah_jones's car` shows the person "Sarah Jones" followed by plain `'s`; h. the Manual explains it.
 
 **27. Tracking tab** (step 3, built 2026-11-15, not pushed: try it on `localhost:5173`, an empty local copy): write
 `+"Dyson V15" $450 on Amazon #shopping` (with a photo), `+*"Dune" Dec 18`, `+"Standing desk"` as three entries: a. the

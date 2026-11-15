@@ -78,15 +78,17 @@ export function thumbSize(w: number, h: number): { w: number; h: number } {
 
 /**
  * How many of `incoming` new files fit next to `current` images on one entry, and what to tell the user about the rest.
+ * `max` is 10 for an entry; the Track form allows one photo (a tracked item shows a single photo on its card).
  */
-export function fitImageLimit(current: number, incoming: number): { take: number; message: string | null } {
-  const room = Math.max(0, MAX_IMAGES_PER_ENTRY - current)
+export function fitImageLimit(current: number, incoming: number, max = MAX_IMAGES_PER_ENTRY): { take: number; message: string | null } {
+  const room = Math.max(0, max - current)
   const take = Math.min(room, incoming)
   if (take === incoming) return { take, message: null }
   const skipped = incoming - take
+  const was = `${skipped} ${skipped === 1 ? 'was' : 'were'} left out.`
   return {
     take,
-    message: `An entry can have up to ${MAX_IMAGES_PER_ENTRY} photos, so ${skipped} ${skipped === 1 ? 'was' : 'were'} left out.`,
+    message: max === 1 ? `A tracked item keeps one photo, so ${was}` : `An entry can have up to ${max} photos, so ${was}`,
   }
 }
 

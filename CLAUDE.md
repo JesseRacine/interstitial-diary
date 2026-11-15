@@ -128,6 +128,8 @@ src/
                         trackingMarker, parseTrackingTitle, trackingNote, computeTracking (one item per entry, by its first
                         marker), splitTracking (active starred-first + done; Newest/Oldest/A-Z); imports only types from
                         entry.ts. Plan: tracking-plan.md
+    markers.ts          markerSegments: an entry's text cut into plain pieces, event chips and the (first) tracking chip
+                        (EntryText draws them); tracking.ts also has trackingEntryText (what the Track form writes)
     eventRows.ts        Events page logic: eventDateLabel, filterEvents, sortEvents, groupEvents, eventYears, mergeTargets
                         (+ eventGap) for "Merge into…"
     db.ts               Dexie schema (v3: entries, meta, thumbs, blobs; v3 recalculates tags) + add/update/delete/renameTag/renameEvent/setEntryImages;

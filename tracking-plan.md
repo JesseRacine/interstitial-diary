@@ -1,8 +1,8 @@
 # Plan: Tracking (things to keep an eye on)
 
 _Status: **planned 2026-11-15; step 1 (header) built, pushed and approved by the user the same day; step 2 (the marker
-and its list, `lib/tracking.ts`, no UI) and step 3 (the Tracking tab) built 2026-11-15, committed locally, not pushed;
-steps 4 and 5 not started.**
+and its list, `lib/tracking.ts`, no UI), step 3 (the Tracking tab) and step 4 (the Track button and the journal chips) built
+2026-11-15, committed locally, not pushed; step 5 (docs, Manual, backup) partly done along the way, the backup is left.**
 Decisions below were made with the user in conversation on that day.
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step._
 
@@ -135,6 +135,10 @@ The Track form in `Capture.tsx` (name, note, one photo, reusing `useDraftImages`
 journal bubbles (`text.tsx`, `EntryItem.tsx`, in the way event chips are drawn). A chip opens the Tracking page.
 **Done when:** an item can be created from the form with and without a photo; the text written is the marker plus the note;
 the chip shows in the journal, in search results and in the week review without breaking other chips.
+_Built 2026-11-15: chips are drawn by `EntryText` through the new `lib/markers.ts` (events and the first tracking marker);
+colour `--track` (amber), icons 📌 ★ ✓ as proposed. The form is a name field above the note: Save, or Enter in the name
+field. One photo is enforced by `useDraftImages(…, 1)`. Checked in the browser: the form, the limit (two photos offered, one
+kept with a message), name validation, Enter in the name field, the text written, the chips and a chip opening the item._
 
 ### 5. Docs, Manual and backup
 

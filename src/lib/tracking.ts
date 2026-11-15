@@ -108,6 +108,12 @@ export function trackingMarker(title: string, state: TrackingState = 'active', d
   return `${HEAD[state]}"${title}"${state === 'done' && date ? ` (${date})` : ''}`
 }
 
+/** The text of a new tracked item (the Track form): the marker, then the note if there is one: `+"Dyson V15" $450 on Amazon`. */
+export function trackingEntryText(title: string, note: string): string {
+  const n = note.trim()
+  return trackingMarker(title) + (n ? ` ${n}` : '')
+}
+
 /**
  * Change the state of the entry's item, which is its first marker. Only the marker's own characters change (`+`, `+*`,
  * `+x`, and the done date); the title as typed, its quote marks and every other character of the text stay exactly as they

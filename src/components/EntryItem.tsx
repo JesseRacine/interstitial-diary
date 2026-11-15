@@ -4,7 +4,7 @@ import { type Entry, dayKey, entryImages, formatGap, shortDayLabel, timeLabel } 
 import { fromDateTimeInput, isAllowedTime, retimedCreatedAt, toDateTimeInput } from '../lib/retime'
 import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
-import { useOpenEvent } from './eventNav'
+import { useOpenEvent, useOpenTracking } from './eventNav'
 import { useCoarsePointer } from '../lib/hooks'
 import { EntryText } from './text'
 import { useDraftImages, useImageInput } from './useDraftImages'
@@ -22,6 +22,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
   onOpenImage?: (e: Entry, index: number) => void
 }) {
   const openEvent = useOpenEvent()
+  const openTracking = useOpenTracking()
   const coarse = useCoarsePointer()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(entry.text)
@@ -110,7 +111,8 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
         </div>
       ) : (
         <>
-          <EntryText text={entry.text} terms={terms} onTag={onTag} onEvent={openEvent ? (title, date) => openEvent(entry, title, date) : undefined} />
+          <EntryText text={entry.text} terms={terms} onTag={onTag} onEvent={openEvent ? (title, date) => openEvent(entry, title, date) : undefined}
+            onTrack={openTracking ? () => openTracking(entry) : undefined} />
           <EntryImages images={images} onOpen={onOpenImage ? (i) => onOpenImage(entry, i) : undefined} />
         </>
       )}

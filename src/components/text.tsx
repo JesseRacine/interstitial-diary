@@ -1,8 +1,10 @@
 import { Fragment, type ReactNode, useMemo, useState } from 'react'
 import { tagBeingTyped, tagSegments } from '../lib/entry'
 import { eventDateLabel } from '../lib/eventRows'
-import { EVENT_ICON, eventSegments } from '../lib/events'
+import { EVENT_ICON } from '../lib/events'
+import { markerSegments } from '../lib/markers'
 import { displayName, tagKindOf, tagLabel, tagName, tagToken } from '../lib/tagKinds'
+import { TRACKING_ICONS } from '../lib/tracking'
 import type { TagStat } from '../search/engine'
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -18,16 +20,38 @@ function highlight(s: string, re: RegExp | null): ReactNode {
  * Events (`!"Jack's party"`, see lib/events.ts) show as "🎉 Jack's party"; they are not tags, so tags inside a title
  * are not clickable. A marker with a date (`!"Jack's party" (2026-05-12)`) also shows it: "🎉 Jack's party · 12 May 2026".
  * `onEvent` gets the event's title (and date, if it has one) and opens its page; without it the event is not clickable.
+ * The tracked item's marker (`+"Dyson V15"`, see lib/tracking.ts) shows as "📌 Dyson V15" (★ starred, ✓ done, with its day
+ * for a done one); `onTrack` opens it on the Tracking page, and without it the chip is not clickable. Only the first marker
+ * of an entry is a chip. Tags inside a title are not clickable.
  */
-export function EntryText({ text, terms, onTag, onEvent }: { text: string; terms?: string[]; onTag?: (key: string) => void; onEvent?: (title: string, date?: string) => void }) {
+export function EntryText({ text, terms, onTag, onEvent, onTrack }: {
+  text: string
+  terms?: string[]
+  onTag?: (key: string) => void
+  onEvent?: (title: string, date?: string) => void
+  onTrack?: () => void
+}) {
   const re = useMemo(() => {
     const t = (terms ?? []).filter(Boolean).sort((a, b) => b.length - a.length)
     return t.length ? new RegExp(`(${t.map(escapeRe).join('|')})`, 'giu') : null
   }, [terms])
   return (
     <div className="entry-text">
-      {eventSegments(text).map((part, p) => {
-        if (part.title !== undefined) {
+      {markerSegments(text).map((part, p) => {
+        if (part.kind === 'tracking') {
+          const label = (
+            <>
+              <span aria-hidden="true">{TRACKING_ICONS[part.state]}</span> {highlight(part.title, re)}
+              {part.date && <span className="event-date"> · {eventDateLabel(part.date, part.date)}</span>}
+            </>
+          )
+          return onTrack ? (
+            <button key={p} type="button" className={`tag tag-track ${part.state}`} title={part.text} onClick={onTrack}>{label}</button>
+          ) : (
+            <span key={p} className={`tag tag-track ${part.state}`} title={part.text}>{label}</span>
+          )
+        }
+        if (part.kind === 'event') {
           const date = part.date
           const label = <><span aria-hidden="true">{EVENT_ICON}</span> {highlight(part.title, re)}{date && <span className="event-date"> · {eventDateLabel(date, date)}</span>}</>
           const title = part.title

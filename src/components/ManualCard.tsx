@@ -39,6 +39,8 @@ export function ManualCard() {
               must start with a letter (<code>~5 min</code> and <code>@3pm</code> are just text).</li>
             <li>The symbol must not touch a word before it: <code>C#</code> and <code>bob@example.com</code> are not tags.</li>
             <li><code>#sarah</code>, <code>@sarah</code> and <code>~sarah</code> are three different tags.</li>
+            <li>An apostrophe ends the name, so <code>@sarah_jones&apos;s car</code> is the person “Sarah Jones” followed by the plain text
+              <code>&apos;s</code> (a curly apostrophe works the same).</li>
             <li>While you type a symbol, up to six matching known names are suggested: <kbd>↑</kbd> <kbd>↓</kbd> to choose,
               <kbd>Tab</kbd> or <kbd>Enter</kbd> to accept, <kbd>Esc</kbd> to dismiss.</li>
             <li>Click a chip to search for it. The <strong>Tags</strong> tab lists them (Tags, People, Places) and can rename or merge
@@ -59,9 +61,12 @@ export function ManualCard() {
 
           <h4>Tracking</h4>
           <ul>
-            <li>For things you may want later but that are not to-dos (a product, a film that is coming out). Start a name with a plus:
-              <code>+&quot;Dyson V15&quot; $450 on Amazon</code>. The rest of the entry is the note, and a photo in the entry shows on the card.
-              The same rules as an event&apos;s title apply (in quotes, up to 120 characters, one line).</li>
+            <li>For things you may want later but that are not to-dos (a product, a film that is coming out). On the Journal tab tap
+              <strong> Track</strong> next to Photo: give it a name, add a note and one photo if you like, and Save (Enter in the name field
+              saves too).</li>
+            <li>You can also type it: <code>+&quot;Dyson V15&quot; $450 on Amazon</code>. The rest of the entry is the note, and a photo in the entry
+              shows on the card. The name goes in quotes, up to 120 characters on one line, like an event&apos;s title.</li>
+            <li>In the journal it shows as a chip: 📌 tracking, ★ starred, ✓ done. Tap it to open the item.</li>
             <li>The <strong>Tracking</strong> tab lists them. <strong>Star</strong> puts one at the top, <strong>Done</strong> moves it to
               the Done list (you bought it, you saw it) and <strong>Track again</strong> brings it back. Newest, Oldest or A–Z sorts the list.</li>
             <li><strong>Delete</strong> removes the entry from the journal too; you can restore it under Settings &gt; Deleted entries.

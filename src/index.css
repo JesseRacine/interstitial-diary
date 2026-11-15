@@ -11,6 +11,7 @@
   --person: #8a4f7d;
   --place: #9a5a1f;
   --event: #2f6b9a;
+  --track: #a2661d;
   --danger: #b03a2e;
   --mark: #fbe7a1;
   --heat-0: #ece8e1;
@@ -37,6 +38,7 @@
     --person: #d49ac8;
     --place: #e0a86c;
     --event: #8ec0ea;
+    --track: #e6b46a;
     --danger: #e0786c;
     --mark: #5c4b12;
     --heat-0: #262421;
@@ -62,6 +64,7 @@
   --person: #d49ac8;
   --place: #e0a86c;
   --event: #8ec0ea;
+  --track: #e6b46a;
   --danger: #e0786c;
   --mark: #5c4b12;
   --heat-0: #262421;
@@ -244,6 +247,16 @@ button.tag:hover { text-decoration: underline; }
 button.tag-person { color: var(--person); }
 button.tag-place { color: var(--place); }
 .tag-event, button.tag-event { color: var(--event); font-weight: 500; }
+.tag-track, button.tag-track { color: var(--track); font-weight: 500; }
+.tag-track.done, button.tag-track.done { color: var(--muted); }
+
+/* The Track form in the capture box: a name field above the note. */
+.track-name { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.track-name label { color: var(--track); font-weight: 600; font-size: 0.9rem; flex: none; }
+.track-name input { flex: 1; min-width: 8rem; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.track-name .error { flex-basis: 100%; font-size: 0.8rem; }
+button.track-toggle { display: inline-flex; align-items: center; gap: 0.3rem; }
+button.track-toggle.on { color: var(--track); border-color: var(--track); }
 .tag-event .event-date { font-weight: 400; opacity: 0.85; }
 .edit { margin-top: 0.4rem; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }

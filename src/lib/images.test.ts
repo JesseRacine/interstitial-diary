@@ -73,6 +73,11 @@ describe('fitImageLimit', () => {
     expect(fitImageLimit(10, 2)).toEqual({ take: 0, message: 'An entry can have up to 10 photos, so 2 were left out.' })
     expect(fitImageLimit(0, 12).take).toBe(10)
   })
+  it('can be limited to one photo, as the Track form does', () => {
+    expect(fitImageLimit(0, 1, 1)).toEqual({ take: 1, message: null })
+    expect(fitImageLimit(0, 3, 1)).toEqual({ take: 1, message: 'A tracked item keeps one photo, so 2 were left out.' })
+    expect(fitImageLimit(1, 1, 1)).toEqual({ take: 0, message: 'A tracked item keeps one photo, so 1 was left out.' })
+  })
 })
 
 describe('formatBytes', () => {

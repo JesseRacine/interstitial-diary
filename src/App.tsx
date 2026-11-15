@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BackupReminder } from './components/BackupReminder'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
-import { OpenEventContext } from './components/eventNav'
+import { OpenEventContext, OpenTrackingContext } from './components/eventNav'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
 import { Lightbox } from './components/Lightbox'
 import { PhotosView } from './components/PhotosView'
@@ -56,6 +56,7 @@ export default function App() {
     if (launch.newEntry) history.replaceState(history.state, '', cleanLaunchUrl(location.href))
   }, [launch])
   const [eventId, setEventId] = useState<string | null>(null) // the event whose page is open in Calendar > Events
+  const [trackId, setTrackId] = useState<string | null>(null) // the tracked item (an entry's id) whose page is open in Tracking
   const [jump, setJump] = useState<Jump | null>(null)
   const [bottomTick, setBottomTick] = useState(0)
   const [layout, setLayoutState] = useState<JournalLayout>(loadLayout)
@@ -106,6 +107,13 @@ export default function App() {
     setQuery('')
     setBackQuery(null)
   }, [events])
+  /** Open the Tracking page on the item that a chip in this entry names. */
+  const openTracking = useCallback((entry: Entry) => {
+    setTrackId(entry.id)
+    setView('tracking')
+    setQuery('')
+    setBackQuery(null)
+  }, [])
   const openDay = (d: string, id: string | null = null) => {
     setJump((j) => ({ day: d, id, n: (j?.n ?? 0) + 1 }))
     setView('journal')
@@ -159,13 +167,14 @@ export default function App() {
 
   return (
     <OpenEventContext.Provider value={openEvent}>
+    <OpenTrackingContext.Provider value={openTracking}>
     <div className={`app${(view === 'journal' || view === 'photos') && !searching ? ' fill' : ''}`}>
       <header className="top">
         <h1>Interstitial</h1>
         <nav>
           {VIEWS.map(([v, label]) => (
             <button key={v} type="button" className={view === v && !searching ? 'on' : ''}
-              onClick={() => { setView(v); setQuery(''); setBackQuery(null); setEventId(null) }}>
+              onClick={() => { setView(v); setQuery(''); setBackQuery(null); setEventId(null); setTrackId(null) }}>
               {label}
             </button>
           ))}
@@ -209,7 +218,7 @@ export default function App() {
           <TagsView tagStats={tagStats} entries={entries} index={index} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'tracking' ? (
-          <TrackingView entries={entries} items={tracking} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
+          <TrackingView entries={entries} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : (
           <SettingsView entries={entries} theme={theme} setTheme={setTheme} tagCount={tagStats.length} />
         )}
@@ -219,6 +228,7 @@ export default function App() {
       )}
       <UpdatePrompt />
     </div>
+    </OpenTrackingContext.Provider>
     </OpenEventContext.Provider>
   )
 }

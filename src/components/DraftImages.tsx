@@ -1,5 +1,4 @@
 import { useRef } from 'react'
-import { MAX_IMAGES_PER_ENTRY } from '../lib/images'
 import { Thumb } from './Thumb'
 import type { DraftImages } from './useDraftImages'
 
@@ -25,7 +24,7 @@ export function DraftChips({ draft }: { draft: DraftImages }) {
 /** "Photo" button with a hidden file picker (several at once; on Android it also offers the camera). */
 export function AttachButton({ draft, onPicked }: { draft: DraftImages; onPicked?: () => void }) {
   const input = useRef<HTMLInputElement>(null)
-  const full = draft.images.length >= MAX_IMAGES_PER_ENTRY
+  const full = draft.images.length >= draft.max
   return (
     <>
       <button
@@ -33,7 +32,7 @@ export function AttachButton({ draft, onPicked }: { draft: DraftImages; onPicked
         className="ghost attach"
         onClick={() => input.current?.click()}
         disabled={full}
-        title={full ? `Up to ${MAX_IMAGES_PER_ENTRY} photos per entry` : 'Attach photos (or paste / drop them)'}
+        title={full ? (draft.max === 1 ? 'A tracked item keeps one photo' : `Up to ${draft.max} photos per entry`) : 'Attach photos (or paste / drop them)'}
         aria-label="Attach photos"
       >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
