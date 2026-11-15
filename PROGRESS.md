@@ -16,7 +16,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Numbers:** 524 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-14):** `origin/main` is at `0d1bb0b` (focus after Save). Local `main` is ahead by **docs-only
+- **Git state (2026-11-14):** `origin/main` is at `4d7df6f` (docs; the last code change is `0d1bb0b`, focus after Save). Local `main` is ahead by **docs-only
   commits that are not pushed**; that is normal. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
 - **Backup:** the newest dated archive is `archive-2026-11-14/` + zip in the Claude session folder (commit `794873f`,
@@ -39,8 +39,8 @@ to the Claude session folder, `builds\`.
   file and its password are the user's to keep, never in a repo). Our own `MainActivity.kt` keeps the app clear of the
   status bar, cutout and keyboard. The user installed it: "the app works fine"; after the focus fix: "definitely
   better, more responsive, happy with it".
-- **Windows: a portable folder, built 2026-11-14 (`b22c6d3`, run 43654221469 green), waiting for the user's checks
-  (item 25).** No installer (the user asked for none): the `windows-portable` artifact is a folder `Interstitial
+- **Windows: a portable folder, built 2026-11-14 (`b22c6d3`, run 43654221469 green); the user tried it: "I think
+  it's good" (item 25 has what was not confirmed).** No installer (the user asked for none): the `windows-portable` artifact is a folder `Interstitial
   Diary\` with `Interstitial Diary.exe` (6.3 MB) and `Read me.txt`. On Windows `src-tauri/src/lib.rs` opens the window
   itself (`tauri.windows.conf.json` has `"create": false`) with its data in `journal-data` beside the `.exe` (it falls
   back to AppData only if that folder cannot be created). It uses the PC's own WebView2 (not bundled). **Checked by
@@ -70,7 +70,8 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**25. Portable Windows app** (built 2026-11-14): copy `builds\Interstitial Diary\` somewhere, run the `.exe`: a. write
+**25. Portable Windows app** (built 2026-11-14; **the user, 2026-11-14: "I think it's good, I tried it earlier"**,
+without saying which of a to d were tried, so Export and Dropbox in the window are not individually confirmed): copy `builds\Interstitial Diary\` somewhere, run the `.exe`: a. write
 an entry, close, reopen: it is still there; b. Settings > Export: does a Save dialog or download appear and is the
 Markdown file written; c. Settings > Dropbox: does the sign-in work inside the window; d. move the whole folder
 elsewhere: the journal comes along.
