@@ -62,7 +62,11 @@ Step 2 (the marker and its list, `src/lib/tracking.ts`): built 2026-11-15. Step 
 `TrackingView.tsx`, plus a two-row phone header): built 2026-11-15, 572 tests, committed locally, not pushed**; the user
 has not tried it (check 27). **Step 4 (the Track button and the journal chips): built 2026-11-15, 580 tests** (check 28).
 **Steps 1 to 4 are pushed and live** (2026-11-15, the user asked for it because they were away from the dev server); not
-yet tried by the user on a device. **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
+yet tried by the user on a device. **The user, 2026-11-15, on the phone (Chrome, the hosted site, with a screenshot): "i
+think it works".** The screenshot shows the two-row header with the five tabs and the gear, the storage badge ("Saved 24 s
+ago", Dropbox) next to the title, the Track button beside Photo and an amber 📌 chip on an entry made with it. Checks 26, 27
+and 28 are therefore only partly seen: not confirmed one by one are the Tracking tab's Star, Done, Track again and Delete,
+the sort switch, the photo on a card, tapping a chip, the one-photo limit and Restore from Settings. **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
 
 Other things, when the user wants them:
 
