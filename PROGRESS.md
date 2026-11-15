@@ -20,9 +20,10 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Git state (2026-11-15):** `origin/main` is at `17eadef` (Tracking steps 1 to 4, pushed on the user's request and
   deployed: run 43755480124 green). Local `main` may be ahead by docs-only commits. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
-- **Backup:** the newest dated archive is `archive-2026-11-14b/` + zip in the Claude session folder, made 2026-11-14:
-  **both repos** (web `c901186`, app `b22c6d3`), restore tested (both bundles cloned with matching heads; 524 tests
-  passed on the web clone; the app clone cannot be built locally). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
+- **Backup:** the newest dated archive is `archive-2026-11-15/` + zip in the Claude session folder, made 2026-11-15
+  (after Tracking): **both repos** (web `65aa322`, app `b22c6d3`), restore tested (both bundles cloned with matching heads
+  and files; 580 tests passed on the web clone; the app clone cannot be built locally). Previous: `archive-2026-11-14b/`.
+  Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Native apps (second repo `interstitial-diary-app`, started 2026-11-14)
