@@ -157,6 +157,12 @@ button.icon.on { color: var(--accent); border-color: var(--accent); }
 .help td { padding: 0.2rem 0.5rem 0.2rem 0; vertical-align: top; }
 .help td:first-child { white-space: nowrap; }
 .help p { margin: 0.5rem 0 0; }
+/* On a phone the nowrap first column is wider than the card: stack each row and let long examples wrap. */
+@media (max-width: 520px) {
+  .help td { display: block; padding: 0; }
+  .help td:first-child { white-space: normal; overflow-wrap: anywhere; }
+  .help tr { display: block; padding: 0.3rem 0; }
+}
 
 /* Autocomplete */
 .field { position: relative; }
