@@ -19,9 +19,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Git state (2026-11-14):** `origin/main` is at `4d7df6f` (docs; the last code change is `0d1bb0b`, focus after Save). Local `main` is ahead by **docs-only
   commits that are not pushed**; that is normal. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
-- **Backup:** the newest dated archive is `archive-2026-11-14/` + zip in the Claude session folder (commit `794873f`,
-  restore tested). **It predates Delete permanently (which changed the sync code), the Manual and the focus fix: offer
-  a new one.** The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
+- **Backup:** the newest dated archive is `archive-2026-11-14b/` + zip in the Claude session folder, made 2026-11-14:
+  **both repos** (web `c901186`, app `b22c6d3`), restore tested (both bundles cloned with matching heads; 524 tests
+  passed on the web clone; the app clone cannot be built locally). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Native apps (second repo `interstitial-diary-app`, started 2026-11-14)
@@ -55,8 +55,9 @@ to the Claude session folder, `builds\`.
 
 ## What next (nothing in progress; ask the user which)
 
-1. **The user's checks of the portable Windows app** (item 25), then fix what they find (Export first).
-2. **A new dated backup** (see Backup above).
+1. **The open details of the portable Windows app** (item 25: Export and Dropbox in the window), if the user wants
+   them confirmed.
+2. **Tidy the apps:** switch off the PWA service worker and "install" hints inside the native apps (see open points).
 3. **Separate Dropbox app for development** (offered 2026-11-12, "not now"): the dev server shares the real app's
    Dropbox folder, so **never connect Dropbox on localhost**. Plan: docs/CLOUD-STORAGE.md.
 4. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
