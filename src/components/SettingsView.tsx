@@ -1,3 +1,4 @@
+import { BUILD_NUMBER } from '../build'
 import type { Entry } from '../lib/entry'
 import { DataSafetyCard } from './DataSafetyCard'
 import { DeletedEntriesCard } from './DeletedEntriesCard'
@@ -69,6 +70,11 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
             <tr><td>Photo viewer</td><td><kbd>←</kbd> <kbd>→</kbd> other photos · <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> zoom · <kbd>Esc</kbd> close</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="card about">
+        <h3>About</h3>
+        <p className="muted">Build <strong>{BUILD_NUMBER}</strong></p>
       </div>
     </section>
   )

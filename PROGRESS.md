@@ -16,7 +16,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   features, Settings (the gear) > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut +
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
-- **Numbers:** 580 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
+  every push to `main`. Current: 1 (committed locally, not yet pushed or built into the apps).
+- **Numbers:** 583 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.

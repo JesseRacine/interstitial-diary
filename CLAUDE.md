@@ -41,6 +41,8 @@ and deploys the site). Keep it free of personal data: no machine paths, personal
 before pushing: `git grep -n -I -i -E "@gmail|/home/[a-z]|C:.Users|wsl.localhost" -- . ':!package-lock.json'` should show
 only generic mentions). Commits use the GitHub noreply address (the repo's local git identity). **Ask the user before every
 push** (it publishes and redeploys); `main` may be ahead of `origin/main` with unpushed docs commits (`git status -sb`).
+**Build number:** `BUILD_NUMBER` in `src/build.ts` is shown in Settings > About. Raise it by 1 before every push to `main`
+(not for local-only commits) and tell the user the new number; the native apps show the number of the web build they wrap.
 `gh` is at `~/.local/bin/gh` in WSL. In an interactive shell (`bash -ic`) plain `git push origin main` and `gh run list`
 worked on 2026-11-14; if a push asks for a password, use `git -c credential.helper= -c "credential.helper=!$HOME/.local/bin/gh
 auth git-credential" push origin main` (the user signed in themself with `gh auth login`; never handle a token or password).
