@@ -20,10 +20,14 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   every push to `main`. Pushed and live: **1** (deploy run 43769361735 green, built into the apps in run 43769444518). Local, not pushed: **2**.
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
-  (every later sync reused it). Fix in build 2 (local commit, not pushed): `src/storage/backends/timeout.ts` aborts a
-  request after 45 s (2 min + upload time for photo calls); the sync then ends in "Problem saving" and retries after 20 s.
-  Ask the user to confirm on the phone after the update. Until then: force-close the app and reopen it.
-- **Numbers:** 593 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+  (every later sync reused it). The user then pressed Stop and chose Dropbox again: still stuck, and **the entry has two
+  photos** (photos are sent one by one *before* the text, so a stalled photo upload holds the text back too). Fix in
+  build 2 (local commits, not pushed): `src/storage/backends/timeout.ts` aborts a request after 45 s (2 min + upload time
+  for photo calls); a photo timeout ends the photo pass at once (text still saves, "Photos: ... (will retry)", retry after
+  20 s); a text timeout gives "Problem saving" and the same retry; the thumbnail worker has a 45 s limit; Settings shows
+  what a running sync is doing ("Sending photo file 1 of 2 (4.2 MB)…"), which tells slow from stuck. Ask the user to
+  confirm on the phone after the update. Not changed on purpose: photos still go before the text (tested design).
+- **Numbers:** 597 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
