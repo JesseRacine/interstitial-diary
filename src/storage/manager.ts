@@ -10,6 +10,7 @@ import { KeySet } from '../lib/keySet'
 import { isDisplayable, typeForExt } from '../lib/images'
 import { type ImageLocal, imagesWaiting } from './attachments'
 import { backendById } from './backends'
+import { RequestTimeoutError } from './backends/timeout'
 import { type CleanupLocal, type CleanupPlan, type CleanupResult, planCleanup, removeUnusedImages } from './cleanup'
 import { metaPending } from './oauthPending'
 import { fetchOriginal, limitMode } from './originals'
@@ -149,6 +150,7 @@ export function syncNow(): Promise<void> {
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')
         set({ status: lost ? 'needs-permission' : 'error', message: describe(e) })
         if (lost) store = null
+        else if (e instanceof RequestTimeoutError) schedule(20_000) // a stalled connection: try again soon, not in 5 minutes
         break
       }
     } while (again)

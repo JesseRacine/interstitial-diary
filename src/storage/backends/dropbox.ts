@@ -2,6 +2,7 @@ import { metaPending } from '../oauthPending'
 import type { StorageBackend } from '../types'
 import { dropboxStore, refreshingToken } from './dropbox-store'
 import { OAuthError, type OAuthProvider, type PendingStore, beginSignIn, completeSignIn, refreshAccessToken } from './oauth'
+import { fetchWithTimeout } from './timeout'
 
 /**
  * The Dropbox app's App key: a public identifier (not a secret), from the Dropbox App Console. Empty until the app is
@@ -44,7 +45,7 @@ export function makeDropboxBackend(deps: DropboxDeps): StorageBackend<DropboxCon
 
   const storeFor = (config: DropboxConfig) =>
     dropboxStore({
-      token: refreshingToken(() => refreshAccessToken(provider, config.refreshToken, LABEL, fetchFn)),
+      token: refreshingToken(() => refreshAccessToken(provider, config.refreshToken, LABEL, fetchWithTimeout(fetchFn, `${LABEL} sign-in`, () => 45_000))),
       fetch: fetchFn,
     })
 

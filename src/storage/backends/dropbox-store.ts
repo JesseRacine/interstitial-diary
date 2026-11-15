@@ -1,6 +1,7 @@
 import { BlobCollisionError, type RemovableBlobStore, type StoredFile, isAppFolder } from '../types'
 import { isDiaryFile, isImagePath } from './fs-store'
 import { type TokenResponse, signedOutError } from './oauth'
+import { bodyBytes, fetchWithTimeout } from './timeout'
 
 /*
  * A FileStore over Dropbox's HTTP API (v2), inside the app's own folder (Apps/<app name>/). Store paths like
@@ -74,8 +75,17 @@ export interface DropboxStoreOptions {
   retries?: number
 }
 
+/**
+ * How long one request may take before it is given up (see timeout.ts). Small JSON calls answer in a second or two; the
+ * content endpoints move whole photos, so they get longer, plus time for the bytes sent (at least 20 KB/s).
+ */
+export function requestTimeoutMs(url: string, init?: RequestInit): number {
+  if (!url.startsWith(CONTENT)) return 45_000
+  return 120_000 + Math.ceil(bodyBytes(init?.body) / 20)
+}
+
 export function dropboxStore(opts: DropboxStoreOptions): RemovableBlobStore {
-  const fetchFn = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a))
+  const fetchFn = fetchWithTimeout(opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a)), NAME, requestTimeoutMs)
   const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)))
   const retries = opts.retries ?? 4
 

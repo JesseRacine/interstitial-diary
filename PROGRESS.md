@@ -17,8 +17,13 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Current: **1**, pushed and live (deploy run 43769361735 green) and built into the apps (run 43769444518).
-- **Numbers:** 583 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+  every push to `main`. Pushed and live: **1** (deploy run 43769361735 green, built into the apps in run 43769444518). Local, not pushed: **2**.
+- **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
+  confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
+  (every later sync reused it). Fix in build 2 (local commit, not pushed): `src/storage/backends/timeout.ts` aborts a
+  request after 45 s (2 min + upload time for photo calls); the sync then ends in "Problem saving" and retries after 20 s.
+  Ask the user to confirm on the phone after the update. Until then: force-close the app and reopen it.
+- **Numbers:** 593 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.

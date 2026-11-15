@@ -431,6 +431,38 @@ describe('manager: connect and reconnect', () => {
     expect(m.storageState().status).toBe('ok')
   })
 
+  it('a storage that stops answering ends the sync in an error and tries again in 20 seconds; other errors wait for the next trigger', async () => {
+    const retries: number[] = []
+    const realSetTimeout = globalThis.setTimeout
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void, ms?: number, ...rest: unknown[]) => {
+      if (ms === 20_000) { retries.push(ms); return 0 } // do not really wait; the retry itself is just a syncNow
+      return realSetTimeout(fn, ms, ...rest)
+    }) as unknown as typeof setTimeout)
+
+    await load()
+    // after load(): it resets the modules, and the manager checks for this copy of the error class
+    const { memoryStore } = await import('./memory')
+    const { RequestTimeoutError } = await import('./backends/timeout')
+    const stalled = memoryStore()
+    stalled.list = async () => { throw new RequestTimeoutError('Cloud', 45_000) }
+    h.stores['local:L'] = stalled
+    await m.initStorage()
+    await m.connect('local')
+    expect(m.storageState()).toMatchObject({ status: 'error', message: 'Cloud did not answer within 45 seconds. It will try again.' })
+    expect(retries).toEqual([20_000])
+
+    // the connection is back: the next sync works and clears the error
+    stalled.list = memoryStore().list
+    await m.syncNow()
+    expect(m.storageState().status).toBe('ok')
+
+    // an ordinary error (not a timeout) does not schedule the quick retry
+    stalled.list = async () => { throw new Error('boom') }
+    await m.syncNow()
+    expect(m.storageState()).toMatchObject({ status: 'error', message: 'boom' })
+    expect(retries).toEqual([20_000])
+  })
+
   it('disconnect forgets the storage, so another tab choosing the same one later is picked up', async () => {
     await load()
     await dbm.setMeta('storage', { backendId: 'local', config: { name: 'L' }, connectedAt: 1 })
