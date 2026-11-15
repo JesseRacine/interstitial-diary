@@ -17,12 +17,14 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **1** (deploy run 43769361735 green, built into the apps in run 43769444518). Local, not pushed: **2**.
+  every push to `main`. Pushed and live: **2** (deploy run 43774248654 green, built into the apps in run 43774335949; build 1 was run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
   (every later sync reused it). The user then pressed Stop and chose Dropbox again: still stuck, and **the entry has two
   photos** (photos are sent one by one *before* the text, so a stalled photo upload holds the text back too). Fix in
-  build 2 (local commits, not pushed): `src/storage/backends/timeout.ts` aborts a request after 45 s (2 min + upload time
+  build 2 (pushed, deploy run 43774248654 green; apps rebuilt in run 43774335949): **the user then removed the photos from
+  the entry and the sync worked, so the photos were what blocked it** (not yet known whether a slow or a stalled upload;
+  the new Settings step text will show). `src/storage/backends/timeout.ts` aborts a request after 45 s (2 min + upload time
   for photo calls); a photo timeout ends the photo pass at once (text still saves, "Photos: ... (will retry)", retry after
   20 s); a text timeout gives "Problem saving" and the same retry; the thumbnail worker has a 45 s limit; Settings shows
   what a running sync is doing ("Sending photo file 1 of 2 (4.2 MB)…"), which tells slow from stuck. Ask the user to
