@@ -272,6 +272,18 @@ flag and the run repeats once. After every successful sync (and every original d
 cache (`trimOriginals`). Jobs that edit the per-storage `images:<id>` list, such as the photo cleanup, run through
 `exclusive`: they wait for a running sync, and any sync requested meanwhile waits for them, then the manager syncs again.
 
+**Cheap checks (`FileStore.changes`, optional).** Every full sync costs several requests (listings, the start-over
+marker, tombstones). A module may offer `changes.bookmark()` and `changes.changedSince(bookmark)`. The manager takes a
+bookmark *before* each full sync (so changes made during it show up next time) and keeps it in memory. A later check,
+when the page is shown or hidden, stops after one `changedSince` question if the answer is "no" **and** nothing is waiting
+here (`canSkipFullSync`: no unsaved entries, no photos to send, none that failed to arrive, none missing from other devices).
+It is always a full sync when there is no bookmark (start, after any error, a new storage), for "Save now", the 5-minute
+timer (the safety net), the photo cleanup, Delete permanently and Start over (`force`). `changes` may only save work:
+when unsure (expired bookmark, network error) it answers "changed" or gives no bookmark. Dropbox uses its cursor:
+`get_latest_cursor` (whole app folder, recursive, with deletions) and `list_folder/continue`. A module without `changes`
+is simply checked in full every time. One cost: the sync's own writes show up as a change at the next check, so one more
+full sync follows each save. Settings says "Checking…" instead of "Saving…" while nothing is waiting to be saved.
+
 ## Storage modules
 
 ```ts

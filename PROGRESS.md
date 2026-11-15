@@ -29,7 +29,12 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   20 s); a text timeout gives "Problem saving" and the same retry; the thumbnail worker has a 45 s limit; Settings shows
   what a running sync is doing ("Sending photo file 1 of 2 (4.2 MB)…"), which tells slow from stuck. Ask the user to
   confirm on the phone after the update. Not changed on purpose: photos still go before the text (tested design).
-- **Numbers:** 597 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Cheap checks (2026-11-15, build 3, local commit, not pushed):** a check when the page is shown or hidden now asks
+  Dropbox one question ("anything changed since my bookmark?", its change cursor) and stops there if the answer is no and
+  nothing is waiting here; any doubt means the full sync as before. Design and limits: DESIGN.md "Cheap checks". Settings
+  says "Checking…" when nothing is waiting to be saved. **Not tried against real Dropbox** (tests use the fake): the user
+  should confirm that a change made on Windows still shows on the phone after switching back to the app.
+- **Numbers:** 610 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.

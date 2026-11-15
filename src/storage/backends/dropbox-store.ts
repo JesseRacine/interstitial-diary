@@ -1,4 +1,4 @@
-import { BlobCollisionError, type RemovableBlobStore, type StoredFile, isAppFolder } from '../types'
+import { BlobCollisionError, type ChangeCheck, type RemovableBlobStore, type StoredFile, isAppFolder } from '../types'
 import { isDiaryFile, isImagePath } from './fs-store'
 import { type TokenResponse, signedOutError } from './oauth'
 import { bodyBytes, fetchWithTimeout } from './timeout'
@@ -178,7 +178,33 @@ export function dropboxStore(opts: DropboxStoreOptions): RemovableBlobStore {
     return m['.tag'] === 'file' ? { size: m.size ?? 0 } : null
   }
 
+  // Dropbox keeps the change record itself: a cursor for the whole app folder, and `continue` lists what changed since it.
+  // Only used to decide whether a full sync can be skipped; any doubt (an error, an expired cursor) means "changed".
+  const changes: ChangeCheck = {
+    async bookmark() {
+      try {
+        const res = await rpc('files/list_folder/get_latest_cursor', { path: '', recursive: true, include_deleted: true })
+        if (!res.ok) return null
+        const body = (await res.json()) as { cursor?: unknown }
+        return typeof body.cursor === 'string' && body.cursor ? body.cursor : null
+      } catch {
+        return null
+      }
+    },
+    async changedSince(bookmark) {
+      try {
+        const res = await rpc('files/list_folder/continue', { cursor: bookmark })
+        if (!res.ok) return true
+        const body = (await res.json()) as { entries?: unknown; has_more?: unknown }
+        return !Array.isArray(body.entries) || body.entries.length > 0 || body.has_more !== false
+      } catch {
+        return true
+      }
+    },
+  }
+
   return {
+    changes,
     // Lists the root, then only the year folders and .meta, one level each: image folders are never walked.
     async list() {
       const out: StoredFile[] = []

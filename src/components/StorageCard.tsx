@@ -30,7 +30,8 @@ function useTick(ms: number) {
 
 function statusText(s: StorageState): string {
   switch (s.status) {
-    case 'syncing': return 'Saving…'
+    // With nothing waiting to be saved, a run is only a look at what the other devices did.
+    case 'syncing': return s.pending === 0 && imagesPending(s) === 0 ? 'Checking…' : 'Saving…'
     case 'ok': {
       const text = s.pending ? `${s.pending} change${s.pending === 1 ? '' : 's'} waiting` : `Saved ${ago(s.lastSync)}`
       const photos = imagesPending(s)
@@ -138,7 +139,7 @@ export function StorageCard() {
             {s.status === 'needs-permission' ? (
               <button type="button" className="primary" onClick={() => void reconnect()}>{signsIn(s.backendId) ? 'Sign in again' : 'Allow access'}</button>
             ) : (
-              <button type="button" onClick={() => void syncNow()} disabled={s.status === 'syncing'}>Save now</button>
+              <button type="button" onClick={() => void syncNow({ force: true })} disabled={s.status === 'syncing'}>Save now</button>
             )}
             <button type="button" onClick={() => setChoosing(!choosing)}>{choosing ? 'Cancel' : 'Change'}</button>
             <button type="button" className="ghost danger" onClick={() => { if (confirm('Stop saving to files? Your entries stay in this browser, and existing files are left as they are.')) void disconnect() }}>Stop</button>

@@ -35,6 +35,8 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
   let revCounter = 0
   const calls: FakeCall[] = []
   const rateLimited: number[] = [] // Retry-After seconds for the next requests
+  const changeLog: string[] = [] // every path written or deleted, in order: what a change cursor reports
+  let cursorsExpired = false
   /** Called before a request is handled; lets a test change things "in the meantime". */
   let beforeHandle: ((c: FakeCall) => Promise<void> | void) | null = null
 
@@ -71,7 +73,8 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
 
   async function handle(endpoint: string, arg: Record<string, unknown>, body: Uint8Array): Promise<Response> {
     const path = typeof arg.path === 'string' ? arg.path : ''
-    const valid = endpoint === 'files/list_folder' ? path === '' || path.startsWith('/') : path.startsWith('/') && path.length > 1
+    const rootAllowed = endpoint === 'files/list_folder' || endpoint === 'files/list_folder/get_latest_cursor'
+    const valid = rootAllowed ? path === '' || path.startsWith('/') : path.startsWith('/') && path.length > 1
     if ('path' in arg && !valid) return textJson(400, { error_summary: 'malformed_path' })
     const key = path.toLowerCase()
     switch (endpoint) {
@@ -79,8 +82,18 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
         if (arg.recursive) return textJson(400, { error_summary: 'the fake does not do recursive listings' })
         return children(path) ? page(path, 0) : err409('path/not_found')
       }
+      case 'files/list_folder/get_latest_cursor': {
+        // Like Dropbox: no entries, just a bookmark of the folder's state now (here: how many changes there have been).
+        if (path !== '') return textJson(400, { error_summary: 'the fake only bookmarks the app folder root' })
+        return textJson(200, { cursor: JSON.stringify({ seq: changeLog.length }) })
+      }
       case 'files/list_folder/continue': {
-        const c = JSON.parse(String(arg.cursor)) as { folder: string; offset: number }
+        const c = JSON.parse(String(arg.cursor)) as { folder: string; offset: number } | { seq: number }
+        if ('seq' in c) {
+          if (cursorsExpired) return err409('reset/..') // Dropbox invalidates old cursors now and then
+          const entries = changeLog.slice(c.seq).map((p) => ({ '.tag': 'file', name: p.slice(p.lastIndexOf('/') + 1), path_lower: p.toLowerCase(), path_display: p }))
+          return textJson(200, { entries, cursor: JSON.stringify({ seq: changeLog.length }), has_more: false })
+        }
         return page(c.folder, c.offset)
       }
       case 'files/get_metadata': {
@@ -92,11 +105,12 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
         const f = files.get(key)
         if (f) {
           files.delete(key)
+          changeLog.push(f.display)
           return textJson(200, { metadata: meta(f) })
         }
         const inside = [...files.keys()].filter((k) => k.startsWith(`${key}/`)) // a folder: Dropbox deletes it whole
         if (!inside.length) return err409('path_lookup/not_found')
-        for (const k of inside) files.delete(k)
+        for (const k of inside) { changeLog.push(files.get(k)!.display); files.delete(k) }
         return textJson(200, { metadata: { '.tag': 'folder', name: path.slice(path.lastIndexOf('/') + 1) } })
       }
       case 'files/download': {
@@ -111,6 +125,7 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
         if (arg.mode !== 'add' && arg.mode !== 'overwrite') return textJson(400, { error_summary: 'unexpected mode' })
         const f: FakeFile = { display: existing?.display ?? path, bytes: body, hash: await sha256Hex(body), rev: ++revCounter }
         files.set(key, f)
+        changeLog.push(f.display)
         return textJson(200, meta(f))
       }
       default:
@@ -153,7 +168,10 @@ export function fakeDropbox(opts: { pageSize?: number } = {}) {
     async put(path: string, data: string | Uint8Array) {
       const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data
       files.set(path.toLowerCase(), { display: path, bytes, hash: await sha256Hex(bytes), rev: ++revCounter })
+      changeLog.push(path)
     },
+    /** From now on every bookmark taken earlier is refused with `reset` (the app must fall back to a full look). */
+    expireCursors() { cursorsExpired = true },
     text(path: string) {
       const f = files.get(path.toLowerCase())
       return f ? new TextDecoder().decode(f.bytes) : null

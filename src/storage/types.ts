@@ -36,6 +36,22 @@ export interface FileStore {
    * confirmed. Optional: without it, Start over refuses to run for this storage.
    */
   removeAll?(): Promise<void>
+  /**
+   * A cheap way to ask "has anything changed?", so a check that finds nothing new costs one request instead of a full
+   * listing. Optional: a module without it is simply checked in full every time, and nothing else changes. It may only
+   * ever save work, never decide what the work does: when unsure, both answers lean towards doing the full sync.
+   */
+  changes?: ChangeCheck
+}
+
+export interface ChangeCheck {
+  /**
+   * A bookmark of the storage's state now. Take it BEFORE a sync reads anything, so changes made while the sync runs
+   * show up at the next check. null when it can't be had (then the next check is a full sync). Never throws.
+   */
+  bookmark(): Promise<string | null>
+  /** Whether anything changed since the bookmark. true when it can't tell (expired bookmark, network error). Never throws. */
+  changedSince(bookmark: string): Promise<boolean>
 }
 
 /** The folders `removeAll` deletes (top level of the storage). */

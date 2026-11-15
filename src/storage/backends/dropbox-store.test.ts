@@ -27,6 +27,71 @@ const bytes = (n: number, fill = 7) => new Uint8Array(n).fill(fill)
 const blob = (n: number, fill = 7) => new Blob([bytes(n, fill)])
 const IMG = '2026/images/0123456789abcdef.jpg'
 
+describe('dropboxStore: the cheap "has anything changed?" check', () => {
+  const asked = (fake: ReturnType<typeof fakeDropbox>) => fake.calls.map((c) => c.endpoint)
+
+  it('a bookmark and a check are one request each, and nothing changed means false', async () => {
+    const { fake, store } = setup()
+    await store.write('2026/2026-11-08.md', 'one')
+    fake.calls.length = 0
+    const mark = await store.changes!.bookmark()
+    expect(mark).toBeTruthy()
+    expect(await store.changes!.changedSince(mark!)).toBe(false)
+    expect(asked(fake)).toEqual(['files/list_folder/get_latest_cursor', 'files/list_folder/continue'])
+  })
+
+  it('asks for the whole app folder, including deletions', async () => {
+    const { fake, store } = setup()
+    await store.changes!.bookmark()
+    expect(fake.calls[0].arg).toEqual({ path: '', recursive: true, include_deleted: true })
+  })
+
+  it('sees a write by another device, a photo, and a deletion', async () => {
+    const { fake, store } = setup()
+    await store.write('2026/2026-11-08.md', 'one')
+
+    let mark = (await store.changes!.bookmark())!
+    await fake.put('/2026/2026-11-09.md', 'written by the other device')
+    expect(await store.changes!.changedSince(mark)).toBe(true)
+
+    mark = (await store.changes!.bookmark())!
+    await fake.put('/2026/images/0123456789abcdef.jpg', new Uint8Array([1, 2, 3]))
+    expect(await store.changes!.changedSince(mark)).toBe(true)
+
+    mark = (await store.changes!.bookmark())!
+    await store.remove('2026/2026-11-08.md')
+    expect(await store.changes!.changedSince(mark)).toBe(true)
+  })
+
+  it('does not count what happened before the bookmark', async () => {
+    const { fake, store } = setup()
+    await fake.put('/2026/2026-11-08.md', 'old')
+    const mark = (await store.changes!.bookmark())!
+    expect(await store.changes!.changedSince(mark)).toBe(false)
+  })
+
+  it('when unsure it says "changed" (an expired bookmark, an error, a network failure), so a full sync follows', async () => {
+    const { fake, store } = setup()
+    const mark = (await store.changes!.bookmark())!
+    fake.expireCursors()
+    expect(await store.changes!.changedSince(mark)).toBe(true)
+
+    expect(await store.changes!.changedSince('not a cursor of this storage')).toBe(true)
+
+    const offline = dropboxStore({ token: async () => 't', fetch: (async () => { throw new TypeError('Failed to fetch') }) as typeof fetch })
+    expect(await offline.changes!.changedSince('x')).toBe(true)
+    expect(await offline.changes!.bookmark()).toBeNull()
+  })
+
+  it('a refused sign-in or a server error gives no bookmark and never throws', async () => {
+    const { fake, store } = setup()
+    const signedOut = dropboxStore({ token: async () => 'a-token-dropbox-refuses', fetch: fake.fetch })
+    expect(await signedOut.changes!.bookmark()).toBeNull()
+    expect(await signedOut.changes!.changedSince('x')).toBe(true)
+    expect(await store.changes!.changedSince('{')).toBe(true)
+  })
+})
+
 describe('dropboxStore: text files', () => {
   it('writes, lists, reads and removes day files', async () => {
     const { fake, store } = setup()

@@ -110,6 +110,8 @@ let store: FileStore | null = null
 let connectedAt: number | undefined // of the storage this window has open
 let running: Promise<void> | null = null
 let again = false
+let forceNext = false // a full sync was asked for while one was running
+let bookmark: string | null = null // the storage's state when the last full sync began (see ChangeCheck); this window only
 let timer: ReturnType<typeof setTimeout> | undefined
 const syncKey = (id: string) => `sync:${id}`
 const imagesKey = (id: string) => `images:${id}` // image paths confirmed to exist in that storage
@@ -123,23 +125,49 @@ function describe(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
 }
 
-export function syncNow(): Promise<void> {
+/**
+ * Whether a check can end after one cheap question to the storage ("anything changed since the bookmark?"): only when the
+ * storage can answer that, a bookmark from the last full sync exists, and nothing here is waiting to be saved or fetched.
+ * Anything else, and any doubt, is a full sync.
+ */
+export function canSkipFullSync(s: StorageState, hasBookmark: boolean, missing: number): boolean {
+  return hasBookmark && s.pending === 0 && imagesPending(s) === 0 && missing === 0
+}
+
+/**
+ * Sync with the storage. Usually a full sync, but when nothing here is waiting and the storage can cheaply say that
+ * nothing changed there, it stops after that one question. `force` always does the full sync (the "Save now" button,
+ * the 5-minute timer, jobs that must work from the latest files).
+ */
+export function syncNow(opts: { force?: boolean } = {}): Promise<void> {
   if (!store || !state.backendId) return Promise.resolve()
+  if (opts.force) forceNext = true
   if (running) { again = true; return running }
   const id = state.backendId
   running = (async () => {
     do {
       again = false
+      const force = forceNext
+      forceNext = false
       const current = store
       if (!current) break
       set({ status: 'syncing', activity: 'Starting' })
       try {
+        if (!force && bookmark && current.changes && canSkipFullSync(state, true, missingImages.size)) {
+          set({ activity: null })
+          if (!(await current.changes.changedSince(bookmark))) {
+            set({ status: 'ok', message: null, activity: null, lastSync: Date.now() }) // checked: nothing new, nothing to send
+            continue
+          }
+        }
+        const mark = current.changes ? await current.changes.bookmark() : null // before reading anything, so a change made during this sync still shows up next time
         await followStartOver(id, current) // before reading the sync state: clearing resets it
         const prev = await getMeta<SyncState>(syncKey(id), emptySyncState())
         const confirmed = new Set(await getMeta<string[]>(imagesKey(id), []))
         const r = await syncAll(dexieLocal, dexieImages, current, prev, confirmed, (activity) => set({ activity }))
         await setMeta(imagesKey(id), [...r.confirmed])
         await setMeta(syncKey(id), r.state)
+        bookmark = mark
         set({
           status: 'ok', message: null, activity: null, lastSync: Date.now(), lastReport: r.report,
           imagesFailed: r.pulled?.failed ?? 0, // failed writes stay unsaved, so imagesWaiting already counts them
@@ -149,6 +177,7 @@ export function syncNow(): Promise<void> {
         if (r.images?.stalled) schedule(20_000) // photos stopped mid-way: try the rest soon, not in 5 minutes
         await trimOriginals(id)
       } catch (e) {
+        bookmark = null // after a failure the next check is a full one
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')
         set({ status: lost ? 'needs-permission' : 'error', message: describe(e), activity: null })
         if (lost) store = null
@@ -196,7 +225,7 @@ export async function startOver(): Promise<void> {
     missingImages.replace([])
     set({ lastReport: null, imagesFailed: 0, imageError: null, startedOverAt: null })
   })
-  void syncNow()
+  void syncNow({ force: true })
 }
 
 /** Hide the "started over on another device" notice. */
@@ -223,7 +252,7 @@ async function exclusive<T>(job: () => Promise<T>): Promise<T> {
 async function bringEntriesUpToDate(): Promise<void> {
   if (!state.backendId) return // no storage: nothing to sync with
   if (!store) throw new Error(`Allow access to ${state.label ?? 'your storage'} first, so photos can be checked against the latest entries.`)
-  await syncNow()
+  await syncNow({ force: true }) // a full look: the decision below must be made from the latest files
   if (state.status !== 'ok') {
     throw new Error(`Saving to ${state.label ?? 'storage'} didn't work, so photos can't be checked safely yet${state.message ? `: ${state.message}` : ''}.`)
   }
@@ -254,7 +283,7 @@ export async function removeImagesOfDeletedEntries(approved: string[]): Promise<
     if (id) await setMeta(imagesKey(id), [...r.confirmed])
     return r
   })
-  void syncNow() // anything a sync asked for while this ran, and any photo that turned out to be in use again
+  void syncNow({ force: true }) // anything a sync asked for while this ran, and any photo that turned out to be in use again
   return result
 }
 
@@ -285,7 +314,7 @@ export async function purgeDeleted(ids: string[]): Promise<number> {
     }
     return purgeLocal(target.map((e) => e.id), synced)
   })
-  void syncNow() // lists them in purged.json
+  void syncNow({ force: true }) // lists them in purged.json
   return count
 }
 
@@ -381,6 +410,7 @@ async function openSaved(saved: SavedStorage, interactive: boolean) {
   const r = await backend.open(saved.config as never, interactive)
   if (r.ok) {
     store = r.store
+    bookmark = null
     set({ label: r.label, status: 'ok', message: null })
     await syncNow()
   } else {
@@ -408,7 +438,7 @@ export async function initStorage() {
     if (document.visibilityState === 'visible') void pickUpOtherTab().then(() => syncNow())
     else void syncNow()
   }) // flush when hidden, pull when shown
-  setInterval(() => void syncNow(), 5 * 60_000) // pick up changes made by other apps
+  setInterval(() => void syncNow({ force: true }), 5 * 60_000) // pick up changes made by other apps; always a full look, a safety net behind the cheap checks
   if (await finishSignInReturn()) return set({ restored: true }) // the new storage is open and syncing already
   const saved = await getMeta<SavedStorage | null>('storage', null)
   if (saved) {
@@ -429,6 +459,7 @@ async function adopt(backendId: string, config: unknown, s: FileStore, label: st
   await db.meta.delete(resetKey(backendId)) // a newly connected device keeps its entries: it only notes the marker
   await db.blobs.toCollection().modify({ onRemote: 0 }) // the new location doesn't have them yet
   store = s
+  bookmark = null
   connectedAt = at
   missingImages.replace([]) // that answer was about the old storage
   set({
@@ -504,6 +535,7 @@ export function dismissSignInError() {
 
 export async function disconnect() {
   store = null
+  bookmark = null
   connectedAt = undefined
   clearTimeout(timer)
   missingImages.replace([])

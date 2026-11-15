@@ -394,6 +394,92 @@ describe('manager: delete permanently', () => {
   })
 })
 
+describe('manager: a check that finds nothing new', () => {
+  /** A connected "local" storage whose answers to the change check, and the number of full listings, can be watched. */
+  async function connected() {
+    await load()
+    const { memoryStore } = await import('./memory')
+    const store = memoryStore()
+    const seen = { bookmarks: 0, checked: [] as string[], changed: false, lists: 0 }
+    Object.assign(store, {
+      changes: {
+        bookmark: async () => `b${++seen.bookmarks}`,
+        changedSince: async (b: string) => { seen.checked.push(b); return seen.changed },
+      },
+    })
+    const list = store.list.bind(store)
+    store.list = async () => { seen.lists++; return list() }
+    h.stores['local:L'] = store
+    await m.initStorage()
+    await m.connect('local')
+    return { store, seen }
+  }
+
+  it('the first sync is a full one and takes a bookmark first', async () => {
+    const { seen } = await connected()
+    expect(seen).toMatchObject({ bookmarks: 1, lists: 1, checked: [] })
+  })
+
+  it('later it asks one question with that bookmark and, with no change, does no listing at all', async () => {
+    const { seen } = await connected()
+    const before = m.storageState().lastSync
+    await new Promise((r) => setTimeout(r, 5))
+    await m.syncNow()
+    expect(seen).toMatchObject({ bookmarks: 1, lists: 1, checked: ['b1'] })
+    expect(m.storageState()).toMatchObject({ status: 'ok', message: null, activity: null })
+    expect(m.storageState().lastSync!).toBeGreaterThan(before!) // "Saved just now": it was checked
+  })
+
+  it('a change in the storage means a full sync, and a new bookmark for the next check', async () => {
+    const { seen } = await connected()
+    seen.changed = true
+    await m.syncNow()
+    expect(seen).toMatchObject({ bookmarks: 2, lists: 2, checked: ['b1'] })
+    seen.changed = false
+    await m.syncNow()
+    expect(seen).toMatchObject({ bookmarks: 2, lists: 2, checked: ['b1', 'b2'] })
+  })
+
+  it('"Save now" and the other forced syncs are always full', async () => {
+    const { seen } = await connected()
+    await m.syncNow({ force: true })
+    expect(seen).toMatchObject({ bookmarks: 2, lists: 2, checked: [] })
+  })
+
+  it('a failed sync forgets the bookmark, so the next one is full even without force', async () => {
+    const { store, seen } = await connected()
+    const list = store.list
+    store.list = async () => { throw new Error('offline') }
+    await m.syncNow({ force: true })
+    expect(m.storageState()).toMatchObject({ status: 'error', message: 'offline' })
+    store.list = list
+    await m.syncNow()
+    expect(m.storageState().status).toBe('ok')
+    expect(seen.checked).toEqual([]) // never asked: it had no bookmark to ask with
+  })
+
+  it('a storage that cannot tell is always checked in full', async () => {
+    await load()
+    await m.initStorage()
+    await m.connect('local') // the plain in-memory storage: no change check
+    const { memoryStore } = await import('./memory')
+    expect(memoryStore().changes).toBeUndefined()
+    await m.syncNow()
+    expect(m.storageState().status).toBe('ok')
+  })
+
+  it('only skips when nothing here is waiting to be saved or fetched', async () => {
+    await load()
+    const base = { ...m.storageState(), pending: 0, imagesWaiting: 0, imagesFailed: 0 }
+    expect(m.canSkipFullSync(base, true, 0)).toBe(true)
+    expect(m.canSkipFullSync(base, false, 0)).toBe(false) // no bookmark yet
+    expect(m.canSkipFullSync({ ...base, pending: 1 }, true, 0)).toBe(false) // an entry still to save
+    expect(m.canSkipFullSync({ ...base, imagesWaiting: 1 }, true, 0)).toBe(false) // a photo still to send
+    expect(m.canSkipFullSync({ ...base, imagesFailed: 1 }, true, 0)).toBe(false) // a thumbnail that failed to come
+    expect(m.canSkipFullSync(base, true, 2)).toBe(false) // photos from another device not arrived yet
+  })
+})
+
 describe('manager: connect and reconnect', () => {
   it('connect saves the storage with connectedAt, resets its sync state and syncs', async () => {
     await load()
