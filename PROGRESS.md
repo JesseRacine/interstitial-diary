@@ -67,7 +67,9 @@ think it works".** The screenshot shows the two-row header with the five tabs an
 ago", Dropbox) next to the title, the Track button beside Photo and an amber 📌 chip on an entry made with it. Checks 26, 27
 and 28 are therefore only partly seen. **Later the same day the user reported: "sort and star button works"** (on the phone).
 **Then: "photo, done, track again, and delete work"** (on the phone; the photo on a card is taken as working and Delete
-as removing the item). Not confirmed yet: tapping a chip, the one-photo limit and Restore from Settings. **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
+as removing the item). **Then: "these all work"** about the three left (tapping a chip opens the item, the one-photo limit, Restore from
+Settings). So every point of checks 26 to 28 that was asked about is confirmed on the phone, except the ones not asked
+(the Manual text, light theme, Windows and the native apps, which only change with a new build in the app repo). **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
 
 Other things, when the user wants them:
 
