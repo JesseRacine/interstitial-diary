@@ -65,8 +65,9 @@ has not tried it (check 27). **Step 4 (the Track button and the journal chips): 
 yet tried by the user on a device. **The user, 2026-11-15, on the phone (Chrome, the hosted site, with a screenshot): "i
 think it works".** The screenshot shows the two-row header with the five tabs and the gear, the storage badge ("Saved 24 s
 ago", Dropbox) next to the title, the Track button beside Photo and an amber 📌 chip on an entry made with it. Checks 26, 27
-and 28 are therefore only partly seen: not confirmed one by one are the Tracking tab's Star, Done, Track again and Delete,
-the sort switch, the photo on a card, tapping a chip, the one-photo limit and Restore from Settings. **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
+and 28 are therefore only partly seen. **Later the same day the user reported: "sort and star button works"** (on the phone).
+Not confirmed yet: Done, Track again and Delete on the Tracking tab, the photo on a card, tapping a chip, the one-photo
+limit and Restore from Settings. **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
 
 Other things, when the user wants them:
 
