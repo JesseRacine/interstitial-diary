@@ -123,6 +123,11 @@ src/
                         `!"Title" (2026-05-12)`: same title + date = one event, its day is that date), eventOfMarker,
                         parseEventTitle, renameEventInText (keeps the date), eventAfterRename; imports only a type from
                         entry.ts (entry.ts imports it back)
+    tracking.ts         tracking (`+"Name"` tracking, `+*"Name"` starred, `+x"Name" (2026-11-20)` done; in entry text, NOT a
+                        tag kind): trackingSpans/trackingSegments/blankTracking, setTrackingState (rewrites only the marker),
+                        trackingMarker, parseTrackingTitle, trackingNote, computeTracking (one item per entry, by its first
+                        marker), splitTracking (active starred-first + done; Newest/Oldest/A-Z); imports only types from
+                        entry.ts. Plan: tracking-plan.md
     eventRows.ts        Events page logic: eventDateLabel, filterEvents, sortEvents, groupEvents, eventYears, mergeTargets
                         (+ eventGap) for "Merge into…"
     db.ts               Dexie schema (v3: entries, meta, thumbs, blobs; v3 recalculates tags) + add/update/delete/renameTag/renameEvent/setEntryImages;
@@ -242,7 +247,8 @@ src/
     (symbol, prefix, colour variable in `index.css`, a search-help row, tests).
 12. **Events are not tags** (`lib/events.ts`, DESIGN.md "Events"): `!"Title"` stays in the entry text, nothing extra is
     stored, and the event list is computed. Never add `!` to `TAG_KINDS`. Any code that reads tags out of text must skip
-    event markers (`extractTags` and `replaceTag` do, via `blankEvents` / `eventSegments`).
+    event markers and tracking markers (`+"Name"`, `lib/tracking.ts`, the same idea; `extractTags` and `replaceTag` do,
+    via `blankEvents` / `blankTracking` and the marker spans). Never add `+` to `TAG_KINDS` either.
 13. Anything that can only be wrong at the user's real folder, on a second device or inside the native apps is **not
     verified** until the user confirms it; say so in PROGRESS.md.
 14. **The entry box keeps the focus after Save** (`Capture.tsx`): the Save button must not take the focus (it is

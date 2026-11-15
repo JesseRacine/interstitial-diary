@@ -15,9 +15,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   Settings > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut + text share), editing
   an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
-- **Numbers:** 528 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-14):** `origin/main` is at `4d7df6f` (docs; the last code change is `0d1bb0b`, focus after Save). Local `main` is ahead by **docs-only
-  commits that are not pushed**; that is normal. A push publishes and redeploys: **ask the user before every push**.
+- **Numbers:** 572 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Git state (2026-11-15):** `origin/main` is at `207c392` (the new header, Tracking step 1). Local `main` is ahead by
+  the Tracking step 2 commit (not pushed; nothing in the app uses it yet). A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
 - **Backup:** the newest dated archive is `archive-2026-11-14b/` + zip in the Claude session folder, made 2026-11-14:
   **both repos** (web `c901186`, app `b22c6d3`), restore tested (both bundles cloned with matching heads; 524 tests
@@ -57,9 +57,9 @@ to the Claude session folder, `builds\`.
 
 **Tracking feature, planned 2026-11-15: [tracking-plan.md](tracking-plan.md)** (a list of things to keep an eye on:
 name, note, one photo; Star, Done, Delete; stored as a marker in an ordinary entry, nothing new to sync). Five steps, one
-per turn. **Step 1 (header: Settings gear, Events inside Calendar) is built 2026-11-15, tested, committed locally, not
-pushed**; the user has not tried it yet (check 26). **Next: step 2** (the marker and its list, no UI), after the user is
-happy with step 1.
+per turn. **Step 1 (header: Settings gear, Events inside Calendar): built, pushed 2026-11-15, the user approved it.
+Step 2 (the marker and its list, `src/lib/tracking.ts`, no screen): built 2026-11-15, 572 tests, committed locally, not
+pushed**; nothing to see or try in the app yet (nothing uses it until step 3). **Next: step 3** (the Tracking tab).
 
 Other things, when the user wants them:
 
@@ -79,7 +79,8 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**26. New header** (built 2026-11-15, not pushed yet: try it on `localhost:5173` or after the push): a. on the phone the
+**26. New header** (built and pushed 2026-11-15; the user approved it: "test approved"; points a to f were not
+individually reported): a. on the phone the
 four tabs (Journal, Calendar, Photos, Tags) and the gear fit on one row, the storage badge sits on a row below; b. the gear
 opens Settings and lights up while you are there; c. Calendar has Month | Year | Week | Events; d. an event chip in the
 journal, and an event in the Week review, opens Calendar > Events on that event's page; "← Events" returns to the list; e.

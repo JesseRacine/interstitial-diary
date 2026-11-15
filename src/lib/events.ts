@@ -26,7 +26,7 @@ export const SAME_EVENT_DAYS = 7
 const EVENT_RE = new RegExp(`(?<![^\\s(\\[{])!["“]([^"“”\\r\\n]{1,${MAX_TITLE}})["”]([ \\t]*\\((\\d{4}-\\d{2}-\\d{2})\\))?`, 'gu')
 
 /** The marker may be followed by the day the event happened, in brackets: `!"Jack's 40th" (2026-05-12)`. */
-const isRealDay = (k: string): boolean => {
+export const isRealDay = (k: string): boolean => {
   const [y, m, d] = k.split('-').map(Number)
   const t = new Date(Date.UTC(y, m - 1, d))
   return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d

@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import Dexie from 'dexie'
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { type ImageRef, entryImages, makeEntry, withDerived } from './entry'
+import { type ImageRef, dayKey, entryImages, makeEntry, withDerived } from './entry'
 
 const IMG_A: ImageRef = { hash: '3f9a2c1b7d04e8aa', ext: 'jpg', w: 640, h: 480 }
 const IMG_B: ImageRef = { hash: '9c01aa22f3b6d710', ext: 'png', w: 800, h: 600 }
@@ -103,6 +103,39 @@ describe('db with images', () => {
     await m.db.entries.put({ ...e, dirty: 0 })
     expect(await m.renameEvent(['ev-plain'], 'no such event', 'Whatever')).toBe(0)
     expect((await m.db.entries.get('ev-plain'))?.dirty).toBe(0)
+  })
+
+  it('setTracking stars, finishes and restarts an item as an ordinary edit', async () => {
+    const e = makeEntry('+"Dyson V15" $450 #shop', Date.UTC(2031, 7, 1, 9), 'tr-a', [IMG_A])
+    await m.db.entries.put({ ...e, dirty: 0 })
+
+    expect(await m.setTracking('tr-a', 'starred')).toBe(true)
+    const starred = await m.db.entries.get('tr-a')
+    expect(starred?.text).toBe('+*"Dyson V15" $450 #shop')
+    expect(starred?.dirty).toBe(1)
+    expect(starred?.updatedAt).toBeGreaterThan(e.updatedAt)
+    expect(starred?.images).toEqual([IMG_A])
+    expect(starred?.tags).toEqual(['shop'])
+
+    expect(await m.setTracking('tr-a', 'done')).toBe(true)
+    expect((await m.db.entries.get('tr-a'))?.text).toBe(`+x"Dyson V15" (${dayKey(new Date())}) $450 #shop`)
+    expect(await m.setTracking('tr-a', 'done')).toBe(false) // already done: nothing changes
+
+    expect(await m.setTracking('tr-a', 'active')).toBe(true)
+    const back = await m.db.entries.get('tr-a')
+    expect(back?.text).toBe('+"Dyson V15" $450 #shop')
+    expect(back?.images).toEqual([IMG_A])
+  })
+
+  it('setTracking changes nothing for a missing, deleted or unmarked entry', async () => {
+    const plain = makeEntry('no marker here', Date.UTC(2031, 7, 2, 9), 'tr-plain')
+    const gone = { ...makeEntry('+"Old thing"', Date.UTC(2031, 7, 3, 9), 'tr-gone'), deleted: 1 as const }
+    await m.db.entries.bulkPut([plain, gone].map((x) => ({ ...x, dirty: 0 as const })))
+    expect(await m.setTracking('tr-missing', 'done')).toBe(false)
+    expect(await m.setTracking('tr-plain', 'done')).toBe(false)
+    expect(await m.setTracking('tr-gone', 'done')).toBe(false)
+    expect((await m.db.entries.get('tr-plain'))?.dirty).toBe(0)
+    expect((await m.db.entries.get('tr-gone'))?.text).toBe('+"Old thing"')
   })
 
   it('adds an entry with images; text is still required', async () => {

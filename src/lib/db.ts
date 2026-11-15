@@ -1,9 +1,10 @@
 import Dexie, { type Table } from 'dexie'
 import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
-import { type Entry, type ImageRef, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
+import { type Entry, type ImageRef, dayKey, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 import { renameEventInText } from './events'
 import { scrubEntry } from './purge'
 import { isAllowedTime, retimeEntry, retimedCreatedAt } from './retime'
+import { type TrackingState, setTrackingState } from './tracking'
 
 export interface Meta {
   key: string
@@ -165,6 +166,20 @@ export async function renameEvent(entryIds: string[], key: string, newTitle: str
     .map(({ e, text }) => withDerived({ ...e, text, updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
   await db.entries.bulkPut(updated)
   return updated.length
+}
+
+/**
+ * Change the state of a tracked item (see tracking.ts): Star, Done and Track again rewrite the entry's marker. An ordinary
+ * edit: updatedAt is bumped and the entry is marked for sync. Becoming done writes today's day after the title.
+ * Returns false (and changes nothing) if the entry is gone or deleted, has no marker, or is already in that state.
+ */
+export async function setTracking(id: string, state: TrackingState): Promise<boolean> {
+  const e = await db.entries.get(id)
+  if (!e || e.deleted) return false
+  const text = setTrackingState(e.text, state, dayKey(new Date()))
+  if (text === e.text) return false
+  await db.entries.put(withDerived({ ...e, text, updatedAt: nextStamp(e.updatedAt), dirty: 1 }))
+  return true
 }
 
 /** Note that an original was just viewed (it is kept longer in the cache). */

@@ -1,7 +1,8 @@
 # Plan: Tracking (things to keep an eye on)
 
-_Status: **planned 2026-11-15; step 1 (header) built the same day, committed locally, not pushed, not yet tried by the
-user; steps 2 to 5 not started.** Decisions below were made with the user in conversation on that day.
+_Status: **planned 2026-11-15; step 1 (header) built, pushed and approved by the user the same day; step 2 (the marker
+and its list, `lib/tracking.ts`, no UI) built 2026-11-15, committed locally, not pushed; steps 3 to 5 not started.**
+Decisions below were made with the user in conversation on that day.
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step._
 
 ## What it is
@@ -109,6 +110,9 @@ quotes, bad dates, `C++"x"`, two markers in one entry, a marker inside a `#tag` 
 state changes keep the rest of the text byte for byte, and a round trip through the Markdown file (`markdown.test.ts`) keeps
 the marker as typed.
 **Done when:** the tests above pass and the existing 524 still pass.
+_Built 2026-11-15: symbols settled as proposed (`+`, `+*`, `+x`; `+X` also reads as done; the icons `📌 ★ ✓` are in
+`TRACKING_ICONS`); the date belongs only to a done marker; `setTracking(id, state)` is in `db.ts`; 44 new tests, 572 in all.
+`replaceTag` now skips markers by span (events and tracking together), the same result as before for events alone._
 
 ### 3. The Tracking page
 

@@ -112,6 +112,30 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   so in advance (`eventAfterRename` tells whether they join). A merge can be undone with Rename. To make two same-titled
   events far apart one, give their entries the same date.
 
+**Tracking** (things to keep an eye on: a product, a film; plan and decisions in [tracking-plan.md](tracking-plan.md); the
+marker and list logic are built in `src/lib/tracking.ts`, the pages and the Track button are later steps) works like events:
+a tracked item is an ordinary entry with a marker in its text, nothing new is stored (no Dexie change, no file-format
+change) and the list is computed from the text of the live entries (`computeTracking`). Not a tag kind: a tracked name has
+spaces and is used once.
+- **Syntax:** `+"Dyson V15"` tracking, `+*"Dyson V15"` starred, `+x"Dyson V15" (2026-11-20)` done (`+X` is read as done too).
+  After `+` and an optional `*` or `x`: a straight or curly quote, a name of 1–120 characters (no quote marks inside, no line
+  break), a closing quote. The `+` must start the text or follow whitespace or `(`/`[`/`{`, so `C++"x"`, `2 + "3"` and
+  an unquoted `+word` are plain text. The bracketed day belongs only to a **done** marker (year-month-day, a real day, right after
+  it); on another state, or not a real day, it is plain text.
+- **One item per entry:** the first marker counts; further markers stay plain text. Two entries with the same name are two
+  items (no merging by name, unlike events). The item's description is the entry's text without the marker (`trackingNote`)
+  and its photo is the entry's first one (the Track form allows one; the limit is the form's, not the entry's).
+- **State changes** (`setTrackingState`, `setTracking(id, state)` in `db.ts`): Star, Done and Track again rewrite only the
+  marker's own characters (`+`, `+*`, `+x` and the done date); everything else in the text, the quote marks as typed
+  included, stays. It is an ordinary edit (`updatedAt` bumped, `dirty: 1`), so it syncs and shows in the Markdown file like
+  any edit. Becoming done writes today's day; leaving done removes it; asking for the state an item already has changes
+  nothing. A done item keeps its entry in the journal; Delete is the entry's normal soft delete (restorable from
+  Settings > Deleted entries).
+- **Order** (`splitTracking`): active items with starred first whatever the sort, then Newest (default) / Oldest / A–Z; done
+  items in the same sort, by the day they were marked done (the day written when the marker has no date). No manual ordering
+  and no search additions on purpose: entries have no position field, and ordinary search finds the words of a name.
+- **Not tags:** `extractTags` and `replaceTag` skip tracking markers like event markers, so a `#word` in a name is part of it.
+
 **Editing an entry's time** (`src/lib/retime.ts`, `updateEntry(id, text, images, pickedTime)` in `db.ts`, the "When"
 field in the editor): the person picks a date and time to the minute; the entry keeps its own seconds (so entries in the
 same minute keep their order), a time in the future or an unreadable one is refused (the editor disables Save and says
