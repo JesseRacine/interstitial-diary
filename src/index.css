@@ -132,6 +132,9 @@ code { background: var(--surface-2); padding: 0.05em 0.35em; border-radius: 4px;
 .top nav { display: flex; gap: 0.25rem; overflow-x: auto; }
 .top nav button { border-color: transparent; background: transparent; color: var(--muted); }
 .top nav button.on { background: var(--surface); border-color: var(--border); color: var(--text); }
+.top .gear { flex: none; margin-left: auto; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; border-color: transparent; background: transparent; color: var(--muted); }
+.top .badge ~ .gear { margin-left: 0; } /* with the storage badge shown (it pushes right itself) the gear follows it */
+.top .gear.on { background: var(--surface); border-color: var(--border); color: var(--text); }
 
 /* Search */
 .search { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 0.25rem 0 0.75rem; }
@@ -433,8 +436,12 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 
 @media (max-width: 520px) {
   .top { gap: 0.5rem; }
-  .top nav { gap: 0; } /* six tabs have to fit without scrolling */
-  .top nav button { padding: 0.35rem 0.25rem; font-size: 0.85rem; }
+  .top h1 { font-size: 1.1rem; }
+  .top nav { gap: 0; } /* the four tabs and the gear have to fit one row without scrolling */
+  .top nav button { padding: 0.35rem 0.3rem; font-size: 0.85rem; }
+  /* the gear stays on the first row at the right; the storage badge, when shown, drops to its own row below as before */
+  .top .badge { order: 1; }
+  .top .gear, .top .badge ~ .gear { margin-left: auto; }
   .event-row { grid-template-columns: 1fr auto; gap: 0.1rem 0.75rem; }
   .event-row .when { grid-column: 1 / -1; }
   .capture-head .muted { display: none; }

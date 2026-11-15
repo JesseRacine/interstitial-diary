@@ -111,7 +111,7 @@ base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (
                       (checked by src/deployWorkflow.test.ts; keep BASE_PATH there in step with the repo name)
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
-  main.tsx, App.tsx   entry point; views (Journal, Calendar, Events, Photos, Tags, Settings), routing, keyboard shortcuts,
+  main.tsx, App.tsx   entry point; views (tabs Journal, Calendar, Photos, Tags; Settings is the gear; Events is Calendar's fourth switch), routing, keyboard shortcuts,
                       the photo viewer's history entry
   lib/                pure logic and the database
     entry.ts            Entry/ImageRef types, tag parsing (extractTags, replaceTag, tagSegments, tagBeingTyped), date
@@ -132,6 +132,7 @@ src/
     merge.ts            union-by-id merge + tombstones
     launch.ts           how the app was opened: parseLaunch (`?new=1`, shared title/text/url -> prefilled entry box),
                         cleanLaunchUrl (words removed once read); pwa-manifest.ts has the shortcut and the share target
+    startView.ts        which page the app opens on (`?view=`): View, CalMode, viewFromAddress (`?view=events` = Calendar > Events)
     weekReview.ts       the weekly review: weekStart (Monday), buildWeekReview (per-day counts, time-of-day bands, top
                         tags/people/places, events of the week, vs the week before), compareLabel
     retime.ts           editing an entry's time/date: retimedCreatedAt, isAllowedTime, retimeEntry (sets the local-only
@@ -182,10 +183,10 @@ src/
     resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
-    Capture, JournalView, EntryItem, Results, SearchBar, CalendarView (Month | Year | Week; WeekReview.tsx is the weekly
+    Capture, JournalView, EntryItem, Results, SearchBar, CalendarView (Month | Year | Week | Events; WeekReview.tsx is the weekly
     review, its logic is lib/weekReview.ts), TagsView (+ TagPage: one person/place), SettingsView (+ DeletedEntriesCard:
     restore or delete permanently),
-    EventsView (list + event page + rename), eventNav.ts (OpenEventContext: event chips open their event),
+    EventsView (list + event page + rename; shown inside CalendarView), eventNav.ts (OpenEventContext: event chips open their event),
     text.tsx (tag and event display + tag autocomplete)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
     EntryImages.tsx     photos in a bubble
@@ -234,8 +235,8 @@ src/
    `w`/`h`, or the grid width) before anything decodes.
 9. TypeScript settings: `verbatimModuleSyntax` + `erasableSyntaxOnly`, so use `import type` for types and no `enum`s.
 10. Keep the UI working at phone width (375px) and in light and dark mode. Colours come from CSS variables in
-    `src/index.css`. The header's six tabs fit 375px only because of the tighter padding in the `max-width: 520px`
-    block (checked 2026-11-13); check it if you add a tab.
+    `src/index.css`. The header's four tabs and the Settings gear fit one row at 375px with the tighter padding in the
+    `max-width: 520px` block (checked 2026-11-15; the storage badge drops to a row of its own); check it if you add a tab.
 11. **A tag is a stored key, not a bare name:** `work`, `@sarah`, `~home` (`lib/tagKinds.ts`). Never build `#${tag}` or
     strip a `#` by hand: use `tagToken`, `tagName`, `displayName`, `tagLabel`. A new kind of tag = one row in `TAG_KINDS`
     (symbol, prefix, colour variable in `index.css`, a search-help row, tests).

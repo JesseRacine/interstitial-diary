@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-14 (after the portable Windows app; this file was cut down the same day). Kept short on purpose:
+_Last updated: 2026-11-15 (Tracking planned; its step 1, the new header, built). Before that: 2026-11-14 (after the portable Windows app; this file was cut down the same day). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -15,7 +15,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   Settings > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut + text share), editing
   an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
-- **Numbers:** 524 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 528 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-14):** `origin/main` is at `4d7df6f` (docs; the last code change is `0d1bb0b`, focus after Save). Local `main` is ahead by **docs-only
   commits that are not pushed**; that is normal. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
@@ -53,7 +53,15 @@ to the Claude session folder, `builds\`.
   apps (probably switch them off with a build flag); the share target and the "New entry" shortcut do not exist
   natively; no native widget (quick capture stage 2, android-capture-plan.md).
 
-## What next (nothing in progress; ask the user which)
+## What next
+
+**Tracking feature, planned 2026-11-15: [tracking-plan.md](tracking-plan.md)** (a list of things to keep an eye on:
+name, note, one photo; Star, Done, Delete; stored as a marker in an ordinary entry, nothing new to sync). Five steps, one
+per turn. **Step 1 (header: Settings gear, Events inside Calendar) is built 2026-11-15, tested, committed locally, not
+pushed**; the user has not tried it yet (check 26). **Next: step 2** (the marker and its list, no UI), after the user is
+happy with step 1.
+
+Other things, when the user wants them:
 
 1. **The open details of the portable Windows app** (item 25: Export and Dropbox in the window), if the user wants
    them confirmed.
@@ -70,6 +78,12 @@ to the Claude session folder, `builds\`.
 Everything below is built and pushed. Until the user reports a check it is **not verified**; general remarks ("it
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
+
+**26. New header** (built 2026-11-15, not pushed yet: try it on `localhost:5173` or after the push): a. on the phone the
+four tabs (Journal, Calendar, Photos, Tags) and the gear fit on one row, the storage badge sits on a row below; b. the gear
+opens Settings and lights up while you are there; c. Calendar has Month | Year | Week | Events; d. an event chip in the
+journal, and an event in the Week review, opens Calendar > Events on that event's page; "← Events" returns to the list; e.
+Rename and Merge on the event page still work; f. an old bookmark `?view=events` opens Calendar > Events.
 
 **25. Portable Windows app** (built 2026-11-14; **the user, 2026-11-14: "I think it's good, I tried it earlier"**,
 without saying which of a to d were tried, so Export and Dropbox in the window are not individually confirmed): copy `builds\Interstitial Diary\` somewhere, run the `.exe`: a. write
@@ -93,7 +107,7 @@ d. reloading afterwards does not bring the shared text back; e. does it start fa
 "N of M photos"; type `last:3m` or `#trip`; pick a year; "Clear the filter" brings everything back; it looks right on
 the phone with real thumbnails.
 
-**19. Event dates:** write `Great night at !"Jack's 40th" (2026-05-12)` in two entries weeks apart: the Events tab
+**19. Event dates:** write `Great night at !"Jack's 40th" (2026-05-12)` in two entries weeks apart: Calendar > Events
 lists one event on 12 May 2026 with both; the chip reads "🎉 Jack's 40th · 12 May 2026"; Rename keeps the date; a wrong
 date such as `(2026-02-30)` stays plain text.
 
@@ -115,8 +129,8 @@ later today just reorders the day; d. a time in the future is refused.
 shows both lines in the journal and on Dropbox.
 
 **13. Events** (the user tried it on an empty local copy: "it works"; phone and Dropbox not confirmed): a. `Went to
-!"Jack's 40th birthday" with @sam` shows a blue chip (straight or curly quotes); b. the Events tab lists it, the chip
-opens its page, Rename event fixes a typo; c. the six header tabs fit the phone; d. with Dropbox a renamed event shows
+!"Jack's 40th birthday" with @sam` shows a blue chip (straight or curly quotes); b. Calendar > Events lists it, the chip
+opens its page, Rename event fixes a typo; c. the header fits the phone (changed 2026-11-15, see 26); d. with Dropbox a renamed event shows
 renamed on the other device.
 
 **12. People and places** (the user: "seems to work"; a to c not confirmed one by one): a. on Windows the journal,
@@ -159,5 +173,6 @@ written on one device appear on the other, including edits made offline on both.
 | [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md) | Dropbox (built) and pCloud (on hold), what the user registers, other storage ideas |
 | [docs/LIMITS-AND-IDEAS.md](docs/LIMITS-AND-IDEAS.md) | Known limitations and the ideas backlog |
 | [images-plan.md](images-plan.md) | The photo feature's plan and build log |
+| [tracking-plan.md](tracking-plan.md) | The Tracking feature: decisions, the marker, the five steps |
 | [android-capture-plan.md](android-capture-plan.md) | Quick capture on Android: stage 1 built, stage 2 (native widget) not started |
 | The app repo's `README.md` | The native apps: how the build works, releasing, the signing key, the Windows folder |

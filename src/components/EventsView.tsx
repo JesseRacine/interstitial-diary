@@ -8,9 +8,9 @@ import { EntryItem } from './EntryItem'
 const SORTS: [EventSort, string][] = [['newest', 'Newest'], ['oldest', 'Oldest'], ['name', 'A–Z']]
 
 /**
- * The Events page: every event as a row (date, title, number of entries), by month, with a title filter, a year and a
- * sort. Clicking an event opens its page: the entries that carry it, oldest first. `selectedId` is kept by App so an
- * event chip anywhere in the app can open its page here.
+ * The Events page, shown inside Calendar (Month | Year | Week | Events): every event as a row (date, title, number of
+ * entries), by month, with a title filter, a year and a sort. Clicking an event opens its page: the entries that carry
+ * it, oldest first. `selectedId` is kept by App so an event chip anywhere in the app can open its page here.
  */
 export function EventsView({ events, entries, selectedId, onSelect, onSearch, onSearchQuery, onOpenDay, onOpenImage }: {
   events: EventStat[]
@@ -42,7 +42,6 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
   return (
     <section className="events">
       <div className="day-nav">
-        <h2>Events</h2>
         <input type="search" placeholder="Filter by title" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter events by title" />
         {years.length > 1 && (
           <select value={year} onChange={(e) => setYear(e.target.value)} aria-label="Year">

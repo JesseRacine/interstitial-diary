@@ -53,7 +53,7 @@ export function ManualCard() {
               far apart you wrote about it.</li>
             <li>Without a date, entries with the same title within 7 days are one event; a longer gap is a new event with the same
               title.</li>
-            <li>An event shows as a 🎉 chip. The <strong>Events</strong> tab lists them by date; open one to see its entries,
+            <li>An event shows as a 🎉 chip. <strong>Calendar &gt; Events</strong> lists them by date; open one to see its entries,
               <strong> Rename</strong> it, <strong>Merge into…</strong> another (to fix a typo), or search for it.</li>
           </ul>
 
@@ -84,12 +84,14 @@ export function ManualCard() {
           <ul>
             <li><strong>Journal:</strong> your entries by day (Days or Stream layout). <kbd>←</kbd> <kbd>→</kbd> move between days,
               <kbd>t</kbd> jumps to the latest entry, <kbd>n</kbd> starts a new entry.</li>
-            <li><strong>Calendar:</strong> Month, Year, or Week. Week is a weekly review: entries, days written, photos, the busiest day,
-              time of day, the top tags, people and places, events, and a comparison with the week before.</li>
-            <li><strong>Events, Tags:</strong> as described above.</li>
+            <li><strong>Calendar:</strong> Month, Year, Week or Events. Week is a weekly review: entries, days written, photos, the
+              busiest day, time of day, the top tags, people and places, events, and a comparison with the week before. Events is
+              the list of events described above.</li>
             <li><strong>Photos:</strong> every photo; its filter box takes the same search words, and the chips narrow by tag, person,
               place or year.</li>
-            <li><strong>Settings:</strong> where entries are saved, backup, export, appearance, deleted entries and start over.</li>
+            <li><strong>Tags:</strong> as described above.</li>
+            <li><strong>The gear (⚙):</strong> Settings, at the right of the header: where entries are saved, backup, export,
+              appearance, deleted entries and start over.</li>
           </ul>
 
           <h4>Your data</h4>

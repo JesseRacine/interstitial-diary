@@ -374,7 +374,9 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## UI
 
-- **Header:** app name, views (Journal, Calendar, Photos, Tags, Settings), storage status badge. With no storage chosen
+- **Header:** app name, four tabs (Journal, Calendar, Photos, Tags), storage status badge and a **gear icon** that opens
+  Settings (it is not a tab; the badge opens Settings too). On a phone the tabs and the gear share one row and the badge
+  drops to its own row below (`.top` in `index.css`; `?view=events` still works and opens Calendar > Events). With no storage chosen
   the badge is hidden, except a red "⚠ Photos only in this browser" once the device holds photos.
 - **Search bar** (always visible): tag autocomplete, chips, saved (★) and recent searches, `?` syntax help.
 - **Manual** (Settings, top card, hidden until "Show the manual"): short static text on writing, tags/people/places,
@@ -409,7 +411,8 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   show an error; "No photos match" offers to clear the filter. The filter is not remembered between visits.
 - **Results:** match count, sort, a histogram of matches over time (click a bar to filter), entries with highlights;
   clicking a date opens that day with a "Back to results" link.
-- **Calendar:** month or year heatmap; click a day to open it. A third switch, **Week** (the weekly review), shows one
+- **Calendar:** month or year heatmap; click a day to open it. The switch also has **Events** (below; the chosen mode is kept by
+  `App.tsx` while the app is open, so event chips can open Calendar on it) and **Week** (the weekly review), which shows one
   Monday-to-Sunday week with ‹ › to move between weeks (not past the current one) and "This week" to come back. It is worked
   out from the entries each time (`buildWeekReview` in `lib/weekReview.ts`; nothing stored, nothing to sync): entries,
   days written (of 7), photos, the busiest day (the earliest if tied) and the change against the week before; a bar per day
@@ -422,13 +425,14 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   with `hasPage`; plain tags still search straight away): entry count, first and last mention, a bar per month (click a
   bar to show only that month), "Search these entries", and the entries newest first. The page lives inside the Tags view
   (`TagPage.tsx`), not as a header tab.
-- **Events view** (header tab after Calendar): every event as a row (date or range such as "6–8 Feb 2026", title, number
+- **Events view** (Calendar's fourth switch, Month | Year | Week | Events; it was a header tab until 2026-11-15): every event as a row (date or range such as "6–8 Feb 2026", title, number
   of entries) under a heading per month of the day it started; a title filter, a year select (shown when events span
   more than one year) and Newest / Oldest / A–Z sort (`lib/eventRows.ts` filters, sorts and groups; `EventsView.tsx`).
   Clicking a row opens the **event page** inside the view: dates, entry count, **Rename event**, and its entries oldest
   first. An event chip ("🎉 Jack's 40th birthday", blue `--event`) in any entry opens its event through
   `OpenEventContext` (`components/eventNav.ts`, provided in `App.tsx`, read by `EntryItem`), which picks the event whose
-  entries include that entry. Six header tabs fit 375 px only with the tighter padding in the `max-width: 520px` block.
+  entries include that entry (it switches Calendar to Events). Four tabs and the gear fit 375 px in one row with the tighter
+  padding in the `max-width: 520px` block.
 - **Settings:** storage, **photos on this device**, theme, export, a short "Quick entry from your phone or taskbar" tip, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The

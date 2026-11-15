@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react'
 import { addDays, dayKey, type Entry, MONTH_NAMES, pad } from '../lib/entry'
 import { eventDateLabel } from '../lib/eventRows'
 import type { EventStat } from '../lib/events'
+import type { CalMode } from '../lib/startView'
 import { buildWeekReview, weekStart } from '../lib/weekReview'
 import { countByDay } from '../search/engine'
+import { EventsView } from './EventsView'
 import { WeekReview } from './WeekReview'
 
 const WEEK_HEAD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -45,18 +47,26 @@ function Month({ y, m, counts, max, compact, today, onOpenDay }: {
   )
 }
 
-type Mode = 'month' | 'year' | 'week'
+const MODES: [CalMode, string][] = [['month', 'Month'], ['year', 'Year'], ['week', 'Week'], ['events', 'Events']]
 
-export function CalendarView({ entries, events, onOpenDay, onTag, onOpenEvent }: {
+export function CalendarView({ entries, events, mode, onMode, eventId, onSelectEvent, onOpenDay, onOpenEntryDay, onOpenImage, onTag, onSearchQuery, onOpenEvent }: {
   entries: Entry[]
   events: EventStat[]
+  /** Kept by App so an event chip anywhere in the app can open Calendar on the Events page. */
+  mode: CalMode
+  onMode: (mode: CalMode) => void
+  /** The event whose page is open in Events mode (kept by App too). */
+  eventId: string | null
+  onSelectEvent: (id: string | null) => void
   onOpenDay: (day: string) => void
+  onOpenEntryDay: (e: Entry) => void
+  onOpenImage: (e: Entry, index: number) => void
   onTag: (tag: string) => void
+  onSearchQuery: (query: string) => void
   onOpenEvent: (id: string) => void
 }) {
   const counts = useMemo(() => countByDay(entries), [entries])
   const now = new Date()
-  const [mode, setMode] = useState<Mode>('month')
   const [y, setY] = useState(now.getFullYear())
   const [m, setM] = useState(now.getMonth())
   const today = dayKey(now)
@@ -78,6 +88,26 @@ export function CalendarView({ entries, events, onOpenDay, onTag, onOpenEvent }:
     setM(d.getMonth())
   }
 
+  // Leaving Events closes any open event page, so coming back shows the list.
+  const switcher = (
+    <div className="seg" role="group" aria-label="Calendar view">
+      {MODES.map(([k, label]) => (
+        <button key={k} type="button" className={mode === k ? 'on' : ''} aria-pressed={mode === k}
+          onClick={() => { onSelectEvent(null); onMode(k) }}>{label}</button>
+      ))}
+    </div>
+  )
+
+  if (mode === 'events') {
+    return (
+      <section className="calendar">
+        <div className="day-nav">{switcher}</div>
+        <EventsView events={events} entries={entries} selectedId={eventId} onSelect={onSelectEvent} onSearch={onTag} onSearchQuery={onSearchQuery}
+          onOpenDay={onOpenEntryDay} onOpenImage={onOpenImage} />
+      </section>
+    )
+  }
+
   return (
     <section className="calendar">
       <div className="day-nav">
@@ -85,11 +115,7 @@ export function CalendarView({ entries, events, onOpenDay, onTag, onOpenEvent }:
         <h2>{mode === 'week' ? `Week of ${eventDateLabel(week, addDays(week, 6))}` : mode === 'month' ? `${MONTH_NAMES[m]} ${y}` : y}</h2>
         <button type="button" onClick={() => step(1)} aria-label="Next" disabled={mode === 'week' && week >= thisWeek}>›</button>
         {mode === 'week' && week !== thisWeek && <button type="button" onClick={() => setWeek(thisWeek)}>This week</button>}
-        <div className="seg">
-          <button type="button" className={mode === 'month' ? 'on' : ''} onClick={() => setMode('month')}>Month</button>
-          <button type="button" className={mode === 'year' ? 'on' : ''} onClick={() => setMode('year')}>Year</button>
-          <button type="button" className={mode === 'week' ? 'on' : ''} onClick={() => setMode('week')}>Week</button>
-        </div>
+        {switcher}
         {review ? (
           <span className="muted count">{review.total} {review.total === 1 ? 'entry' : 'entries'}</span>
         ) : (

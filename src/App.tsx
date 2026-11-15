@@ -3,7 +3,6 @@ import { BackupReminder } from './components/BackupReminder'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
 import { OpenEventContext } from './components/eventNav'
-import { EventsView } from './components/EventsView'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
 import { Lightbox } from './components/Lightbox'
 import { PhotosView } from './components/PhotosView'
@@ -20,11 +19,12 @@ import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker } from './lib/events'
+import { type CalMode, type View, viewFromAddress } from './lib/startView'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
 
-type View = 'journal' | 'calendar' | 'events' | 'photos' | 'tags' | 'settings'
-const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['events', 'Events'], ['photos', 'Photos'], ['tags', 'Tags'], ['settings', 'Settings']]
+// Settings is not a tab: it is the gear next to the storage badge. Events lives inside Calendar.
+const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['photos', 'Photos'], ['tags', 'Tags']]
 
 function loadTheme(): Theme {
   try { return (localStorage.getItem('theme') as Theme | null) ?? 'system' } catch { return 'system' }
@@ -45,12 +45,14 @@ export default function App() {
   // How the app was opened: the "New entry" shortcut or Android's Share sheet (see lib/launch.ts).
   const [launch] = useState(() => parseLaunch(location.search))
   const [prefill, setPrefill] = useState(launch.text) // shared text for the entry box, used once
-  const [view, setView] = useState<View>(() => (launch.newEntry ? 'journal' : (new URLSearchParams(location.search).get('view') as View | null) ?? 'journal'))
+  const [start] = useState(() => (launch.newEntry ? { view: 'journal' as View, calMode: 'month' as CalMode } : viewFromAddress(location.search)))
+  const [view, setView] = useState<View>(start.view)
+  const [calMode, setCalMode] = useState<CalMode>(start.calMode) // Month | Year | Week | Events, remembered while the app is open
   useEffect(() => {
     // Read once; take the launch words out of the address so a reload does not bring the shared text back.
     if (launch.newEntry) history.replaceState(history.state, '', cleanLaunchUrl(location.href))
   }, [launch])
-  const [eventId, setEventId] = useState<string | null>(null) // the event whose page is open in the Events view
+  const [eventId, setEventId] = useState<string | null>(null) // the event whose page is open in Calendar > Events
   const [jump, setJump] = useState<Jump | null>(null)
   const [bottomTick, setBottomTick] = useState(0)
   const [layout, setLayoutState] = useState<JournalLayout>(loadLayout)
@@ -96,7 +98,8 @@ export default function App() {
     const found = eventOfMarker(events, entry.id, title, date)
     if (!found) return
     setEventId(found.id)
-    setView('events')
+    setCalMode('events')
+    setView('calendar')
     setQuery('')
     setBackQuery(null)
   }, [events])
@@ -165,6 +168,13 @@ export default function App() {
           ))}
         </nav>
         <StorageBadge onOpenSettings={() => { setView('settings'); setQuery('') }} />
+        <button type="button" className={`gear${view === 'settings' && !searching ? ' on' : ''}`} aria-label="Settings" title="Settings"
+          onClick={() => { setView('settings'); setQuery(''); setBackQuery(null); setEventId(null) }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
       </header>
 
       <BackupReminder entries={entries} onBackUp={() => { setView('settings'); setQuery('') }} />
@@ -184,11 +194,10 @@ export default function App() {
               onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
-          <CalendarView entries={entries} events={events} onOpenDay={(d) => openDay(d)} onTag={searchTag}
-            onOpenEvent={(id) => { setEventId(id); setView('events'); setQuery(''); setBackQuery(null) }} />
-        ) : view === 'events' ? (
-          <EventsView events={events} entries={entries} selectedId={eventId} onSelect={setEventId} onSearch={searchTag} onSearchQuery={searchFor}
-            onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
+          <CalendarView entries={entries} events={events} mode={calMode} onMode={setCalMode}
+            eventId={eventId} onSelectEvent={setEventId} onOpenDay={(d) => openDay(d)} onOpenEntryDay={(e) => openDay(e.day, e.id)}
+            onOpenImage={openPhoto} onTag={searchTag} onSearchQuery={searchFor}
+            onOpenEvent={(id) => { setEventId(id); setCalMode('events'); setQuery(''); setBackQuery(null) }} />
         ) : view === 'photos' ? (
           <PhotosView entries={entries} index={index} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
