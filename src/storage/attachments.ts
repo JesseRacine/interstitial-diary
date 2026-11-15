@@ -1,6 +1,7 @@
 import { type Entry, type ImageRef, entryImages } from '../lib/entry'
 import type { Thumbnailer } from '../lib/imageClient'
-import { imagePath, isDisplayable, thumbPath } from '../lib/images'
+import { formatBytes, imagePath, isDisplayable, thumbPath } from '../lib/images'
+import { RequestTimeoutError } from './backends/timeout'
 import { BlobCollisionError, type BlobStore } from './types'
 
 /*
@@ -30,6 +31,7 @@ export interface PushReport {
   written: number // files written this run
   pending: number // files still to write (failed this run; retried next sync)
   errors: string[]
+  stalled?: true // the storage stopped answering, so the rest was left for the next sync (the caller retries soon)
 }
 
 interface Job {
@@ -68,6 +70,7 @@ export async function pushImages(
   local: ImageLocal,
   store: BlobStore,
   confirmed: ReadonlySet<string>,
+  onProgress?: (text: string) => void,
 ): Promise<{ confirmed: Set<string>; report: PushReport }> {
   const done = new Set(confirmed)
   const report: PushReport = { written: 0, pending: 0, errors: [] }
@@ -75,9 +78,10 @@ export async function pushImages(
   const jobs = wanted.filter((j) => !done.has(j.path))
   const originalFailed = new Set<string>()
 
-  for (const job of jobs) {
+  for (const [i, job] of jobs.entries()) {
     const blob = job.kind === 'original' ? await local.original(job.hash) : await local.thumb(job.hash)
     if (!blob) continue // not on this device (e.g. added elsewhere, or a format without a thumbnail): nothing to push
+    onProgress?.(`Sending photo file ${i + 1} of ${jobs.length} (${formatBytes(blob.size)})`)
     try {
       const there = await store.hasBlob(job.path)
       if (there) {
@@ -91,6 +95,13 @@ export async function pushImages(
       if (job.kind === 'original') originalFailed.add(job.hash)
       report.pending++
       report.errors.push(e instanceof Error ? e.message : String(e))
+      if (e instanceof RequestTimeoutError) {
+        // The connection has stalled: trying the rest would only wait for each of them. Leave them for the next sync, so the
+        // text sync (which follows) is not held up any longer.
+        report.pending += jobs.length - i - 1
+        report.stalled = true
+        break
+      }
     }
   }
 

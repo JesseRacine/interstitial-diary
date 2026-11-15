@@ -17,6 +17,7 @@ export async function syncAll(
   store: FileStore,
   prev: SyncState,
   confirmed: ReadonlySet<string>,
+  onProgress?: (text: string) => void,
 ): Promise<{
   state: SyncState
   report: SyncReport
@@ -30,16 +31,19 @@ export async function syncAll(
   const blobs = supportsBlobs(store)
   if (blobs) {
     try {
-      const r = await pushImages(images, store, nextConfirmed)
+      onProgress?.('Checking photos')
+      const r = await pushImages(images, store, nextConfirmed, onProgress)
       imageReport = r.report
       nextConfirmed = r.confirmed
     } catch (e) {
       imageReport = { written: 0, pending: 0, errors: [message(e)] }
     }
   }
+  onProgress?.('Saving entries')
   const { state, report } = await syncOnce(local, store, prev)
   if (blobs) {
     try {
+      onProgress?.('Checking thumbnails')
       const r = await pullImages(images, store, nextConfirmed)
       pulled = r.report
       nextConfirmed = r.confirmed

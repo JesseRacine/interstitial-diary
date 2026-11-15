@@ -71,6 +71,7 @@ export interface StorageState {
   restored: boolean // the saved storage (if any) has been read at startup; before that 'off' just means "not known yet"
   signInError: string | null // a sign-in on another site (Dropbox) that could not be finished; the old storage stays
   startedOverAt: number | null // another device started the journal over (when), so this device cleared its copy
+  activity: string | null // what a running sync is doing right now ("Sending photo file 1 of 3 (4.2 MB)"); null when none runs
 }
 
 /** Photos the badge reports as waiting: still to save from here, plus ones that failed to download. */
@@ -78,7 +79,7 @@ export const imagesPending = (s: StorageState) => s.imagesWaiting + s.imagesFail
 
 let state: StorageState = {
   backendId: null, label: null, status: 'off', message: null, lastSync: null, lastReport: null, pending: 0,
-  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false, signInError: null, startedOverAt: null,
+  imagesWaiting: 0, imagesFailed: 0, imageError: null, restored: false, signInError: null, startedOverAt: null, activity: null,
 }
 const listeners = new Set<() => void>()
 function set(patch: Partial<StorageState>) {
@@ -131,24 +132,25 @@ export function syncNow(): Promise<void> {
       again = false
       const current = store
       if (!current) break
-      set({ status: 'syncing' })
+      set({ status: 'syncing', activity: 'Starting' })
       try {
         await followStartOver(id, current) // before reading the sync state: clearing resets it
         const prev = await getMeta<SyncState>(syncKey(id), emptySyncState())
         const confirmed = new Set(await getMeta<string[]>(imagesKey(id), []))
-        const r = await syncAll(dexieLocal, dexieImages, current, prev, confirmed)
+        const r = await syncAll(dexieLocal, dexieImages, current, prev, confirmed, (activity) => set({ activity }))
         await setMeta(imagesKey(id), [...r.confirmed])
         await setMeta(syncKey(id), r.state)
         set({
-          status: 'ok', message: null, lastSync: Date.now(), lastReport: r.report,
+          status: 'ok', message: null, activity: null, lastSync: Date.now(), lastReport: r.report,
           imagesFailed: r.pulled?.failed ?? 0, // failed writes stay unsaved, so imagesWaiting already counts them
           imageError: r.images?.errors[0] ?? r.pulled?.errors[0] ?? null,
         })
         missingImages.replace(r.pulled?.missing ?? [])
+        if (r.images?.stalled) schedule(20_000) // photos stopped mid-way: try the rest soon, not in 5 minutes
         await trimOriginals(id)
       } catch (e) {
         const lost = e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')
-        set({ status: lost ? 'needs-permission' : 'error', message: describe(e) })
+        set({ status: lost ? 'needs-permission' : 'error', message: describe(e), activity: null })
         if (lost) store = null
         else if (e instanceof RequestTimeoutError) schedule(20_000) // a stalled connection: try again soon, not in 5 minutes
         break

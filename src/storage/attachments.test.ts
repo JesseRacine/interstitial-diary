@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { type Entry, type ImageRef, makeEntry } from '../lib/entry'
 import type { ImageLocal } from './attachments'
 import { imagesWaiting, pushImages } from './attachments'
+import { RequestTimeoutError } from './backends/timeout'
 import { hashBytes } from '../lib/images'
 import { memoryLocal, memoryStore } from './memory'
 import { fetchOriginal } from './originals'
@@ -83,6 +84,46 @@ describe('pushing images to storage', () => {
     expect(r2.images).toEqual({ written: 2, pending: 0, errors: [] })
     expect(store.blobs.has('2026/images/aaaaaaaaaaaaaaaa.jpg')).toBe(true)
     expect(d.onRemote.has(A.hash)).toBe(true)
+  })
+
+  it('reports what it is doing: checking photos, which file it is sending, then saving entries', async () => {
+    const seen: string[] = []
+    const store = memoryStore()
+    const d = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])], { [A.hash]: bytes(10) }, { [A.hash]: bytes(3) })
+    await syncAll(d.local, d.images, store, emptySyncState(), new Set(), (t) => seen.push(t))
+    expect(seen).toEqual([
+      'Checking photos',
+      'Sending photo file 1 of 2 (10 B)',
+      'Sending photo file 2 of 2 (3 B)',
+      'Saving entries',
+      'Checking thumbnails',
+    ])
+  })
+
+  it('a storage that stops answering ends the photo pass at once, still saves the text, and flags it for a quick retry', async () => {
+    const store = memoryStore()
+    let writes = 0
+    store.writeBlob = async () => { writes++; throw new RequestTimeoutError('Dropbox', 120_000) }
+    const d = device(
+      [makeEntry('photos', at(2026, 8, 9), 'x', [A, { ...A, hash: 'cccccccccccccccc' }])],
+      { [A.hash]: bytes(10), cccccccccccccccc: bytes(10) }, { [A.hash]: bytes(3), cccccccccccccccc: bytes(3) },
+    )
+    const r = await d.sync(store)
+    expect(writes).toBe(1) // not one attempt per file, each waiting for its own timeout
+    expect(r.images).toMatchObject({ written: 0, pending: 4, stalled: true })
+    expect(r.images!.errors).toEqual(['Dropbox did not answer within 120 seconds. It will try again.'])
+    expect(store.files.has('2026/2026-11-08.md')).toBe(true) // the text went through
+    expect(d.onRemote.size).toBe(0)
+  })
+
+  it('an ordinary photo failure is not flagged as stalled and the other files are still tried', async () => {
+    const store = memoryStore()
+    let writes = 0
+    store.writeBlob = async () => { writes++; throw new Error('disk full') }
+    const d = device([makeEntry('photo', at(2026, 8, 9), 'x', [A])], { [A.hash]: bytes(10) }, { [A.hash]: bytes(3) })
+    const r = await d.sync(store)
+    expect(writes).toBe(2)
+    expect(r.images?.stalled).toBeUndefined()
   })
 
   it('even an unexpected crash in the image pass leaves the text sync running', async () => {

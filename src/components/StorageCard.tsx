@@ -120,6 +120,7 @@ export function StorageCard() {
             <strong>{s.label}</strong>
             <div className={`muted${s.status === 'error' ? ' error' : ''}`}>
               {statusText(s)}
+              {s.status === 'syncing' && s.activity ? ` · ${s.activity}…` : ''}
               {s.status === 'error' && s.message ? `: ${s.message}` : ''}
               {s.lastReport && s.status === 'ok' && !s.pending
                 ? ` · last run read ${s.lastReport.read}, wrote ${s.lastReport.written} file${s.lastReport.written === 1 ? '' : 's'}`

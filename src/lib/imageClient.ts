@@ -20,6 +20,9 @@ export interface Thumbnail {
 /** Makes a thumbnail, or returns null when the image can't be decoded here. Never throws. */
 export type Thumbnailer = (blob: Blob) => Promise<Thumbnail | null>
 
+/** How long the worker gets to make one thumbnail (a large photo takes a few seconds on a phone). */
+const THUMB_TIMEOUT_MS = 45_000
+
 let worker: Worker | null = null
 let nextId = 1
 const pending = new Map<number, (r: ThumbResponse) => void>()
@@ -47,7 +50,13 @@ export const makeThumbnail: Thumbnailer = async (blob) => {
   if (!w) return null
   const id = nextId++
   const r = await new Promise<ThumbResponse>((resolve) => {
-    pending.set(id, resolve)
+    // A worker that dies without an error event (the phone ran out of memory on a big photo) would otherwise leave this,
+    // and the sync that waits for it, pending forever.
+    const timer = setTimeout(() => {
+      pending.delete(id)
+      resolve({ id, ok: false, error: `no answer from the image worker within ${THUMB_TIMEOUT_MS / 1000} seconds` })
+    }, THUMB_TIMEOUT_MS)
+    pending.set(id, (answer) => { clearTimeout(timer); resolve(answer) })
     w.postMessage({ id, blob } satisfies ThumbRequest)
   })
   if (!r.ok) {

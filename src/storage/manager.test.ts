@@ -463,6 +463,32 @@ describe('manager: connect and reconnect', () => {
     expect(retries).toEqual([20_000])
   })
 
+  it('photos that stop mid-way still let the text save, show what it was doing, and retry in 20 seconds', async () => {
+    const retries: number[] = []
+    const realSetTimeout = globalThis.setTimeout
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void, ms?: number, ...rest: unknown[]) => {
+      if (ms === 20_000) { retries.push(ms); return 0 }
+      return realSetTimeout(fn, ms, ...rest)
+    }) as unknown as typeof setTimeout)
+
+    await load()
+    const { memoryStore } = await import('./memory')
+    const { RequestTimeoutError } = await import('./backends/timeout')
+    const store = memoryStore()
+    store.writeBlob = async () => { throw new RequestTimeoutError('Cloud', 120_000) }
+    h.stores['local:L'] = store
+    const ref = { hash: 'aaaaaaaaaaaaaaaa', ext: 'jpg', w: 4, h: 3 }
+    await dbm.db.entries.put(makeEntry('with a photo', DAY, 'e1', [ref]))
+    await dbm.db.blobs.put({ hash: ref.hash, blob: new Blob([new Uint8Array(10)]), mime: 'image/jpeg', size: 10, onRemote: 0, addedAt: 1 })
+    await m.initStorage()
+    await m.connect('local')
+
+    expect(store.files.has('2026/2026-11-08.md')).toBe(true) // the text was saved although the photo stalled
+    expect(m.storageState()).toMatchObject({ status: 'ok', activity: null })
+    expect(m.storageState().imageError).toContain('did not answer')
+    expect(retries).toEqual([20_000])
+  })
+
   it('disconnect forgets the storage, so another tab choosing the same one later is picked up', async () => {
     await load()
     await dbm.setMeta('storage', { backendId: 'local', config: { name: 'L' }, connectedAt: 1 })
