@@ -17,7 +17,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **2** (deploy run 43774248654 green, built into the apps in run 43774335949; build 1 was run 43769444518).
+  every push to `main`. Pushed and live: **3** (deploy run 43776852761 green, built into the apps in run 43776935182; build 2 was runs 43774248654 and 43774335949, build 1 run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
   (every later sync reused it). The user then pressed Stop and chose Dropbox again: still stuck, and **the entry has two
@@ -29,7 +29,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   20 s); a text timeout gives "Problem saving" and the same retry; the thumbnail worker has a 45 s limit; Settings shows
   what a running sync is doing ("Sending photo file 1 of 2 (4.2 MB)…"), which tells slow from stuck. Ask the user to
   confirm on the phone after the update. Not changed on purpose: photos still go before the text (tested design).
-- **Cheap checks (2026-11-15, build 3, local commit, not pushed):** a check when the page is shown or hidden now asks
+- **Cheap checks (2026-11-15, build 3, pushed: deploy run 43776852761 green; apps rebuilt in run 43776935182):** a check when the page is shown or hidden now asks
   Dropbox one question ("anything changed since my bookmark?", its change cursor) and stops there if the answer is no and
   nothing is waiting here; any doubt means the full sync as before. Design and limits: DESIGN.md "Cheap checks". Settings
   says "Checking…" when nothing is waiting to be saved. **Not tried against real Dropbox** (tests use the fake): the user
