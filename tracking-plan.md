@@ -1,7 +1,8 @@
 # Plan: Tracking (things to keep an eye on)
 
 _Status: **planned 2026-11-15; step 1 (header) built, pushed and approved by the user the same day; step 2 (the marker
-and its list, `lib/tracking.ts`, no UI) built 2026-11-15, committed locally, not pushed; steps 3 to 5 not started.**
+and its list, `lib/tracking.ts`, no UI) and step 3 (the Tracking tab) built 2026-11-15, committed locally, not pushed;
+steps 4 and 5 not started.**
 Decisions below were made with the user in conversation on that day.
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step._
 
@@ -122,6 +123,11 @@ Edit and Delete buttons. State changes go through `updateEntry`-style edits in `
 yet" with a hint about the Track button). Phone layout checked at 375 px.
 **Done when:** with test entries, every button works and syncs as an edit; deleting from the page removes the entry from
 the journal and it can be restored from Settings > Deleted entries; a done item keeps showing in the journal.
+_Built 2026-11-15 (`TrackingView.tsx`): Edit is not a card button: tapping a name opens the item's page, which shows the
+entry with `EntryItem` (full text, every photo, its own Edit and Delete) under the same state buttons. Checked in the browser
+at phone and desktop width with seeded items (star, done, track again, delete from the card and from the page, the empty
+states, Done order, the text rewrite and `dirty`). Five tabs do not fit one phone row beside the name, so the phone header
+became two rows (name + badge + gear above, the tabs below); the badge and gear are one group, `.top-end`._
 
 ### 4. Track button and journal chips
 

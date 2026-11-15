@@ -111,7 +111,7 @@ base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (
                       (checked by src/deployWorkflow.test.ts; keep BASE_PATH there in step with the repo name)
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
-  main.tsx, App.tsx   entry point; views (tabs Journal, Calendar, Photos, Tags; Settings is the gear; Events is Calendar's fourth switch), routing, keyboard shortcuts,
+  main.tsx, App.tsx   entry point; views (tabs Journal, Calendar, Photos, Tags, Tracking; Settings is the gear; Events is Calendar's fourth switch), routing, keyboard shortcuts,
                       the photo viewer's history entry
   lib/                pure logic and the database
     entry.ts            Entry/ImageRef types, tag parsing (extractTags, replaceTag, tagSegments, tagBeingTyped), date
@@ -191,6 +191,7 @@ src/
     Capture, JournalView, EntryItem, Results, SearchBar, CalendarView (Month | Year | Week | Events; WeekReview.tsx is the weekly
     review, its logic is lib/weekReview.ts), TagsView (+ TagPage: one person/place), SettingsView (+ DeletedEntriesCard:
     restore or delete permanently),
+    TrackingView (Tracking tab: Active|Done|All cards with Star/Done/Track again/Delete; the item page reuses EntryItem),
     EventsView (list + event page + rename; shown inside CalendarView), eventNav.ts (OpenEventContext: event chips open their event),
     text.tsx (tag and event display + tag autocomplete)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
@@ -240,8 +241,8 @@ src/
    `w`/`h`, or the grid width) before anything decodes.
 9. TypeScript settings: `verbatimModuleSyntax` + `erasableSyntaxOnly`, so use `import type` for types and no `enum`s.
 10. Keep the UI working at phone width (375px) and in light and dark mode. Colours come from CSS variables in
-    `src/index.css`. The header's four tabs and the Settings gear fit one row at 375px with the tighter padding in the
-    `max-width: 520px` block (checked 2026-11-15; the storage badge drops to a row of its own); check it if you add a tab.
+    `src/index.css`. The header has two rows at phone width: the name with the badge-and-gear group (`.top-end`) on top, the
+    five tabs sharing the row below (`max-width: 520px` block, checked 2026-11-15); check it if you add a tab.
 11. **A tag is a stored key, not a bare name:** `work`, `@sarah`, `~home` (`lib/tagKinds.ts`). Never build `#${tag}` or
     strip a `#` by hand: use `tagToken`, `tagName`, `displayName`, `tagLabel`. A new kind of tag = one row in `TAG_KINDS`
     (symbol, prefix, colour variable in `index.css`, a search-help row, tests).

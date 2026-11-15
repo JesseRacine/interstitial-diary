@@ -132,8 +132,10 @@ code { background: var(--surface-2); padding: 0.05em 0.35em; border-radius: 4px;
 .top nav { display: flex; gap: 0.25rem; overflow-x: auto; }
 .top nav button { border-color: transparent; background: transparent; color: var(--muted); }
 .top nav button.on { background: var(--surface); border-color: var(--border); color: var(--text); }
-.top .gear { flex: none; margin-left: auto; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; border-color: transparent; background: transparent; color: var(--muted); }
-.top .badge ~ .gear { margin-left: 0; } /* with the storage badge shown (it pushes right itself) the gear follows it */
+/* The storage badge (when shown) and the gear form one group at the right, so they move together if the header wraps. */
+.top-end { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+.top-end .badge { margin-left: 0; }
+.top .gear { flex: none; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; border-color: transparent; background: transparent; color: var(--muted); }
 .top .gear.on { background: var(--surface); border-color: var(--border); color: var(--text); }
 
 /* Search */
@@ -382,6 +384,26 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .event-page h2 { margin: 0.25rem 0; color: var(--event); }
 .event-page .summary { margin: 0.25rem 0 0.75rem; color: var(--muted); }
 .event-page-actions { margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Tracking: a card per item (photo, name, note, buttons); the name opens the item. */
+.track-group h3 { margin: 1rem 0 0.4rem; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+.track-card { display: flex; gap: 0.75rem; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.track-photo { flex: none; width: 76px; height: 76px; }
+.track-body { flex: 1; min-width: 0; }
+button.track-title { border: 0; padding: 0; background: none; text-align: left; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+button.track-title:hover:not(:disabled) { text-decoration: underline; border-color: transparent; }
+.track-card.done button.track-title { color: var(--muted); font-weight: 500; }
+.track-note { font-size: 0.92rem; }
+.track-note .entry-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 0.15rem; }
+.track-meta { font-size: 0.8rem; margin-top: 0.2rem; }
+.track-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.45rem; }
+.track-actions button { padding: 0.2rem 0.6rem; font-size: 0.85rem; }
+.track-actions button.ghost { padding: 0.2rem 0.45rem; }
+.track-actions button.on { color: var(--accent); border-color: var(--accent); }
+.track-page .back { margin-left: -0.45rem; }
+.track-page h2 { margin: 0.25rem 0; }
+.track-page .summary { margin: 0.25rem 0 0.6rem; }
+.track-page .track-actions { margin: 0 0 0.75rem; }
 .event-merge { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: -0.25rem 0 0.75rem; }
 .event-merge select { min-width: 0; max-width: 100%; flex: 1 1 12rem; }
 
@@ -437,11 +459,11 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 @media (max-width: 520px) {
   .top { gap: 0.5rem; }
   .top h1 { font-size: 1.1rem; }
-  .top nav { gap: 0; } /* the four tabs and the gear have to fit one row without scrolling */
-  .top nav button { padding: 0.35rem 0.3rem; font-size: 0.85rem; }
-  /* the gear stays on the first row at the right; the storage badge, when shown, drops to its own row below as before */
-  .top .badge { order: 1; }
-  .top .gear, .top .badge ~ .gear { margin-left: auto; }
+  /* Two rows: the name and the badge-and-gear group on top; the five tabs share the row below, so they fit 375px without
+     scrolling. */
+  .top-end { order: 1; }
+  .top nav { order: 2; flex: 1 1 100%; gap: 0; }
+  .top nav button { flex: 1; padding: 0.35rem 0.25rem; font-size: 0.85rem; }
   .event-row { grid-template-columns: 1fr auto; gap: 0.1rem 0.75rem; }
   .event-row .when { grid-column: 1 / -1; }
   .capture-head .muted { display: none; }

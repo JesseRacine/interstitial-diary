@@ -57,6 +57,17 @@ export function ManualCard() {
               <strong> Rename</strong> it, <strong>Merge into…</strong> another (to fix a typo), or search for it.</li>
           </ul>
 
+          <h4>Tracking</h4>
+          <ul>
+            <li>For things you may want later but that are not to-dos (a product, a film that is coming out). Start a name with a plus:
+              <code>+&quot;Dyson V15&quot; $450 on Amazon</code>. The rest of the entry is the note, and a photo in the entry shows on the card.
+              The same rules as an event&apos;s title apply (in quotes, up to 120 characters, one line).</li>
+            <li>The <strong>Tracking</strong> tab lists them. <strong>Star</strong> puts one at the top, <strong>Done</strong> moves it to
+              the Done list (you bought it, you saw it) and <strong>Track again</strong> brings it back. Newest, Oldest or A–Z sorts the list.</li>
+            <li><strong>Delete</strong> removes the entry from the journal too; you can restore it under Settings &gt; Deleted entries.
+              Tap a name to see the whole entry and edit it.</li>
+          </ul>
+
           <h4>Search</h4>
           <p>Type in the search box at the top (or press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>). Everything you type must match;
             combine freely, e.g. <code>#work tired time:13-17 last:30d</code>.</p>
@@ -89,7 +100,7 @@ export function ManualCard() {
               the list of events described above.</li>
             <li><strong>Photos:</strong> every photo; its filter box takes the same search words, and the chips narrow by tag, person,
               place or year.</li>
-            <li><strong>Tags:</strong> as described above.</li>
+            <li><strong>Tags, Tracking:</strong> as described above.</li>
             <li><strong>The gear (⚙):</strong> Settings, at the right of the header: where entries are saved, backup, export,
               appearance, deleted entries and start over.</li>
           </ul>

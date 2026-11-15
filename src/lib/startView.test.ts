@@ -9,6 +9,7 @@ describe('viewFromAddress', () => {
   it('opens the named page', () => {
     expect(viewFromAddress('?view=photos').view).toBe('photos')
     expect(viewFromAddress('?view=tags').view).toBe('tags')
+    expect(viewFromAddress('?view=tracking').view).toBe('tracking')
     expect(viewFromAddress('?view=settings').view).toBe('settings')
     expect(viewFromAddress('?view=calendar')).toEqual({ view: 'calendar', calMode: 'month' })
   })

@@ -17,7 +17,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   How each was built and checked: docs/HISTORY.md.
 - **Numbers:** 572 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `207c392` (the new header, Tracking step 1). Local `main` is ahead by
-  the Tracking step 2 commit (not pushed; nothing in the app uses it yet). A push publishes and redeploys: **ask the user before every push**.
+  the Tracking step 2 and 3 commits (not pushed). A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
 - **Backup:** the newest dated archive is `archive-2026-11-14b/` + zip in the Claude session folder, made 2026-11-14:
   **both repos** (web `c901186`, app `b22c6d3`), restore tested (both bundles cloned with matching heads; 524 tests
@@ -58,8 +58,10 @@ to the Claude session folder, `builds\`.
 **Tracking feature, planned 2026-11-15: [tracking-plan.md](tracking-plan.md)** (a list of things to keep an eye on:
 name, note, one photo; Star, Done, Delete; stored as a marker in an ordinary entry, nothing new to sync). Five steps, one
 per turn. **Step 1 (header: Settings gear, Events inside Calendar): built, pushed 2026-11-15, the user approved it.
-Step 2 (the marker and its list, `src/lib/tracking.ts`, no screen): built 2026-11-15, 572 tests, committed locally, not
-pushed**; nothing to see or try in the app yet (nothing uses it until step 3). **Next: step 3** (the Tracking tab).
+Step 2 (the marker and its list, `src/lib/tracking.ts`): built 2026-11-15. Step 3 (the Tracking tab,
+`TrackingView.tsx`, plus a two-row phone header): built 2026-11-15, 572 tests, committed locally, not pushed**; the user
+has not tried it (check 27). Until step 4 an item is made by typing `+"Name" note` in the entry box, and the journal shows the
+marker as plain text. **Next: step 4** (the Track button in the capture box, and the chips in the journal).
 
 Other things, when the user wants them:
 
@@ -78,6 +80,14 @@ Other things, when the user wants them:
 Everything below is built and pushed. Until the user reports a check it is **not verified**; general remarks ("it
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
+
+**27. Tracking tab** (step 3, built 2026-11-15, not pushed: try it on `localhost:5173`, an empty local copy): write
+`+"Dyson V15" $450 on Amazon #shopping` (with a photo), `+*"Dune" Dec 18`, `+"Standing desk"` as three entries: a. the
+Tracking tab lists them, starred first, newest first, the photo on its card; b. ☆ Star / ★ Unstar and ✓ Done work, Done
+moves the item to the Done list with today's date, Track again brings it back; c. the sort switch (Newest, Oldest, A–Z) works
+and starred items stay on top; d. All shows both groups; e. a name opens the item with its entry (Edit works); f. Delete asks,
+removes the item and the entry from the journal, and it can be restored in Settings > Deleted entries; g. on the phone the
+header is two rows and the five tabs fit; h. the Manual has a Tracking section.
 
 **26. New header** (built and pushed 2026-11-15; the user approved it: "test approved"; points a to f were not
 individually reported): a. on the phone the

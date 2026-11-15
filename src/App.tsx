@@ -12,6 +12,7 @@ import { SettingsView, type Theme } from './components/SettingsView'
 import { StorageBadge } from './components/StorageCard'
 import { initStorage } from './storage/manager'
 import { TagsView } from './components/TagsView'
+import { TrackingView } from './components/TrackingView'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
@@ -20,11 +21,12 @@ import { useLive } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker } from './lib/events'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
+import { computeTracking } from './lib/tracking'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
 
 // Settings is not a tab: it is the gear next to the storage badge. Events lives inside Calendar.
-const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['photos', 'Photos'], ['tags', 'Tags']]
+const VIEWS: [View, string][] = [['journal', 'Journal'], ['calendar', 'Calendar'], ['photos', 'Photos'], ['tags', 'Tags'], ['tracking', 'Tracking']]
 
 function loadTheme(): Theme {
   try { return (localStorage.getItem('theme') as Theme | null) ?? 'system' } catch { return 'system' }
@@ -41,6 +43,7 @@ export default function App() {
   const index = useMemo(() => buildIndex(entries), [entries])
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
   const events = useMemo(() => computeEvents(entries), [entries])
+  const tracking = useMemo(() => computeTracking(entries), [entries])
 
   // How the app was opened: the "New entry" shortcut or Android's Share sheet (see lib/launch.ts).
   const [launch] = useState(() => parseLaunch(location.search))
@@ -167,14 +170,16 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <StorageBadge onOpenSettings={() => { setView('settings'); setQuery('') }} />
-        <button type="button" className={`gear${view === 'settings' && !searching ? ' on' : ''}`} aria-label="Settings" title="Settings"
-          onClick={() => { setView('settings'); setQuery(''); setBackQuery(null); setEventId(null) }}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </button>
+        <div className="top-end">
+          <StorageBadge onOpenSettings={() => { setView('settings'); setQuery('') }} />
+          <button type="button" className={`gear${view === 'settings' && !searching ? ' on' : ''}`} aria-label="Settings" title="Settings"
+            onClick={() => { setView('settings'); setQuery(''); setBackQuery(null); setEventId(null) }}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       <BackupReminder entries={entries} onBackUp={() => { setView('settings'); setQuery('') }} />
@@ -203,6 +208,8 @@ export default function App() {
         ) : view === 'tags' ? (
           <TagsView tagStats={tagStats} entries={entries} index={index} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
+        ) : view === 'tracking' ? (
+          <TrackingView entries={entries} items={tracking} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : (
           <SettingsView entries={entries} theme={theme} setTheme={setTheme} tagCount={tagStats.length} />
         )}

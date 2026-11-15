@@ -398,9 +398,10 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
 
 ## UI
 
-- **Header:** app name, four tabs (Journal, Calendar, Photos, Tags), storage status badge and a **gear icon** that opens
-  Settings (it is not a tab; the badge opens Settings too). On a phone the tabs and the gear share one row and the badge
-  drops to its own row below (`.top` in `index.css`; `?view=events` still works and opens Calendar > Events). With no storage chosen
+- **Header:** app name, five tabs (Journal, Calendar, Photos, Tags, Tracking), and at the right one group of the storage
+  status badge and a **gear icon** that opens Settings (it is not a tab; the badge opens Settings too). On a phone the header
+  has two rows: the name and that group on top, the five tabs sharing the row below (`.top` and `.top-end` in `index.css`;
+  `?view=events` still works and opens Calendar > Events, `?view=tracking` opens Tracking). With no storage chosen
   the badge is hidden, except a red "⚠ Photos only in this browser" once the device holds photos.
 - **Search bar** (always visible): tag autocomplete, chips, saved (★) and recent searches, `?` syntax help.
 - **Manual** (Settings, top card, hidden until "Show the manual"): short static text on writing, tags/people/places,
@@ -457,6 +458,17 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   `OpenEventContext` (`components/eventNav.ts`, provided in `App.tsx`, read by `EntryItem`), which picks the event whose
   entries include that entry (it switches Calendar to Events). Four tabs and the gear fit 375 px in one row with the tighter
   padding in the `max-width: 520px` block.
+- **Tracking view** (header tab after Tags; `TrackingView.tsx`, logic in `lib/tracking.ts`, see "Tracking" above): a switch
+  **Active | Done | All** (each with its count) and a sort **Newest | Oldest | A–Z**, then a card per item: its first photo (a
+  76 px square, opens the viewer), the name with its state icon (📌 ★ ✓), the note (the entry's text without the marker, three
+  lines at most, tags and people clickable), "Added <day>" or "Done <day>", and buttons: **☆ Star / ★ Unstar** and **✓ Done**
+  for an item being watched, **Track again** for a done one, and **Delete** (asks, then the entry's normal soft delete: it
+  leaves the journal too and can be restored in Settings > Deleted entries). Starred items are on top in Active (and in All's
+  active group) whatever the sort. All shows two groups, Active and Done, with headings when both have items. The name
+  opens the item's page (inside the view, "← Tracking"): the same buttons and the entry as the journal shows it (full text,
+  every photo, Edit with the time and photo fields, Delete); deleting there returns to the list. There is no filter box and
+  no manual order on purpose. The page's choices are not remembered between visits. Until the Track button and the journal
+  chips exist (step 4 of tracking-plan.md) items are made by typing the marker, and the journal shows it as plain text.
 - **Settings:** storage, **photos on this device**, theme, export, a short "Quick entry from your phone or taskbar" tip, shortcuts. The photos card (`PhotoStorageCard`) lists
   full-size photos (count and size, with how many storage doesn't have yet), thumbnails, what the browser reports for
   the whole app (`navigator.storage.estimate()`, an estimate; left out where unsupported), and the cache limit. The
