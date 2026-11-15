@@ -17,7 +17,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Current: 1 (committed locally, not yet pushed or built into the apps).
+  every push to `main`. Current: **1**, pushed and live (deploy run 43769361735 green) and built into the apps (run 43769444518).
 - **Numbers:** 583 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
@@ -36,9 +36,10 @@ builds once, then makes the Windows folder and a signed Android APK (about 8 min
 **Nothing can be built locally** (no Rust or Android tools): every try is a push to that repo and a wait. Its
 `README.md` explains the rest. `origin/main` there is at `b22c6d3`, nothing unpushed. A web-app change reaches the
 apps only through a new build there (`gh workflow run 'Build apps' --ref main`). **Rebuilt 2026-11-15 on the user's
-request, twice (latest: run 43761403115 green, web `main` at `eeec68a`, app repo unchanged at `b22c6d3`): the APK and
-portable Windows folder have Tracking, the new header and the search-help phone layout fix** and replaced the old ones in
-`builds\` (APK 10,222,271 bytes, `.exe` 6,320,640; the sizes did not change, but the hashes did and the built CSS has the fix). Claude checked only that the new `.exe` starts from a scratch copy (window titled "Interstitial Diary",
+request, three times (latest: run 43769444518 green, web `main` at `09c1f03`, app repo unchanged at `b22c6d3`): the APK and
+portable Windows folder have Tracking, the new header, the search-help phone layout fix and **build number 1 in Settings >
+About** and replaced the old ones in `builds\` (APK 10,222,271 bytes, `.exe` 6,320,640; the sizes did not change, but the
+hashes did and the built bundle was checked for the change each time). Claude checked only that the new `.exe` starts from a scratch copy (window titled "Interstitial Diary",
 `journal-data` created beside it); **installing the APK and using either app is the user's to check** (check 29).
 Both builds are version 0.1.0 as before; if Android ever refuses to install over the old app, raise the version (README). App id
 `io.github.jesseracine.interstitialdiary`; the app's origin is `https://tauri.localhost/`. The newest builds are copied
