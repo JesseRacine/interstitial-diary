@@ -1,6 +1,8 @@
 # Plan: Tracking (things to keep an eye on)
 
-_Status: **planned 2026-11-15; step 1 (header) built, pushed and approved by the user the same day; step 2 (the marker
+_Status: **FINISHED 2026-11-15: steps 1 to 4 built, pushed and confirmed working on the user's phone; step 5 (docs and a
+dated backup) done; the native apps are not rebuilt yet. The older status below is kept as it was written.** Earlier:
+planned 2026-11-15; step 1 (header) built, pushed and approved by the user the same day; step 2 (the marker
 and its list, `lib/tracking.ts`, no UI), step 3 (the Tracking tab) and step 4 (the Track button and the journal chips) built
 2026-11-15, committed locally, not pushed; step 5 (docs, Manual, backup) partly done along the way, the backup is left.**
 Decisions below were made with the user in conversation on that day.

@@ -45,6 +45,13 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   title more than 7 days apart are separate events (that is how a yearly birthday stays separate); a long trip written
   about with gaps over a week is split. An event's date is the day of its entries, not the day it was about. The event
   list is computed on the fly from all entries each time they change (fine for tens of thousands, not measured).
+- Tracking: only the quoted form `+"Name"` counts (an unquoted `+word` is plain text), a name cannot contain quote marks,
+  and an entry is one item by its first marker (a second marker stays plain text). Two entries with the same name are two
+  items (no merging by name). The Done date belongs only to a done marker. The Track form keeps one photo (an entry written
+  another way may hold more; the card shows the first). There is no manual order (Star is the only priority), no filter or
+  search additions on the Tracking tab (ordinary search finds the words), and the page's tab and sort choices are not
+  remembered between visits. A tracked item shows as plain `+"Name"` text in the Markdown file and in an older app version.
+  The native apps only have Tracking after a new build in the app repo.
 
 ## Ideas backlog
 - Restyle search results to match the chat look (they still use cards).
@@ -64,4 +71,9 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   2026-11-13); a date picker or a button that adds the `(date)` to a marker; a date range (`(2026-05-12..2026-05-15)`),
   a month-only date, other date formats; an `event:` search that also takes a date; attach photos to an event; make the
   7-day window a setting; an events export (a list of dates and titles).
+- Tracking, next (none asked for): share a screenshot or a page from another Android app straight into the Track form
+  (needs the share target to accept photos: a POST target and a custom service worker, see android-capture-plan.md); a
+  "bought" or "watched" note on Done; a reminder date for something coming out (not wanted so far: no due dates); remember
+  the page's tab and sort; a Track action on an existing entry (turn it into an item without retyping); a chip for the
+  tracked item in search results' highlight and in the week review.
 - Small polish: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.

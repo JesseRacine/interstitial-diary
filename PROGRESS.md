@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-15 (Tracking planned; its step 1, the new header, built). Before that: 2026-11-14 (after the portable Windows app; this file was cut down the same day). Kept short on purpose:
+_Last updated: 2026-11-15 (Tracking finished, pushed and working on the phone; the native apps not rebuilt yet). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -9,11 +9,12 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Web app, live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`); every push to `main` runs the tests and
   redeploys. The user has it installed on Windows and Android.
-- **Built and live:** journal, search, calendar (Month | Year | Week review), tags + people + places, events
-  (`!"Title"`, own date, search, rename, merge), photos (phases 1 to 3, filters), export, three storage modules (folder,
-  browser files, **Dropbox**: working Windows ↔ Android per the user), installable PWA, data-safety features,
-  Settings > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut + text share), editing
-  an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
+- **Built and live:** journal, search, calendar (Month | Year | Week review | Events), tags + people + places, events
+  (`!"Title"`, own date, search, rename, merge), **Tracking** (`+"Name"`: the Tracking tab, Track button, Star, Done,
+  Delete, journal chips; [tracking-plan.md](tracking-plan.md)), photos (phases 1 to 3, filters), export, three storage
+  modules (folder, browser files, **Dropbox**: working Windows ↔ Android per the user), installable PWA, data-safety
+  features, Settings (the gear) > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut +
+  text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Numbers:** 580 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `17eadef` (Tracking steps 1 to 4, pushed on the user's request and
@@ -31,7 +32,8 @@ holding only a Tauri 2 shell. Its workflow checks out this repo (ref in its `web
 builds once, then makes the Windows folder and a signed Android APK (about 8 minutes; a `v*` tag makes a Release).
 **Nothing can be built locally** (no Rust or Android tools): every try is a push to that repo and a wait. Its
 `README.md` explains the rest. `origin/main` there is at `b22c6d3`, nothing unpushed. A web-app change reaches the
-apps only through a new build there (`gh workflow run 'Build apps' --ref main`). App id
+apps only through a new build there (`gh workflow run 'Build apps' --ref main`). **The newest builds (2026-11-14,
+`b22c6d3`) do not have Tracking or the new header: they need a new build** (what next, item 1). App id
 `io.github.jesseracine.interstitialdiary`; the app's origin is `https://tauri.localhost/`. The newest builds are copied
 to the Claude session folder, `builds\`.
 
@@ -55,32 +57,22 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Tracking feature, planned 2026-11-15: [tracking-plan.md](tracking-plan.md)** (a list of things to keep an eye on:
-name, note, one photo; Star, Done, Delete; stored as a marker in an ordinary entry, nothing new to sync). Five steps, one
-per turn. **Step 1 (header: Settings gear, Events inside Calendar): built, pushed 2026-11-15, the user approved it.
-Step 2 (the marker and its list, `src/lib/tracking.ts`): built 2026-11-15. Step 3 (the Tracking tab,
-`TrackingView.tsx`, plus a two-row phone header): built 2026-11-15, 572 tests, committed locally, not pushed**; the user
-has not tried it (check 27). **Step 4 (the Track button and the journal chips): built 2026-11-15, 580 tests** (check 28).
-**Steps 1 to 4 are pushed and live** (2026-11-15, the user asked for it because they were away from the dev server); not
-yet tried by the user on a device. **The user, 2026-11-15, on the phone (Chrome, the hosted site, with a screenshot): "i
-think it works".** The screenshot shows the two-row header with the five tabs and the gear, the storage badge ("Saved 24 s
-ago", Dropbox) next to the title, the Track button beside Photo and an amber 📌 chip on an entry made with it. Checks 26, 27
-and 28 are therefore only partly seen. **Later the same day the user reported: "sort and star button works"** (on the phone).
-**Then: "photo, done, track again, and delete work"** (on the phone; the photo on a card is taken as working and Delete
-as removing the item). **Then: "these all work"** about the three left (tapping a chip opens the item, the one-photo limit, Restore from
-Settings). So every point of checks 26 to 28 that was asked about is confirmed on the phone, except the ones not asked
-(the Manual text, light theme, Windows and the native apps, which only change with a new build in the app repo). **Next: step 5** (the rest of the docs, then a new dated backup of both repos).
+Nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
+again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
-Other things, when the user wants them:
-
-1. **The open details of the portable Windows app** (item 25: Export and Dropbox in the window), if the user wants
+1. **Rebuild the native apps** so they get Tracking and the new header (`gh workflow run 'Build apps' --ref main` in
+   `~/projects/interstitial-diary-app`, about 5 to 8 minutes, then `gh run download <run id>` into the session folder's
+   `builds\`, replacing the old ones). Not done yet (asked 2026-11-15, waiting for the user's yes).
+2. **The open details of the portable Windows app** (item 25: Export and Dropbox in the window), if the user wants
    them confirmed.
-2. **Tidy the apps:** switch off the PWA service worker and "install" hints inside the native apps (see open points).
-3. **Separate Dropbox app for development** (offered 2026-11-12, "not now"): the dev server shares the real app's
+3. **Tidy the apps:** switch off the PWA service worker and "install" hints inside the native apps (see open points).
+4. **Separate Dropbox app for development** (offered 2026-11-12, "not now"): the dev server shares the real app's
    Dropbox folder, so **never connect Dropbox on localhost**. Plan: docs/CLOUD-STORAGE.md.
-4. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
-   installed app should show "A new version is ready" with Reload. Closes older check 7.
-5. **pCloud** (on hold: its app approval may be manual; docs/CLOUD-STORAGE.md), photo sharing into the app, ideas in
+5. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
+   installed app should show "A new version is ready" with Reload. Closes older check 7. (The Tracking push on
+   2026-11-15 was a chance to see it; the user did not say whether it appeared.)
+6. **pCloud** (on hold: its app approval may be manual; docs/CLOUD-STORAGE.md), photo sharing into the app, ideas in
    docs/LIMITS-AND-IDEAS.md.
 
 ## Waiting on the user
@@ -89,27 +81,11 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**28. Track button and chips** (step 4, built 2026-11-15, not pushed: try it on `localhost:5173`, an empty local copy): a. on
-the Journal tab, **Track** sits next to Photo; tapping it shows a name field above the note; b. a name, a note and one photo
-saved make an item on the Tracking tab, the box is plain again and still has the focus; c. Enter in the name field saves
-an item with no note; d. a second photo is refused with a message; e. a name with quote marks shows an error and cannot be
-saved; f. in the journal the entry shows an amber chip (📌 tracking, ★ starred, ✓ done) and tapping it opens the item on the
-Tracking tab; g. `@sarah_jones's car` shows the person "Sarah Jones" followed by plain `'s`; h. the Manual explains it.
-
-**27. Tracking tab** (step 3, built 2026-11-15, not pushed: try it on `localhost:5173`, an empty local copy): write
-`+"Dyson V15" $450 on Amazon #shopping` (with a photo), `+*"Dune" Dec 18`, `+"Standing desk"` as three entries: a. the
-Tracking tab lists them, starred first, newest first, the photo on its card; b. ☆ Star / ★ Unstar and ✓ Done work, Done
-moves the item to the Done list with today's date, Track again brings it back; c. the sort switch (Newest, Oldest, A–Z) works
-and starred items stay on top; d. All shows both groups; e. a name opens the item with its entry (Edit works); f. Delete asks,
-removes the item and the entry from the journal, and it can be restored in Settings > Deleted entries; g. on the phone the
-header is two rows and the five tabs fit; h. the Manual has a Tracking section.
-
-**26. New header** (built and pushed 2026-11-15; the user approved it: "test approved"; points a to f were not
-individually reported): a. on the phone the
-four tabs (Journal, Calendar, Photos, Tags) and the gear fit on one row, the storage badge sits on a row below; b. the gear
-opens Settings and lights up while you are there; c. Calendar has Month | Year | Week | Events; d. an event chip in the
-journal, and an event in the Week review, opens Calendar > Events on that event's page; "← Events" returns to the list; e.
-Rename and Merge on the event page still work; f. an old bookmark `?view=events` opens Calendar > Events.
+**26. Tracking and the new header** (pushed 2026-11-15; **the user confirmed on the phone: the header with the gear, the
+Track button, chips, Star, Done, Track again, Delete, Restore, the photo on a card, the one-photo limit, the sort**; the
+rest was not asked or reported): the Tracking tab's All view and the item page's Edit; Calendar > Events (Rename, Merge,
+chips from the Week review) after the move; `?view=events` and `?view=tracking` bookmarks; the light theme (the amber chip
+colour); the Manual's new Tracking text and the apostrophe note (see 23); Enter in the Track form's name field on the phone.
 
 **25. Portable Windows app** (built 2026-11-14; **the user, 2026-11-14: "I think it's good, I tried it earlier"**,
 without saying which of a to d were tried, so Export and Dropbox in the window are not individually confirmed): copy `builds\Interstitial Diary\` somewhere, run the `.exe`: a. write
@@ -117,7 +93,8 @@ an entry, close, reopen: it is still there; b. Settings > Export: does a Save di
 Markdown file written; c. Settings > Dropbox: does the sign-in work inside the window; d. move the whole folder
 elsewhere: the journal comes along.
 
-**23. Manual:** Settings > Manual > Show the manual: read it; say what is wrong, unclear or missing.
+**23. Manual:** Settings (the gear) > Manual > Show the manual: read it; say what is wrong, unclear or missing. (It gained
+a Tracking section, the Calendar > Events move and a note that an apostrophe ends a person's name, 2026-11-15.)
 
 **22. Delete permanently:** delete an entry, find it in Settings > Deleted entries, Restore it, delete it again and
 Delete permanently; with Dropbox, `Apps/Interstitial Journal/.meta/purged.json` lists its id and on the other device

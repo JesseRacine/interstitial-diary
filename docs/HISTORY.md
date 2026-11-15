@@ -66,12 +66,49 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | 22c990a | Delete permanently (2026-11-13): Settings > Deleted entries (Restore, Delete permanently, Delete all); `lib/purge.ts` scrubs the row, `.meta/purged.json` makes other devices scrub theirs, `purgeDeleted` in `manager.ts` syncs first and removes only the photos these entries used; 18 new tests |
 | ee39282 | Manual (2026-11-13): Settings > Manual card (`ManualCard.tsx`); the search help table moved to `search/syntax.ts` (shared with the `?` help, every example parsed by a test). **Both pushed 2026-11-13 (deploy green)** |
 | 0d1bb0b | Focus stays in the entry box after Save (2026-11-14): the Save button no longer takes the focus (`onMouseDown` preventDefault in `Capture.tsx`) and `save()` focuses the box; it stops the keyboard closing on phones. **Pushed 2026-11-14 (deploy green); the user: "definitely better"** |
+| 207c392 | Tracking step 1 (2026-11-15): header restructure: Settings is a gear icon, Events is Calendar's fourth switch (Month \| Year \| Week \| Events); `lib/startView.ts` reads `?view=` (`?view=events` opens Calendar > Events); `tracking-plan.md` added. **Pushed 2026-11-15 (deploy green); the user approved it** |
+| 332f249 | Tracking step 2: the marker and its list, no UI: `lib/tracking.ts` (`+"Name"`, `+*"Name"`, `+x"Name" (date)`), `setTracking` in `db.ts`, tag code skips markers; 44 new tests |
+| 90aa2f8 | Tracking step 3: the Tracking tab (`TrackingView.tsx`: Active \| Done \| All, Newest \| Oldest \| A–Z, cards, Star / Done / Track again / Delete, the item page); the phone header became two rows (five tabs); `?view=tracking` |
+| 17eadef | Tracking step 4: the Track button in the capture box (name, note, one photo), tracking chips in the journal (`lib/markers.ts`, `EntryText`), `useDraftImages` photo limit, Manual text. **Steps 1 to 4 pushed 2026-11-15 on the user's request (deploy green); confirmed working on the phone** |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old
 doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
 history is only in the local backup bundle `~/interstitial-diary-pre-rewrite.bundle` (outside the repo, private; it still
 holds the old identity, so never push or share it) and in the older Windows-folder archive of f4ef4d9.
+
+## Tracking (2026-11-15): all four build steps pushed and working on the phone
+
+What it is and every decision: [tracking-plan.md](../tracking-plan.md). In short: a list of things to keep an eye on
+(a product, a film), written in an entry as `+"Name"`; nothing new is stored, so there is no sync or file-format change and
+photos, search, export and delete are the entry's own. States are in the marker: `+` tracking, `+*` starred, `+x` done
+(with an optional `(YYYY-MM-DD)`); Star, Done and Track again rewrite only those characters (`setTrackingState`).
+
+- **How it was decided:** the user asked for a "tracking" tag with a name, an entry and one photo, and for Delete; the name
+  stayed "Tracking" (Radar was the alternative); no habit tracker (declined); no search additions and no filter box (10 to
+  20 items at most); no manual drag order (entries have no position field and one move would rewrite several entries), so a
+  **Star** instead; **Done** and **Delete** both kept; a "Stop tracking" action was dropped because Done covers it. The
+  header was restructured first (Settings gear, Events into Calendar) to make room.
+- **Step 1** header (`207c392`): checked in the browser pane at 375 px and desktop: the chip, Back, the Week review link,
+  the gear, `?view=events`, an unknown `?view=` word. Pushed on request; the user approved it.
+- **Step 2** logic (`332f249`): 44 new tests (reading the three states, curly quotes, `C++"x"`, bad dates, state changes
+  that leave every other character alone, ordering, tags and event markers not read inside titles, the Markdown round trip,
+  `setTracking` in the database).
+- **Step 3** tab (`90aa2f8`): five tabs plus the gear do not fit one phone row, so the phone header is two rows (name, badge
+  and gear above, tabs below; `.top-end` groups the badge and gear so they wrap together). Checked with seeded items:
+  star, done, track again, delete from the card and from the item page, empty states, the order, the rewritten text and
+  `dirty: 1`.
+- **Step 4** Track button and chips (`17eadef`): `lib/markers.ts` cuts text into event and tracking chips for `EntryText`
+  (only an entry's first tracking marker is a chip); `fitImageLimit` and `useDraftImages` take a photo limit (1 in the Track
+  form); the form is a name field above the note, Enter in the name field saves; name errors as for an event's title.
+  Checked in the browser: two photos offered, one kept with a message; quote marks in the name refused; Enter saves; the
+  text written (`+"Name" note #tag`); the chip and a chip opening the item. 580 tests.
+- **Same day, a question:** `@sarah_jones's car` shows the person "Sarah Jones" and then plain `'s` (the apostrophe ends a
+  name; a curly one too); tested in the app and added to the Manual.
+- **The user's checks (phone, hosted site):** "i think it works" (a screenshot of the header, the Track button and a chip),
+  then "sort and star button works", "photo, done, track again, and delete work", "these all work" (tapping a chip, the
+  one-photo limit, Restore). The native apps were **not** rebuilt, so they do not have Tracking yet.
+- **Limits and ideas:** docs/LIMITS-AND-IDEAS.md.
 
 ## Completed steps
 
