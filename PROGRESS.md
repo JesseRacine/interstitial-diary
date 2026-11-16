@@ -50,11 +50,13 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   going to the real network (type "other", `Service-Worker: script`), not through Tauri's custom protocol (page fetches
   do go through it). So **in the Tauri web view a saved copy can never be updated or replaced** (also why the Reload banner
   never showed); the web-side cleanup (`nativeApp.ts`, `sw-native.js`) only helps once the page is not controlled (a hard
-  reload) and `sw-native.js` never reaches an old worker. **Real fix, in the app repo (local commits `a0edce4`, `02187c7`,
-  not pushed):** Windows `lib.rs` deletes `journal-data\EBWebView\Default\Service Worker` before opening the window;
+  reload) and `sw-native.js` never reaches an old worker. **Real fix, in the app repo (pushed: `a0edce4`, `02187c7`; build
+  run 43807025001 green, so the Rust and Kotlin compile; the web build inside it is still build 5, no web change):** Windows `lib.rs` deletes `journal-data\EBWebView\Default\Service Worker` before opening the window;
   Android `MainActivity.kt` deletes `app_webview/Default/Service Worker` once per process before the first web view
-  (path unverified; harmless if wrong). Compiled only in Actions. Check after the build: run the new exe against a copy of
-  the old `Service Worker` folder (the scratch method above), then the user's real copy; Android is the user's to check.
+  (path unverified; harmless if wrong). **Checked on this PC:** the new exe run against a copy of the user's old `Service
+  Worker` folder (30 files) plus a stand-in database folder: no controlling worker, no registration or cache, About shows
+  Build 5 straight away with no reload, the stand-in database untouched, the old saved-copy files gone. **Not yet done:** the
+  user's real Windows copy (they copy the new exe over theirs) and Android (unverified path).
 - **Build 5 (pushed: deploy run 43805685363 green; apps rebuilt in run 43805769633; new exe checked from a clean scratch copy: Build 5, no worker or cache; the real Windows copy and Android are the user's to confirm): the old saved copy cleans itself.** `public/sw-native.js` is loaded by sw.js
   (`importScripts`, vite.config.ts; not precached). On `tauri.localhost` / `tauri://` only, the new worker skips waiting,
   clears every cache, unregisters itself and reloads the open window; on the website it does nothing (the Reload banner
