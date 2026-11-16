@@ -34,7 +34,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   nothing is waiting here; any doubt means the full sync as before. Design and limits: DESIGN.md "Cheap checks". Settings
   says "Checking…" when nothing is waiting to be saved. **Not tried against real Dropbox** (tests use the fake): the user
   should confirm that a change made on Windows still shows on the phone after switching back to the app.
-- **Native apps: no saved copy (2026-11-15, build 4, local commit, not pushed):** found on the user's PC: the Windows exe
+- **Native apps: no saved copy (2026-11-15, build 4, pushed: deploy run 43803994684 green; apps rebuilt in run 43804086111, new exe checked from a clean scratch copy: Build 4, no service worker or cache):** found on the user's PC: the Windows exe
   was build 3 but its `journal-data` held an older service worker + cache, which served the old site (a copy of the same
   exe in a folder with no `journal-data` showed build 3; a hard reload (Ctrl+Shift+R) fixed it). Now `src/lib/nativeApp.ts`:
   on `tauri.localhost` the service worker is not registered, and an existing one is removed once at startup (then one
