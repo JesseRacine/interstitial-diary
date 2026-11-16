@@ -44,6 +44,17 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   app holding an old saved copy: **the user's real Windows copy showed no build number after build 4** (its old copy was
   never replaced; the banner did not show; the earlier Ctrl+Shift+R only skipped it for one load), and the user does not
   want to ever reload the apps (and on Android there is no way to).
+- **Build 5 did NOT fix the user's real Windows copy (found 2026-11-15, same night), and why:** with a copy of that
+  copy's `Service Worker` folder in a scratch profile, the old worker controlled the window, `registration.update()` failed
+  with "unknown error when fetching the script", and a net log showed the update fetch of `https://tauri.localhost/sw.js`
+  going to the real network (type "other", `Service-Worker: script`), not through Tauri's custom protocol (page fetches
+  do go through it). So **in the Tauri web view a saved copy can never be updated or replaced** (also why the Reload banner
+  never showed); the web-side cleanup (`nativeApp.ts`, `sw-native.js`) only helps once the page is not controlled (a hard
+  reload) and `sw-native.js` never reaches an old worker. **Real fix, in the app repo (local commits `a0edce4`, `02187c7`,
+  not pushed):** Windows `lib.rs` deletes `journal-data\EBWebView\Default\Service Worker` before opening the window;
+  Android `MainActivity.kt` deletes `app_webview/Default/Service Worker` once per process before the first web view
+  (path unverified; harmless if wrong). Compiled only in Actions. Check after the build: run the new exe against a copy of
+  the old `Service Worker` folder (the scratch method above), then the user's real copy; Android is the user's to check.
 - **Build 5 (pushed: deploy run 43805685363 green; apps rebuilt in run 43805769633; new exe checked from a clean scratch copy: Build 5, no worker or cache; the real Windows copy and Android are the user's to confirm): the old saved copy cleans itself.** `public/sw-native.js` is loaded by sw.js
   (`importScripts`, vite.config.ts; not precached). On `tauri.localhost` / `tauri://` only, the new worker skips waiting,
   clears every cache, unregisters itself and reloads the open window; on the website it does nothing (the Reload banner
