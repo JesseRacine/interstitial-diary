@@ -69,11 +69,12 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
-- **Backup:** the only one is `Interstitial-Diary-archive-2026-11-15b.zip` in the Claude session folder (unzipped
-  folder removed at the user's request), made 2026-11-15 at **build 4**: **both repos** (web `1a5bed0`, app `b22c6d3`),
-  restore tested (both bundles cloned with matching heads and files; 620 tests and the type check passed on the web
-  clone; the app clone cannot be built locally). All older archives, including the one with the personal Gmail address in
-  its history, were deleted on 2026-11-15 at the user's request. It is on the same disk as the project: the user was
+- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-16.zip` in the Claude session folder (no unzipped
+  folder, as the user prefers), made 2026-11-16 at **build 5** plus the app repo's saved-copy cleanup: **both repos**
+  (commit ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; the
+  web tests and type check passed on the web clone; the app clone cannot be built locally). The previous zip
+  (`...-2026-11-15b.zip`, build 4) is superseded. All older archives, including the one with the personal Gmail address
+  in its history, were deleted on 2026-11-15 at the user's request. It is on the same disk as the project: the user was
   advised to copy it elsewhere (not confirmed). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
