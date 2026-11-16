@@ -46,11 +46,12 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
-- **Backup:** the newest dated archive is `archive-2026-11-15b/` + zip in the Claude session folder, made 2026-11-15
-  at **build 4**: **both repos** (web `1a5bed0`, app `b22c6d3`), restore tested (both bundles cloned with matching heads
-  and files; 620 tests and the type check passed on the web clone; the app clone cannot be built locally). Previous
-  (kept as a fallback): `archive-2026-11-15/`. All older archives, including the one with the personal Gmail address in
-  its history, were deleted on 2026-11-15 at the user's request. Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
+- **Backup:** the only one is `Interstitial-Diary-archive-2026-11-15b.zip` in the Claude session folder (unzipped
+  folder removed at the user's request), made 2026-11-15 at **build 4**: **both repos** (web `1a5bed0`, app `b22c6d3`),
+  restore tested (both bundles cloned with matching heads and files; 620 tests and the type check passed on the web
+  clone; the app clone cannot be built locally). All older archives, including the one with the personal Gmail address in
+  its history, were deleted on 2026-11-15 at the user's request. It is on the same disk as the project: the user was
+  advised to copy it elsewhere (not confirmed). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Native apps (second repo `interstitial-diary-app`, started 2026-11-14)
