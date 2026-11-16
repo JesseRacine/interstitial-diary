@@ -34,7 +34,15 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   nothing is waiting here; any doubt means the full sync as before. Design and limits: DESIGN.md "Cheap checks". Settings
   says "Checking…" when nothing is waiting to be saved. **Not tried against real Dropbox** (tests use the fake): the user
   should confirm that a change made on Windows still shows on the phone after switching back to the app.
-- **Numbers:** 610 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Native apps: no saved copy (2026-11-15, build 4, local commit, not pushed):** found on the user's PC: the Windows exe
+  was build 3 but its `journal-data` held an older service worker + cache, which served the old site (a copy of the same
+  exe in a folder with no `journal-data` showed build 3; a hard reload (Ctrl+Shift+R) fixed it). Now `src/lib/nativeApp.ts`:
+  on `tauri.localhost` the service worker is not registered, and an existing one is removed once at startup (then one
+  reload, guarded). Website unchanged. Checked in headless Edge on this PC against `tauri.localhost` with a build 3 saved
+  copy: Reload banner path and hard-reload path both end on build 4 with no service worker or cache; a plain address still
+  gets its service worker. Android untested here. An app still on the old code needs one Reload (banner) or hard refresh to
+  get onto the build with the cleanup; after that builds show on opening.
+- **Numbers:** 620 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
