@@ -55,8 +55,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   Android `MainActivity.kt` deletes `app_webview/Default/Service Worker` once per process before the first web view
   (path unverified; harmless if wrong). **Checked on this PC:** the new exe run against a copy of the user's old `Service
   Worker` folder (30 files) plus a stand-in database folder: no controlling worker, no registration or cache, About shows
-  Build 5 straight away with no reload, the stand-in database untouched, the old saved-copy files gone. **Not yet done:** the
-  user's real Windows copy (they copy the new exe over theirs) and Android (unverified path).
+  Build 5 straight away with no reload, the stand-in database untouched, the old saved-copy files gone. **The user then
+  confirmed the real Windows copy works** (2026-11-16). **Not yet done:** Android (unverified path; the user installs
+  the new APK and checks Settings > About says Build 5 with no reload).
 - **Build 5 (pushed: deploy run 43805685363 green; apps rebuilt in run 43805769633; new exe checked from a clean scratch copy: Build 5, no worker or cache; the real Windows copy and Android are the user's to confirm): the old saved copy cleans itself.** `public/sw-native.js` is loaded by sw.js
   (`importScripts`, vite.config.ts; not precached). On `tauri.localhost` / `tauri://` only, the new worker skips waiting,
   clears every cache, unregisters itself and reloads the open window; on the website it does nothing (the Reload banner
