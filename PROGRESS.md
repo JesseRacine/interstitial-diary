@@ -17,7 +17,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **3** (deploy run 43776852761 green, built into the apps in run 43776935182; build 2 was runs 43774248654 and 43774335949, build 1 run 43769444518).
+  every push to `main`. Pushed and live: **5** (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
   (every later sync reused it). The user then pressed Stop and chose Dropbox again: still stuck, and **the entry has two
@@ -44,7 +44,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   app holding an old saved copy: **the user's real Windows copy showed no build number after build 4** (its old copy was
   never replaced; the banner did not show; the earlier Ctrl+Shift+R only skipped it for one load), and the user does not
   want to ever reload the apps (and on Android there is no way to).
-- **Build 5 (local commit, not pushed): the old saved copy cleans itself.** `public/sw-native.js` is loaded by sw.js
+- **Build 5 (pushed: deploy run 43805685363 green; apps rebuilt in run 43805769633; new exe checked from a clean scratch copy: Build 5, no worker or cache; the real Windows copy and Android are the user's to confirm): the old saved copy cleans itself.** `public/sw-native.js` is loaded by sw.js
   (`importScripts`, vite.config.ts; not precached). On `tauri.localhost` / `tauri://` only, the new worker skips waiting,
   clears every cache, unregisters itself and reloads the open window; on the website it does nothing (the Reload banner
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
