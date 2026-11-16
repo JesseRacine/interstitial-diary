@@ -75,8 +75,8 @@ to the Claude session folder, `builds\`.
   in the window, and Settings > Export. The user accepted a database in `journal-data` instead of readable `.md` files
   **only as long as exporting to Markdown works in the app**, so Export is the important one.
 - **Open points for the apps:** Dropbox needs `https://tauri.localhost/` as a redirect URI and the sign-in inside the
-  app window is untried (passkeys may not work there); the PWA service worker and "install" hints still run inside the
-  apps (probably switch them off with a build flag); the share target and the "New entry" shortcut do not exist
+  app window is untried (passkeys may not work there); the "install" hints still show inside the apps (the PWA service
+  worker no longer runs there since build 4, see "Native apps: no saved copy" above); the share target and the "New entry" shortcut do not exist
   natively; no native widget (quick capture stage 2, android-capture-plan.md).
 
 ## What next
@@ -91,7 +91,7 @@ again, Delete, Restore, the photo on a card, the one-photo limit and the sort. A
    path through `wsl ... bash -ic "..."` once made it write into a folder named with a space inside the app repo.)
 2. **The open details of the portable Windows app** (item 25: Export and Dropbox in the window), if the user wants
    them confirmed.
-3. **Tidy the apps:** switch off the PWA service worker and "install" hints inside the native apps (see open points).
+3. **Tidy the apps:** the "install" hints inside the native apps (the service worker part is done, build 4).
 4. **Separate Dropbox app for development** (offered 2026-11-12, "not now"): the dev server shares the real app's
    Dropbox folder, so **never connect Dropbox on localhost**. Plan: docs/CLOUD-STORAGE.md.
 5. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the

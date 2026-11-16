@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { registerSW } from 'virtual:pwa-register'
+import { dropSavedSiteAndReload, isNativeApp } from '../lib/nativeApp'
 
 const CHECK_EVERY_MS = 60 * 60 * 1000 // an installed app can stay open for days
 
@@ -18,6 +19,11 @@ export function UpdatePrompt() {
   useEffect(() => {
     if (started) return // StrictMode runs effects twice in development
     started = true
+    if (isNativeApp(location)) {
+      // The Windows and Android apps contain the site: no saved copy, so a new build shows as soon as the app opens.
+      void dropSavedSiteAndReload()
+      return
+    }
     applyUpdate = registerSW({
       onNeedRefresh: () => setNeedRefresh(true),
       onOfflineReady: () => setOfflineReady(true),
