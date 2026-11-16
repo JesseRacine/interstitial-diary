@@ -40,8 +40,16 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   on `tauri.localhost` the service worker is not registered, and an existing one is removed once at startup (then one
   reload, guarded). Website unchanged. Checked in headless Edge on this PC against `tauri.localhost` with a build 3 saved
   copy: Reload banner path and hard-reload path both end on build 4 with no service worker or cache; a plain address still
-  gets its service worker. Android untested here. An app still on the old code needs one Reload (banner) or hard refresh to
-  get onto the build with the cleanup; after that builds show on opening.
+  gets its service worker. Android untested here. Build 4 alone still needed one Reload (banner) or hard refresh on an
+  app holding an old saved copy: **the user's real Windows copy showed no build number after build 4** (its old copy was
+  never replaced; the banner did not show; the earlier Ctrl+Shift+R only skipped it for one load), and the user does not
+  want to ever reload the apps (and on Android there is no way to).
+- **Build 5 (local commit, not pushed): the old saved copy cleans itself.** `public/sw-native.js` is loaded by sw.js
+  (`importScripts`, vite.config.ts; not precached). On `tauri.localhost` / `tauri://` only, the new worker skips waiting,
+  clears every cache, unregisters itself and reloads the open window; on the website it does nothing (the Reload banner
+  still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
+  opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
+  waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 620 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.

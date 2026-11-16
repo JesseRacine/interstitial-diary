@@ -24,6 +24,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
+        // In the native apps (not on the website) this makes a worker left by an older build clean itself up (see the file).
+        importScripts: ['sw-native.js'],
+        globIgnores: ['sw-native.js'], // loaded by the worker itself, not part of the saved copy
       },
     }),
   ],
