@@ -115,7 +115,10 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-Nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+**Person notes: planned 2026-11-16, nothing built** ([person-notes-plan.md](person-notes-plan.md)): facts about a
+person (not time-bound), written as `=@sam_jones fact` or with an Add note button on the person's page; shown on the
+person's page and in search only, not in the journal stream, calendar or week review; people first. Five steps; the
+user has not yet said to start step 1 (the marker and its logic, no UI). Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
@@ -242,5 +245,6 @@ written on one device appear on the other, including edits made offline on both.
 | [docs/LIMITS-AND-IDEAS.md](docs/LIMITS-AND-IDEAS.md) | Known limitations and the ideas backlog |
 | [images-plan.md](images-plan.md) | The photo feature's plan and build log |
 | [tracking-plan.md](tracking-plan.md) | The Tracking feature: decisions, the marker, the five steps |
+| [person-notes-plan.md](person-notes-plan.md) | Person notes (planned 2026-11-16): decisions, the `=@name` marker, the five steps |
 | [android-capture-plan.md](android-capture-plan.md) | Quick capture on Android: stage 1 built, stage 2 (native widget) not started |
 | The app repo's `README.md` | The native apps: how the build works, releasing, the signing key, the Windows folder |
