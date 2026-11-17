@@ -1,6 +1,7 @@
 # Plan: Person notes (facts about a person)
 
-_Status: **PLANNED 2026-11-16, nothing built.** Decisions below were made with the user in conversation that day.
+_Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17, committed locally, not pushed.
+Steps 2 to 5 not started.** Decisions below were made with the user in conversation on 2026-11-16.
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step._
 
 ## What it is
@@ -83,6 +84,13 @@ mid-text (not a note), `=@` alone, `=@3pm` (not a name), a name with `-` and `/`
 person), `x=@sam` (not a note), Rename and Merge rewrite the marker, a round trip through the Markdown file
 (`markdown.test.ts`), an older text with no marker unchanged.
 **Done when:** the new tests pass and all 620 existing still pass, `npx tsc -b` clean.
+_Built 2026-11-17 (`src/lib/personNotes.ts`, 20 tests in `personNotes.test.ts`, 645 in all; tsc clean, lint 0 errors):
+marker settled as proposed, `=@name` at the start of the text only (`(=@sam` is plain text). No change was needed in
+`entry.ts`: `=` is not in the tag code's "not before" list, so `extractTags` and `replaceTag` already treat the person as
+an ordinary tag, and Rename/Merge rewrite the marker. The note's text drops the spaces and **one `:`** after the marker
+(`=@sam: likes jazz`). `=@sam` alone is an **empty note** (still a note). The day file trims leading spaces of any entry,
+so `  =@sam x` comes back as `=@sam x` (still a note). Functions: `personNoteOf`, `isPersonNote`, `personNoteText` (throws
+for a key that is not a person), `computePersonNotes` (a Map by person key, newest first, ties by id, keeps photos)._
 
 ### 2. Keep notes out of the journal
 

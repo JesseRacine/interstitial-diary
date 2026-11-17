@@ -65,7 +65,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 620 tests; `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 645 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
@@ -115,10 +115,11 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Person notes: planned 2026-11-16, nothing built** ([person-notes-plan.md](person-notes-plan.md)): facts about a
+**Person notes: in progress** ([person-notes-plan.md](person-notes-plan.md)): facts about a
 person (not time-bound), written as `=@sam_jones fact` or with an Add note button on the person's page; shown on the
-person's page and in search only, not in the journal stream, calendar or week review; people first. Five steps; the
-user has not yet said to start step 1 (the marker and its logic, no UI). Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+person's page and in search only, not in the journal stream, calendar or week review; people first. Five steps. **Step 1
+(the marker and its logic, `src/lib/personNotes.ts`, no UI) built 2026-11-17, committed locally, not pushed** (645 tests).
+Next: step 2 (keep notes out of the journal: split `entries` in `App.tsx`), once the user says go. Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
