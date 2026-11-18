@@ -1,6 +1,6 @@
 # Plan: pCloud storage module
 
-_Status: **PLAN AGREED 2026-11-17 (with the `dev-localhost/` folder on localhost); step 1 not started.** Written after
+_Status: **PLAN AGREED 2026-11-17 (with the `dev-localhost/` folder on localhost); step 1 done 2026-11-17; step 2 next.** Written after
 the user registered the app with pCloud. Decisions below were agreed in the conversation on 2026-11-17; the steps are built one per turn, each tested and committed, asking before the
 next. Older background: docs/CLOUD-STORAGE.md section 5 and DESIGN.md "pCloud notes"._
 
@@ -44,6 +44,14 @@ apps by referrer; the alternatives are `gettextfile` for text and `file_open`/`f
    reuse the pending store and its 30-minute limit; clean the fragment from the URL). `pcloud.ts`: the module (`setup`
    leaves for pCloud's page, `resumeSetup` saves the config, `open` needs no network), registered in `backends/index.ts`
    and removed from `PLANNED_BACKENDS`, with the localhost subfolder rule. Tests: the reply parsing and state check.
+   **Done 2026-11-17.** `oauth.ts` has `flow: 'token'` (no PKCE; `parseReturn` reads `access_token`/`state` from the
+   fragment, `cleanReturnUrl` removes them from it, a reply of the wrong kind for the provider is refused);
+   `pcloud.ts` has `PCLOUD_CLIENT_ID`, `makePCloudBackend` (config `{ token, hostname, uid }`; `hostname` must be a
+   `*.pcloud.com` host, else taken from `locationid`), `isDevHost` (localhost, 127.0.0.1, [::1]; **not**
+   `tauri.localhost`) and `DEV_FOLDER`: the folder is decided from the page's address every time, never saved. 9 new
+   tests (667 in all), tsc clean, lint 0 errors. **Changed from the plan:** the module is **not registered yet** (no
+   `pcloudBackend` instance, still in `PLANNED_BACKENDS`): its file store is a dependency, so registering waits for step
+   2, and Settings shows no half-working pCloud meanwhile.
 2. **The files.** `pcloud-store.ts` (the FileStore: `list`, `read`, `write`, `remove`, the photo methods,
    `removeAll`, the `diff` change check; waits and retries on 4xxx/5xxx; 1000/2000 → "Sign in to pCloud again") and
    `fake-pcloud.ts`; tests through the sync engine as `dropbox-store.test.ts` does.

@@ -67,7 +67,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 658 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 667 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
@@ -119,7 +119,8 @@ to the Claude session folder, `builds\`.
 
 **In progress: pCloud** ([pcloud-plan.md](pcloud-plan.md)). pCloud approved the user's app (Client ID `8rKcvw6AboV`,
 app-folder access, US account). The four-step plan was agreed on 2026-11-17, including the decision that localhost always
-uses a separate `dev-localhost/` subfolder of the app folder. **Next: step 1 (sign-in), with the user's go-ahead.**
+uses a separate `dev-localhost/` subfolder of the app folder. **Step 1 (sign-in, `oauth.ts` token flow + `pcloud.ts`)
+done 2026-11-17, not registered yet. Next: step 2 (the files, `pcloud-store.ts`), with the user's go-ahead.**
 The user registered all four redirect URIs (hosted, `localhost:5173`, `127.0.0.1:5173`, `tauri.localhost`).
 
 **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);

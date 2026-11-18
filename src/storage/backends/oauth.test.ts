@@ -81,6 +81,17 @@ describe('parseReturn / cleanReturnUrl', () => {
     expect(cleanReturnUrl(`${REDIRECT}?code=abc&state=xyz&keep=1#top`)).toBe(`${REDIRECT}?keep=1#top`)
     expect(cleanReturnUrl(`${REDIRECT}?error=access_denied&error_description=no&state=s`)).toBe(REDIRECT)
   })
+
+  it('reads a token-flow reply from the fragment and removes it (the token must not stay in the address)', () => {
+    const href = `${REDIRECT}?keep=1#access_token=TOK&token_type=bearer&uid=42&state=xyz&locationid=1&hostname=api.pcloud.com`
+    expect(parseReturn(href)).toEqual({
+      kind: 'token', accessToken: 'TOK', state: 'xyz',
+      data: { access_token: 'TOK', token_type: 'bearer', uid: '42', state: 'xyz', locationid: '1', hostname: 'api.pcloud.com' },
+    })
+    expect(cleanReturnUrl(href)).toBe(`${REDIRECT}?keep=1`)
+    expect(parseReturn(`${REDIRECT}#error=access_denied&state=xyz`)).toMatchObject({ kind: 'error', error: 'access_denied', state: 'xyz' })
+    expect(parseReturn(`${REDIRECT}#access_token=TOK`)).toBeNull() // no state: not ours
+  })
 })
 
 describe('completeSignIn', () => {

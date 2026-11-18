@@ -1,6 +1,7 @@
 /*
- * OAuth 2 sign-in for cloud storage modules: the authorization-code flow with PKCE (RFC 7636), for a browser app that
- * has no client secret. Used by Dropbox; meant to be reused by later modules.
+ * OAuth 2 sign-in for cloud storage modules, for a browser app that has no client secret: the authorization-code flow
+ * with PKCE (RFC 7636), used by Dropbox, and the token ("implicit") flow, used by pCloud (its tokens never expire and it
+ * has no PKCE; the token comes back in the URL fragment, which the browser never sends to any server).
  *
  * The sign-in leaves the page (a full-page redirect, which also works from an installed Android app), so what is needed
  * to finish it (the PKCE verifier and the `state`) is kept in a PendingStore: in the app that is the IndexedDB meta
@@ -11,8 +12,11 @@
 
 export interface OAuthProvider {
   authorizeUrl: string
+  /** Unused by the token flow. */
   tokenUrl: string
   clientId: string
+  /** 'code' (default): code + PKCE, exchanged at tokenUrl. 'token': the access token comes back in the URL fragment. */
+  flow?: 'code' | 'token'
   /** Extra query parameters for the authorize page, e.g. { token_access_type: 'offline' } for Dropbox. */
   authorizeParams?: Record<string, string>
 }
@@ -81,16 +85,16 @@ export async function pkceChallenge(verifier: string): Promise<string> {
 export async function beginSignIn(
   provider: OAuthProvider, backendId: string, redirectUri: string, pending: PendingStore, now = Date.now(),
 ): Promise<string> {
-  const verifier = randomString(32)
+  const tokenFlow = provider.flow === 'token'
+  const verifier = tokenFlow ? '' : randomString(32)
   const state = randomString(16)
   await pending.set({ backendId, state, verifier, redirectUri, startedAt: now })
   const url = new URL(provider.authorizeUrl)
   const params: Record<string, string> = {
     client_id: provider.clientId,
     redirect_uri: redirectUri,
-    response_type: 'code',
-    code_challenge: await pkceChallenge(verifier),
-    code_challenge_method: 'S256',
+    response_type: tokenFlow ? 'token' : 'code',
+    ...(tokenFlow ? {} : { code_challenge: await pkceChallenge(verifier), code_challenge_method: 'S256' }),
     state,
     ...provider.authorizeParams,
   }
@@ -98,20 +102,34 @@ export async function beginSignIn(
   return url.toString()
 }
 
-const RETURN_PARAMS = ['code', 'state', 'error', 'error_description']
+/** Sign-in parameters removed from the query and the fragment after a return (pCloud also adds its region to both). */
+const RETURN_PARAMS = [
+  'code', 'state', 'error', 'error_description',
+  'access_token', 'token_type', 'expires_in', 'uid', 'locationid', 'hostname',
+]
 
 export type SignInReturn =
   | { kind: 'code'; code: string; state: string }
+  | { kind: 'token'; accessToken: string; state: string; data: Record<string, string> }
   | { kind: 'error'; error: string; description: string; state: string | null }
+
+const fragmentParams = (url: URL) => new URLSearchParams(url.hash.replace(/^#/, ''))
 
 /** The sign-in result in a URL the provider sent the browser back to, or null if the URL is not such a return. */
 export function parseReturn(href: string): SignInReturn | null {
-  const q = new URL(href).searchParams
+  const url = new URL(href)
+  const q = url.searchParams
   const code = q.get('code')
   const state = q.get('state')
   if (code && state) return { kind: 'code', code, state }
-  const error = q.get('error')
-  if (error) return { kind: 'error', error, description: q.get('error_description') ?? '', state }
+  const f = fragmentParams(url)
+  const accessToken = f.get('access_token')
+  const fState = f.get('state')
+  if (accessToken && fState) return { kind: 'token', accessToken, state: fState, data: Object.fromEntries(f) }
+  for (const p of [q, f]) {
+    const error = p.get('error')
+    if (error) return { kind: 'error', error, description: p.get('error_description') ?? '', state: p.get('state') }
+  }
   return null
 }
 
@@ -119,6 +137,11 @@ export function parseReturn(href: string): SignInReturn | null {
 export function cleanReturnUrl(href: string): string {
   const url = new URL(href)
   for (const p of RETURN_PARAMS) url.searchParams.delete(p)
+  const f = fragmentParams(url)
+  if ([...f.keys()].some((k) => RETURN_PARAMS.includes(k))) {
+    for (const p of RETURN_PARAMS) f.delete(p)
+    url.hash = f.toString() // an empty fragment leaves no '#'
+  }
   return url.toString()
 }
 
@@ -140,6 +163,12 @@ export async function completeSignIn(
     throw new OAuthError(ret.error === 'access_denied' ? 'Sign-in was cancelled.' : `Sign-in failed: ${ret.description || ret.error}`)
   }
   if (now - p.startedAt > PENDING_MAX_AGE_MS) throw new OAuthError('The sign-in took too long. Please try again.')
+  const tokenFlow = provider.flow === 'token'
+  if ((ret.kind === 'token') !== tokenFlow) throw new OAuthError('The sign-in reply was not of the expected kind. Please try again.')
+  if (ret.kind === 'token') {
+    // A token-flow token does not expire (pCloud); the whole fragment (region, user id) is passed on as `data`.
+    return { backendId: p.backendId, tokens: { accessToken: ret.accessToken, expiresAt: Number.POSITIVE_INFINITY, data: ret.data } }
+  }
   const tokens = await tokenRequest(provider, {
     grant_type: 'authorization_code',
     code: ret.code,
