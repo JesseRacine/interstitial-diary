@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-17 (Notes on people and places finished and pushed as build 6). Kept short on purpose:
+_Last updated: 2026-11-17 (pCloud plan agreed; Notes on people and places finished and pushed as build 6). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -117,7 +117,12 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-Nothing in progress. **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
+**In progress: pCloud** ([pcloud-plan.md](pcloud-plan.md)). pCloud approved the user's app (Client ID `8rKcvw6AboV`,
+app-folder access, US account). The four-step plan was agreed on 2026-11-17, including the decision that localhost always
+uses a separate `dev-localhost/` subfolder of the app folder. **Next: step 1 (sign-in), with the user's go-ahead.**
+Still to ask: the redirect URIs the user entered (needed before step 3, the first real try on localhost).
+
+**Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
 story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
 **build 6** on the user's request; not yet tried on the user's devices (check 30); the native apps are not rebuilt (they show
 a note as an ordinary entry starting with `=@…` until they are). **Offer a new dated backup of both repos** (the last is
@@ -145,7 +150,7 @@ they want:
 6. **Trim the test suite** (the user, 2026-11-17: "I don't think we need like 700 unit tests in a small app like this";
    a to-do for later, not now): keep the tests that guard against losing entries (sync, merge, file format, delete,
    storage modules) and fold or drop the ones that only pin small details; the user may raise the model's effort for it.
-7. **pCloud** (on hold: its app approval may be manual; docs/CLOUD-STORAGE.md), photo sharing into the app, ideas in
+7. **pCloud**: in progress, see above. Also: photo sharing into the app, and the ideas in
    docs/LIMITS-AND-IDEAS.md.
 
 ## Waiting on the user
@@ -264,5 +269,6 @@ written on one device appear on the other, including edits made offline on both.
 | [images-plan.md](images-plan.md) | The photo feature's plan and build log |
 | [tracking-plan.md](tracking-plan.md) | The Tracking feature: decisions, the marker, the five steps |
 | [person-notes-plan.md](person-notes-plan.md) | Notes on people and places (2026-11-16/17): decisions, the `=@name` / `=~name` marker, the Note button, the five steps |
+| [pcloud-plan.md](pcloud-plan.md) | The pCloud module (agreed 2026-11-17): what is known, the `dev-localhost/` rule, the four steps |
 | [android-capture-plan.md](android-capture-plan.md) | Quick capture on Android: stage 1 built, stage 2 (native widget) not started |
 | The app repo's `README.md` | The native apps: how the build works, releasing, the signing key, the Windows folder |
