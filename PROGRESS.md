@@ -120,7 +120,7 @@ to the Claude session folder, `builds\`.
 **In progress: pCloud** ([pcloud-plan.md](pcloud-plan.md)). pCloud approved the user's app (Client ID `8rKcvw6AboV`,
 app-folder access, US account). The four-step plan was agreed on 2026-11-17, including the decision that localhost always
 uses a separate `dev-localhost/` subfolder of the app folder. **Next: step 1 (sign-in), with the user's go-ahead.**
-Still to ask: the redirect URIs the user entered (needed before step 3, the first real try on localhost).
+The user registered all four redirect URIs (hosted, `localhost:5173`, `127.0.0.1:5173`, `tauri.localhost`).
 
 **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
 story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
