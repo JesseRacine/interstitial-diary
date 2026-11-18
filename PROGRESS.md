@@ -18,8 +18,8 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed: **6** (2026-11-17, notes; deploy run: see the next docs commit; the apps are not rebuilt
-  with it). Build 5: (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
+  every push to `main`. Pushed and live: **6** (2026-11-17, notes; `001ac63`, deploy run 44208677386 green, the live
+  site's Settings > About read "Build 6"; the apps are not rebuilt with it). Build 5: (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
   (every later sync reused it). The user then pressed Stop and chose Dropbox again: still stuck, and **the entry has two
