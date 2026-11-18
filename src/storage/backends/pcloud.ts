@@ -108,7 +108,7 @@ export function makePCloudBackend(deps: PCloudDeps): StorageBackend<PCloudConfig
       if (!r) throw new OAuthError('Nothing to finish: this page is not a return from pCloud.')
       const hostname = apiHost(r.tokens.data)
       if (!hostname) throw new OAuthError('pCloud did not say which region your account is in. Please try again.')
-      const uid = r.tokens.data.uid
+      const uid = r.tokens.data.userid ?? r.tokens.data.uid // the real reply (2026-11-17) says `userid`; the docs say `uid`
       const config: PCloudConfig = { token: r.tokens.accessToken, hostname, uid: typeof uid === 'string' ? uid : '' }
       return { config, store: storeFor(config), label: label() }
     },

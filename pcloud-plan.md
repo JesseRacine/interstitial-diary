@@ -1,6 +1,11 @@
 # Plan: pCloud storage module
 
-_Status: **PLAN AGREED 2026-11-17 (with the `dev-localhost/` folder on localhost); steps 1 and 2 done 2026-11-17; step 3 (the user's first real try on localhost) next.** Written after
+_Status: **STOPPED 2026-11-17 at step 3, on the user's decision: pCloud lets a web page save files but not read them
+back** (see "Why it stopped" at the end). Steps 1 and 2 are built and kept in the code, but pCloud is not offered in
+Settings. If it is picked up again, the user wants it done with pCloud's own login (email and password) instead of
+OAuth; see the end._
+
+_Earlier status: plan agreed 2026-11-17 (with the `dev-localhost/` folder on localhost); steps 1 and 2 done 2026-11-17._ Written after
 the user registered the app with pCloud. Decisions below were agreed in the conversation on 2026-11-17; the steps are built one per turn, each tested and committed, asking before the
 next. Older background: docs/CLOUD-STORAGE.md section 5 and DESIGN.md "pCloud notes"._
 
@@ -72,9 +77,48 @@ apps by referrer; the alternatives are `gettextfile` for text and `file_open`/`f
 3. **First real try (the user, on localhost, writing into `dev-localhost/` only).** Sign in, write entries and a photo,
    look at the files on pcloud.com; Claude settles the unknowns above from what happens and fixes what differs.
    Settings text and the Manual's storage section.
-4. **Docs and push.** DESIGN.md (table + "pCloud notes"), CLOUD-STORAGE.md, PROGRESS.md "Waiting on the user"; raise
+   **Tried 2026-11-17, stopped.** The user signed in on `localhost:5173` (a private window): the sign-in and saving
+   worked, and the files landed in `My pCloud/Applications/Interstitial Diary/dev-localhost/2026/` (so "/" for this
+   app's token **is** the app folder). The first sync failed reading `.meta/reset.json` with **7010 "Invalid link
+   referer."** from `getfilelink`; reading was switched to `getzip` (`fe95c31`) and "Saved" followed, but only because
+   nothing existed to read yet. On `127.0.0.1:5173` (the user signed in inside Claude's browser pane, Claude ran the
+   calls from the page with the saved token and printed only result codes) every read failed. Not done: the Manual text,
+   step 4.
+4. **Docs and push.** (Not done: stopped.) DESIGN.md (table + "pCloud notes"), CLOUD-STORAGE.md, PROGRESS.md "Waiting on the user"; raise
    `BUILD_NUMBER` and push **only with the user's OK**. Then the user tries Windows ↔ Android on the live site.
    (The native apps need `https://tauri.localhost/` registered and an app rebuild: a later, separate step.)
 
 **Done when:** an entry and a photo written on Windows appear on Android and the other way round, through pCloud,
 including edits made offline on both.
+
+## Why it stopped (2026-11-17)
+
+Measured against the real API from a web page (`http://127.0.0.1:5173`), with an OAuth token for this app:
+
+| Call | Result |
+|---|---|
+| `userinfo`, `listfolder` (path or `folderid=0`), `stat`, `uploadfile`, `createfolderifnotexists`, deletes | work |
+| `diff` | 2096 "only supported for applications with full access" (harmless: the change check then means a full sync) |
+| `getfilelink` as GET | 7010 "Invalid link referer." |
+| `getfilelink` as POST (form body) | works, but the download host (`def2.pcloud.com`) sends no CORS headers: "Failed to fetch" |
+| `getzip`, `getziplink`, `gettextfile` (GET or POST) | 1000 "Log in required." (they do not take `access_token`) |
+| `getthumb` | works (a small JPEG), but a thumbnail is never the original photo |
+| any call with an `Authorization: Bearer` header | blocked by the CORS preflight |
+
+So a web page can save into pCloud but cannot read a day file or a photo back, and a journal that cannot read cannot
+sync. pCloud's SDK maintainers said the same (pcloud-sdk-js issue 4: downloading from a browser "is not currently
+supported"). Other facts learned: the reply's fragment holds `userid` (the docs say `uid`), now handled.
+
+**What stays in the code:** `oauth.ts` token flow, `pcloud.ts` (module, `isDevHost`, `DEV_FOLDER`), `pcloud-store.ts`,
+`fake-pcloud.ts` and their tests; nothing in `backends/index.ts` uses them, so the app does not include them. Also kept:
+Settings now shows the reason after "Sign in to … again" (any module), and a refused pCloud call names pCloud's code.
+
+**If the user picks pCloud up again: pCloud's own login (the user's decision, 2026-11-17).** pCloud's `userinfo` with
+`getauth=1` and the account's email and password returns an `auth` token, which the content calls (`getzip`,
+`gettextfile`) presumably accept where `access_token` is refused: **to be checked first**, before building anything.
+The user called this "the somewhat not great way": the app would show its own email + password form, send the
+password to pCloud once over https and keep only the `auth` token (never the password), with "Stop" calling `logout`.
+Accounts with two-factor sign-in may not work this way. Claude never types or asks for the password; the user signs in
+themselves. The rest (the store, the development folder) can be reused. Alternatives, not chosen: pCloud only in the
+native apps (their native side can read the download link; needs app-repo work tested only through Actions), or the
+Folder module on a pCloud Drive folder on Windows (works today).

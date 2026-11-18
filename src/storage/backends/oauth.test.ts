@@ -89,6 +89,7 @@ describe('parseReturn / cleanReturnUrl', () => {
       data: { access_token: 'TOK', token_type: 'bearer', uid: '42', state: 'xyz', locationid: '1', hostname: 'api.pcloud.com' },
     })
     expect(cleanReturnUrl(href)).toBe(`${REDIRECT}?keep=1`)
+    expect(cleanReturnUrl(`${REDIRECT}#userid=18&access_token=T&state=s`)).toBe(REDIRECT) // pCloud's real reply has `userid`
     expect(parseReturn(`${REDIRECT}#error=access_denied&state=xyz`)).toMatchObject({ kind: 'error', error: 'access_denied', state: 'xyz' })
     expect(parseReturn(`${REDIRECT}#access_token=TOK`)).toBeNull() // no state: not ours
   })

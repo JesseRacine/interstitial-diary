@@ -15,10 +15,12 @@ import { bodyBytes, fetchWithTimeout } from './timeout'
  * preflight). Errors come as HTTP 200 with `result` ≠ 0. Uploads do not create folders (2005) and overwrite by default
  * (pCloud keeps the old file as a revision); `renameifexists` never overwrites. `hash` is a content hash.
  *
- * Reading a file: `getfilelink` and `gettextfile` refuse web pages ("7010 Invalid link referer", seen in the first real
- * try on 2026-11-17; pCloud's SDK maintainers: downloading from a browser "is not currently supported"). `getzip`
- * returns a zip of the chosen files straight from the API host and has no such note, so a read is `stat` (file id and
- * size), `getzip` of that one file, unzip, and a size check. This is not an officially supported way.
+ * **Reading does not work from a web page, so this store is not offered (pcloud-plan.md, stopped 2026-11-17).** Tried
+ * against the real API with an OAuth token: `getfilelink` GET → 7010 "Invalid link referer"; as a POST it gives a link,
+ * but the download host sends no CORS headers; `getzip`, `getziplink`, `gettextfile` → 1000 "Log in required" (they do
+ * not take `access_token`); only `getthumb` (a small thumbnail) works. Listing, uploading and deleting all work. The
+ * read below (`stat`, then `getzip` of that one file, unzip, size check) is kept in case a later version signs in
+ * differently (pCloud's own login gives an `auth` token, which those methods may accept).
  */
 
 const NAME = 'pCloud'
@@ -97,7 +99,11 @@ export function pcloudStore(opts: PCloudStoreOptions): RemovableBlobStore {
       const data = res.ok ? ((await res.json().catch(() => null)) as Reply | null) : null
       const code = data && typeof data.result === 'number' ? data.result : res.ok ? 5000 : res.status === 429 ? 4000 : 5000 + res.status
       if (code === 0) return data
-      if (SIGNED_OUT.has(code)) throw signedOutError(NAME)
+      if (SIGNED_OUT.has(code)) {
+        const e = signedOutError(NAME)
+        // pCloud's code and words (never the token), so "sign in again" can be told apart from other refusals.
+        throw new DOMException(`${e.message.replace(/\.$/, '')} (${method}: ${code}${typeof data?.error === 'string' ? ` ${data.error}` : ''}).`, e.name)
+      }
       if (okCodes.includes(code)) return null
       if (retryable(code) && attempt < retries) {
         await sleep(1000 * 2 ** attempt)

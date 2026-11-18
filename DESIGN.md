@@ -352,7 +352,7 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 | `folder`: Folder on this computer | done | Text and images. File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
 | `browser`: Files inside this browser | done | Text and images; `insideBrowser`. OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
 | `dropbox`: Dropbox | done (2026-11-12) | Text and images, in `Apps/<app name>/`. OAuth PKCE redirect with a refresh token. Works everywhere incl. Android. The user reported Windows ↔ Android on the hosted app "appears to be working" (details in PROGRESS.md item 10). See "Dropbox notes" below and docs/CLOUD-STORAGE.md. |
-| `pcloud` | planned, on hold | pCloud's app registration may need manual approval. See "pCloud notes" below. |
+| `pcloud` | stopped (2026-11-17) | Built (`backends/pcloud.ts`, `pcloud-store.ts`) but not offered: with an OAuth token a web page can save to pCloud but not read files back. See "pCloud notes" below and pcloud-plan.md. |
 | `github` | idea | Files in a private repo via the GitHub contents API (a token pasted into the app; free version history). |
 | `onedrive`, `gdrive` | ideas | OneDrive simple upload is 4 MB (photos need upload sessions); Google Drive has fiddly sign-in rules. |
 | native folder (Tauri) | idea | Real folders on Android once there's a native build. |
@@ -402,7 +402,11 @@ device first); "Folder on this computer" can't reach other copies of that folder
   sign-in on this device but does not revoke it at Dropbox (the user can remove the app under Dropbox settings >
   Connected apps).
 
-**pCloud notes** (from a CORS check on 2026-11-08; sign-in details read in pCloud's docs on 2026-11-12):
+**pCloud notes** (from a CORS check on 2026-11-08; sign-in details read in pCloud's docs on 2026-11-12). **Stopped
+2026-11-17:** measured against the real API, a web page with an OAuth token can list, save and delete, but every way to
+read a file's content is refused (`getfilelink` 7010 or a download host without CORS; `getzip`/`gettextfile` 1000).
+The table of calls and the idea for later (pCloud's own login and an `auth` token) are in pcloud-plan.md. The app's
+token sees its app folder (`Applications/Interstitial Diary/`) as "/". The notes below are the original plan:
 - Use the **HTTP API** (`api.pcloud.com` US / `eapi.pcloud.com` EU). It returns `Access-Control-Allow-Origin: *`.
 - **WebDAV has no CORS headers**, so browsers can't use it.
 - Preflight allows no custom headers, so send the token as the `access_token` parameter, not an `Authorization` header.

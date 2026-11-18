@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-17 (pCloud plan agreed; Notes on people and places finished and pushed as build 6). Kept short on purpose:
+_Last updated: 2026-11-17 (pCloud built, tried and stopped; Notes on people and places finished and pushed as build 6). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -117,12 +117,14 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**In progress: pCloud** ([pcloud-plan.md](pcloud-plan.md)). pCloud approved the user's app (Client ID `8rKcvw6AboV`,
-app-folder access, US account). The four-step plan was agreed on 2026-11-17, including the decision that localhost always
-uses a separate `dev-localhost/` subfolder of the app folder. **Steps 1 (sign-in) and 2 (the files,
-`pcloud-store.ts`; pCloud now listed in Settings) done 2026-11-17, tested against a fake only. Next: step 3, the user's
-first real sign-in on `http://localhost:5173/` (writes only to `dev-localhost/`), with the user's go-ahead.**
-The user registered all four redirect URIs (hosted, `localhost:5173`, `127.0.0.1:5173`, `tauri.localhost`).
+Nothing in progress. **pCloud is stopped** (2026-11-17, the user's decision; [pcloud-plan.md](pcloud-plan.md) "Why it
+stopped"): sign-in and saving worked against the real pCloud, but **a web page cannot read files back** (`getfilelink`
+7010 or no CORS on the download host; `getzip`/`gettextfile` 1000 "Log in required"), so it cannot sync. Steps 1 and 2
+stay in the code, unregistered (not in Settings, not in "coming later"). **If the user picks it up again, they want
+pCloud's own login (email + password → an `auth` token)**; check first that the content calls accept that token. Not
+pushed (nothing user-visible changed except Settings showing the reason after "Sign in to … again"). The user may
+delete the test folder `Applications/Interstitial Diary/dev-localhost` on pcloud.com and remove the app's access in
+pCloud's settings.
 
 **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
 story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
@@ -152,7 +154,7 @@ they want:
 6. **Trim the test suite** (the user, 2026-11-17: "I don't think we need like 700 unit tests in a small app like this";
    a to-do for later, not now): keep the tests that guard against losing entries (sync, merge, file format, delete,
    storage modules) and fold or drop the ones that only pin small details; the user may raise the model's effort for it.
-7. **pCloud**: in progress, see above. Also: photo sharing into the app, and the ideas in
+7. **pCloud** is stopped (see above; a later try would use pCloud's own login). Also: photo sharing into the app, and the ideas in
    docs/LIMITS-AND-IDEAS.md.
 
 ## Waiting on the user
@@ -266,11 +268,11 @@ written on one device appear on the other, including edits made offline on both.
 | [CLAUDE.md](CLAUDE.md) | Always loaded: commands, code map, rules, gotchas, how we work, how to push |
 | [DESIGN.md](DESIGN.md) | The contract: data model, file format, sync rules, storage modules, search syntax, photos, data safety |
 | [docs/HISTORY.md](docs/HISTORY.md) | The commit table, and how every finished piece of work was built and checked (look things up, don't read it whole) |
-| [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md) | Dropbox (built) and pCloud (on hold), what the user registers, other storage ideas |
+| [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md) | Dropbox (built) and pCloud (stopped), what the user registers, other storage ideas |
 | [docs/LIMITS-AND-IDEAS.md](docs/LIMITS-AND-IDEAS.md) | Known limitations and the ideas backlog |
 | [images-plan.md](images-plan.md) | The photo feature's plan and build log |
 | [tracking-plan.md](tracking-plan.md) | The Tracking feature: decisions, the marker, the five steps |
 | [person-notes-plan.md](person-notes-plan.md) | Notes on people and places (2026-11-16/17): decisions, the `=@name` / `=~name` marker, the Note button, the five steps |
-| [pcloud-plan.md](pcloud-plan.md) | The pCloud module (agreed 2026-11-17): what is known, the `dev-localhost/` rule, the four steps |
+| [pcloud-plan.md](pcloud-plan.md) | The pCloud module (stopped 2026-11-17): the plan, what was built, why it stopped (the table of API results), the own-login idea for later |
 | [android-capture-plan.md](android-capture-plan.md) | Quick capture on Android: stage 1 built, stage 2 (native widget) not started |
 | The app repo's `README.md` | The native apps: how the build works, releasing, the signing key, the Windows folder |

@@ -105,7 +105,7 @@ export async function beginSignIn(
 /** Sign-in parameters removed from the query and the fragment after a return (pCloud also adds its region to both). */
 const RETURN_PARAMS = [
   'code', 'state', 'error', 'error_description',
-  'access_token', 'token_type', 'expires_in', 'uid', 'locationid', 'hostname',
+  'access_token', 'token_type', 'expires_in', 'uid', 'userid', 'locationid', 'hostname',
 ]
 
 export type SignInReturn =
