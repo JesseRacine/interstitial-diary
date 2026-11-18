@@ -73,7 +73,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 663 tests (2026-11-18, after trim step 1); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 655 tests (2026-11-18, after trim step 2); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits are docs-only and
   usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
@@ -122,7 +122,7 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**In progress: the test-suite trim (item 6 below; step 1 of 6 done).** **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
+**In progress: the test-suite trim (item 6 below; steps 1 and 2 of 6 done).** **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
 installed by the user: "seems good" (the Windows `.exe` is in `builds\`, copying it to the real folder is the user's).
 
@@ -163,8 +163,8 @@ they want:
    Target about 400. Steps, one per turn, no push needed (no app change):
    1. ~~Remove the pCloud code and its tests~~ **done 2026-11-18** (685 → 663; also the pCloud-only token flow in
       `oauth.ts`).
-   2. Drop `build.test.ts` and `deployWorkflow.test.ts` (they match file text; one reads PROGRESS.md, so a docs edit
-      could fail a deploy).
+   2. ~~Drop `build.test.ts` and `deployWorkflow.test.ts`~~ **done 2026-11-18** (663 → 655; they matched file text,
+      and one read PROGRESS.md, so a docs edit could fail a deploy).
    3. `dataSafety`: keep when warnings/reminders show, drop exact-sentence checks.
    4. Screen helpers (imageLayout, photoRows, journalRows, eventRows, weekReview, zoom, tagKinds, dom, launch,
       startView, keySet): 2 or 3 each.

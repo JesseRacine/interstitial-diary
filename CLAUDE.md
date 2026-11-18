@@ -117,7 +117,7 @@ git commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
 pwa-manifest.ts       web app manifest (tested by src/pwa.test.ts); vite.config.ts wires vite-plugin-pwa (precache, prompt update)
 base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (tested by src/basePath.test.ts); unset = "/"
 .github/workflows/deploy.yml  GitHub Pages deploy on push to main: npm ci, test, build with BASE_PATH=/interstitial-diary/, deploy
-                      (checked by src/deployWorkflow.test.ts; keep BASE_PATH there in step with the repo name)
+                      (keep BASE_PATH there in step with the repo name; tests must stay before the deploy step)
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
 src/
   main.tsx, App.tsx   entry point; views (tabs Journal, Calendar, Photos, Tags, Tracking; Settings is the gear; Events is Calendar's fourth switch), routing, keyboard shortcuts,
