@@ -20,7 +20,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
   every push to `main`. Pushed and live: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
   44216122403 green; Claude's browser pane showed "A new version is ready", Reload, then Settings > About "Build 7" and
-  no pCloud option; the apps are not rebuilt and still list pCloud under "coming later"). Build 6 (2026-11-17, notes; `001ac63`, deploy run 44208677386 green, the live
+  no pCloud option; **apps rebuilt with it**: run 44216731203 green, the bundled web build checked for build 7 and no
+pCloud, APK 10,193,599 bytes and `.exe` 6,338,560 copied to the session folder's `builds\`, the `.exe` started from a
+scratch copy (window "Interstitial Diary", its own `journal-data`); installing and using them is the user's). Build 6 (2026-11-17, notes; `001ac63`, deploy run 44208677386 green, the live
   site's Settings > About read "Build 6"; the apps are not rebuilt with it). Build 5: (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
