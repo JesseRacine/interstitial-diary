@@ -1,6 +1,7 @@
 import MiniSearch from 'minisearch'
 import type { Entry } from '../lib/entry'
 import { eventKey, eventSpans } from '../lib/events'
+import { isNote } from '../lib/notes'
 import type { ParsedQuery } from './query'
 
 export type SearchIndex = MiniSearch<Entry>
@@ -79,24 +80,33 @@ export function runSearch(q: ParsedQuery, entries: Entry[], index: SearchIndex, 
 
 export interface TagStat {
   tag: string // stored key: `work`, `@sarah`, `~home`
-  count: number
-  first: number // createdAt of the oldest entry that has it
-  last: number // createdAt of the newest
+  count: number // journal entries that have it (notes are not counted, see lib/notes.ts)
+  notes: number // notes on people and places that have it, as their own name or as a mention
+  first: number // createdAt of the oldest journal entry that has it; 0 when only notes have it
+  last: number // createdAt of the newest journal entry; 0 when only notes have it
 }
 
+/**
+ * Every tag in the entries with how often and when it is used. A note counts in `notes`, not in `count`, `first` or `last`
+ * (its day does not matter), but a tag that only notes have is still listed, so it can be found, opened and renamed.
+ */
 export function computeTagStats(entries: Entry[]): TagStat[] {
   const map = new Map<string, TagStat>()
   for (const e of entries) {
     if (e.deleted) continue
+    const note = isNote(e)
     for (const t of e.tags) {
-      const s = map.get(t) ?? { tag: t, count: 0, first: e.createdAt, last: 0 }
-      s.count++
-      s.first = Math.min(s.first, e.createdAt)
-      s.last = Math.max(s.last, e.createdAt)
+      const s = map.get(t) ?? { tag: t, count: 0, notes: 0, first: 0, last: 0 }
+      if (note) s.notes++
+      else {
+        s.first = s.count ? Math.min(s.first, e.createdAt) : e.createdAt
+        s.last = Math.max(s.last, e.createdAt)
+        s.count++
+      }
       map.set(t, s)
     }
   }
-  return [...map.values()].sort((a, b) => b.count - a.count || b.last - a.last)
+  return [...map.values()].sort((a, b) => b.count - a.count || b.notes - a.notes || b.last - a.last)
 }
 
 export function countByDay(entries: Entry[]): Map<string, number> {

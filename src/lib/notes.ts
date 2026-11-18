@@ -51,6 +51,9 @@ export function noteOf(text: string): NoteMarker | null {
 /** Whether the entry is a note (its text starts with the marker). */
 export const isNote = (e: Pick<Entry, 'text'>): boolean => noteOf(e.text) !== null
 
+/** The entries the journal shows: everything but notes (calendar, week review, photos, events, tracking, tag pages). */
+export const journalEntries = <T extends Pick<Entry, 'text'>>(entries: readonly T[]): T[] => entries.filter((e) => !isNote(e))
+
 /**
  * The text of a new note (the Note form and Add note): `=@sam_jones Allergic to shellfish`. `key` must be a person's or a
  * place's stored key; the note is trimmed.

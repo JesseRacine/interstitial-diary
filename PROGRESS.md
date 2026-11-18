@@ -65,7 +65,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 648 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 652 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
@@ -119,9 +119,10 @@ to the Claude session folder, `builds\`.
 facts that are not time-bound ("allergic to shellfish", "closed on Mondays"), written with a **Note button** in the entry
 box or **Add note** on the person's/place's page (both write `=@sam_jones fact` / `=~blue_door fact`; typing it is never
 needed); shown on that page and in search only, not in the journal stream, calendar or week review. Not for events or
-`#tags`. Five steps. **Step 1 (the marker and its logic, `src/lib/notes.ts`, no UI) built 2026-11-17 for people and places,
-committed locally, not pushed** (648 tests). Next: step 2 (keep notes out of the journal: split `entries` in `App.tsx`),
-once the user says go; **push steps 2 and 3 together**. Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+`#tags`. Five steps. **Steps 1 (the marker and its logic, `src/lib/notes.ts`) and 2 (notes kept out of the journal,
+calendar, photos, events, tracking and tag pages; labelled "📝 Note" in search) built 2026-11-17, committed locally, not
+pushed** (652 tests). Next: step 3 (the Notes section and Add note on the person's/place's page), once the user says go;
+**push steps 2 and 3 together** (after step 2 alone, notes are only findable by search). Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
@@ -137,7 +138,10 @@ again, Delete, Restore, the photo on a card, the one-photo limit and the sort. A
 5. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
    installed app should show "A new version is ready" with Reload. Closes older check 7. (The Tracking push on
    2026-11-15 was a chance to see it; the user did not say whether it appeared.)
-6. **pCloud** (on hold: its app approval may be manual; docs/CLOUD-STORAGE.md), photo sharing into the app, ideas in
+6. **Trim the test suite** (the user, 2026-11-17: "I don't think we need like 700 unit tests in a small app like this";
+   a to-do for later, not now): keep the tests that guard against losing entries (sync, merge, file format, delete,
+   storage modules) and fold or drop the ones that only pin small details; the user may raise the model's effort for it.
+7. **pCloud** (on hold: its app approval may be manual; docs/CLOUD-STORAGE.md), photo sharing into the app, ideas in
    docs/LIMITS-AND-IDEAS.md.
 
 ## Waiting on the user

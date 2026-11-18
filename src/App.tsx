@@ -21,6 +21,7 @@ import { useLive } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker } from './lib/events'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
+import { journalEntries } from './lib/notes'
 import { computeTracking } from './lib/tracking'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
@@ -37,13 +38,17 @@ function loadLayout(): JournalLayout {
 }
 
 export default function App() {
+  // `entries` is every live entry, notes on people and places included (search, export, backup, the photo viewer).
+  // `journal` leaves the notes out: a note has no day that matters, so the journal, calendar, week review, photos,
+  // events and tracking never see it (see lib/notes.ts and person-notes-plan.md).
   const entries = useLive<Entry[]>(() => db.entries.orderBy('createdAt').filter((e) => !e.deleted).toArray(), [], [])
+  const journal = useMemo(() => journalEntries(entries), [entries])
   const saved = useLive<string[]>(() => getMeta('savedSearches', []), [], [])
   const recent = useLive<string[]>(() => getMeta('recentSearches', []), [], [])
   const index = useMemo(() => buildIndex(entries), [entries])
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
-  const events = useMemo(() => computeEvents(entries), [entries])
-  const tracking = useMemo(() => computeTracking(entries), [entries])
+  const events = useMemo(() => computeEvents(journal), [journal])
+  const tracking = useMemo(() => computeTracking(journal), [journal])
 
   // How the app was opened: the "New entry" shortcut or Android's Share sheet (see lib/launch.ts).
   const [launch] = useState(() => parseLaunch(location.search))
@@ -202,23 +207,23 @@ export default function App() {
             onOpenImage={openPhoto} />
         ) : view === 'journal' ? (
           <>
-            <JournalView entries={entries} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
+            <JournalView entries={journal} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
               onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
             <Capture tagStats={tagStats} inputRef={captureRef} initialText={prefill} onPrefilled={() => setPrefill('')}
               onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
-          <CalendarView entries={entries} events={events} mode={calMode} onMode={setCalMode}
+          <CalendarView entries={journal} events={events} mode={calMode} onMode={setCalMode}
             eventId={eventId} onSelectEvent={setEventId} onOpenDay={(d) => openDay(d)} onOpenEntryDay={(e) => openDay(e.day, e.id)}
             onOpenImage={openPhoto} onTag={searchTag} onSearchQuery={searchFor}
             onOpenEvent={(id) => { setEventId(id); setCalMode('events'); setQuery(''); setBackQuery(null) }} />
         ) : view === 'photos' ? (
-          <PhotosView entries={entries} index={index} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
+          <PhotosView entries={journal} index={index} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
-          <TagsView tagStats={tagStats} entries={entries} index={index} onSearch={searchTag}
+          <TagsView tagStats={tagStats} entries={journal} index={index} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'tracking' ? (
-          <TrackingView entries={entries} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
+          <TrackingView entries={journal} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : (
           <SettingsView entries={entries} theme={theme} setTheme={setTheme} tagCount={tagStats.length} />
         )}

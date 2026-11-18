@@ -39,7 +39,8 @@ export function TagPage({ tag, stat, entries, index, backLabel, onBack, onSearch
       {stat ? (
         <>
           <p className="summary">
-            {stat.count} {stat.count === 1 ? 'entry' : 'entries'} · first {shortDayLabel(dayKey(stat.first))} · last {shortDayLabel(dayKey(stat.last))}
+            {stat.count} {stat.count === 1 ? 'entry' : 'entries'}
+            {stat.count > 0 && <> · first {shortDayLabel(dayKey(stat.first))} · last {shortDayLabel(dayKey(stat.last))}</>}
             <span className="muted"> · written as {tagToken(tag)}</span>
           </p>
           <div className="tag-page-actions">

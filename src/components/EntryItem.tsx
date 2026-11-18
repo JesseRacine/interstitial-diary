@@ -6,6 +6,7 @@ import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
 import { useOpenEvent, useOpenTracking } from './eventNav'
 import { useCoarsePointer } from '../lib/hooks'
+import { isNote } from '../lib/notes'
 import { EntryText } from './text'
 import { useDraftImages, useImageInput } from './useDraftImages'
 
@@ -58,15 +59,25 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
     if (confirm('Delete this entry?')) await deleteEntry(entry.id)
   }
 
+  // A note on a person or place (lib/notes.ts) has no day that matters, and the journal does not show it: no date, time
+  // or "open this day", and no When field in the editor.
+  const note = isNote(entry)
+
   const meta = (
     <header className="entry-meta">
-      {showDate && (
-        <button type="button" className="link" onClick={() => onOpenDay?.(entry)} title="Open this day">
-          {shortDayLabel(entry.day)}
-        </button>
+      {note ? (
+        <span className="note-label">📝 Note</span>
+      ) : (
+        <>
+          {showDate && (
+            <button type="button" className="link" onClick={() => onOpenDay?.(entry)} title="Open this day">
+              {shortDayLabel(entry.day)}
+            </button>
+          )}
+          <span className="time">{timeLabel(entry.createdAt)}</span>
+          {!bubble && gapMinutes != null && <span className="gap">{formatGap(gapMinutes)}</span>}
+        </>
       )}
-      <span className="time">{timeLabel(entry.createdAt)}</span>
-      {!bubble && gapMinutes != null && <span className="gap">{formatGap(gapMinutes)}</span>}
       <span className="spacer" />
       {!editing && (
         <span className="entry-actions">
@@ -95,13 +106,13 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
             }}
           />
           <DraftChips draft={photos} />
-          <div className="row when">
+          {!note && <div className="row when">
             <label htmlFor={`when-${entry.id}`} className="muted">When</label>
             <input id={`when-${entry.id}`} type="datetime-local" value={when} onChange={(e) => { setWhen(e.target.value); setClock(Date.now()) }}
               aria-invalid={!!whenError} />
             {whenError && <span className="error">{whenError}</span>}
             {movesTo && <span className="muted">Moves to {movesTo}</span>}
-          </div>
+          </div>}
           <div className="row">
             <button type="button" className="primary" onClick={save} disabled={!canSave}>Save</button>
             <button type="button" onClick={() => setEditing(false)}>Cancel</button>

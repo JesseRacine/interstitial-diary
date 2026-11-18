@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { type Entry, makeEntry } from '../lib/entry'
 import { buildIndex, computeTagStats, runSearch } from './engine'
 import { parseQuery } from './query'
+import { journalEntries } from '../lib/notes'
 
 const NOW = new Date(2026, 10, 8, 12, 0)
 const at = (y: number, mo: number, d: number, h: number, mi = 0) => new Date(y, mo - 1, d, h, mi).getTime()
@@ -165,7 +166,37 @@ describe('computeTagStats', () => {
       { ...makeEntry('@tom deleted', at(2026, 1, 20, 9), 'c'), deleted: 1 as const },
     ]
     const stats = computeTagStats(e)
-    expect(stats.find((s) => s.tag === '@tom')).toEqual({ tag: '@tom', count: 2, first: at(2026, 1, 5, 9), last: at(2026, 1, 9, 9) })
+    expect(stats.find((s) => s.tag === '@tom')).toEqual({ tag: '@tom', count: 2, notes: 0, first: at(2026, 1, 5, 9), last: at(2026, 1, 9, 9) })
     expect(stats.find((s) => s.tag === '~home')?.count).toBe(1)
+  })
+  it('counts notes apart: not in count, first or last, but a name only notes have is still listed', () => {
+    const e = [
+      makeEntry('=@tom Allergic to shellfish', at(2026, 1, 1, 9), 'n1'), // older than his entries: must not move "first"
+      makeEntry('Lunch with @tom', at(2026, 1, 5, 9), 'a'),
+      makeEntry('=@tom Married to @maria #family', at(2026, 2, 1, 9), 'n2'), // newer: must not move "last"
+      makeEntry('=~blue_door Closed on Mondays', at(2026, 1, 3, 9), 'n3'),
+    ]
+    const stats = computeTagStats(e)
+    expect(stats.find((s) => s.tag === '@tom')).toEqual({ tag: '@tom', count: 1, notes: 2, first: at(2026, 1, 5, 9), last: at(2026, 1, 5, 9) })
+    expect(stats.find((s) => s.tag === '@maria')).toEqual({ tag: '@maria', count: 0, notes: 1, first: 0, last: 0 })
+    expect(stats.find((s) => s.tag === 'family')).toEqual({ tag: 'family', count: 0, notes: 1, first: 0, last: 0 })
+    expect(stats.find((s) => s.tag === '~blue_door')).toEqual({ tag: '~blue_door', count: 0, notes: 1, first: 0, last: 0 })
+    expect(stats[0].tag).toBe('@tom') // entries first, then notes
+  })
+})
+
+describe('notes and the journal', () => {
+  const e = [
+    makeEntry('Lunch with @tom #food', at(2026, 1, 5, 9), 'a'),
+    makeEntry('=@tom Allergic to shellfish #food', at(2026, 1, 6, 9), 'n'),
+  ]
+  it('search finds a note by its words and by its name', () => {
+    const idx = buildIndex(e)
+    expect(runSearch(parseQuery('shellfish'), e, idx).map((h) => h.entry.id)).toEqual(['n'])
+    expect(runSearch(parseQuery('@tom'), e, idx, 'newest').map((h) => h.entry.id)).toEqual(['n', 'a'])
+  })
+  it('a page given only the journal entries (as App does) does not list the note', () => {
+    const idx = buildIndex(e)
+    expect(runSearch(parseQuery('@tom'), journalEntries(e), idx).map((h) => h.entry.id)).toEqual(['a'])
   })
 })

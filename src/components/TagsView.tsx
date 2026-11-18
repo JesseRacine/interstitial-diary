@@ -41,8 +41,8 @@ export function TagsView({ tagStats, entries, index, onSearch, onOpenDay, onOpen
     if (to === t.tag) return
     const merging = tagStats.some((s) => s.tag === to)
     const msg = merging
-      ? `${tagLabel(to)} already exists. Merge ${tagLabel(t.tag)} into it? This changes ${t.count} entries.`
-      : `Rename ${tagLabel(t.tag)} to ${tagLabel(to)} in ${t.count} entries?`
+      ? `${tagLabel(to)} already exists. Merge ${tagLabel(t.tag)} into it? This changes ${t.count + t.notes} entries.`
+      : `Rename ${tagLabel(t.tag)} to ${tagLabel(to)} in ${t.count + t.notes} entries?`
     if (confirm(msg)) await renameTag(t.tag, to)
   }
 
@@ -83,7 +83,7 @@ export function TagsView({ tagStats, entries, index, onSearch, onOpenDay, onOpen
               <tr key={t.tag}>
                 <td><button type="button" className={kind.className} onClick={() => (kind.hasPage ? setSelected(t.tag) : onSearch(t.tag))}>{tagLabel(t.tag)}</button></td>
                 <td>{t.count}</td>
-                <td className="muted">{shortDayLabel(dayKey(t.last))}</td>
+                <td className="muted">{t.count ? shortDayLabel(dayKey(t.last)) : '—'}</td>
                 <td><button type="button" className="ghost" onClick={() => rename(t)}>Rename</button></td>
               </tr>
             ))}

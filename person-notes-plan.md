@@ -1,7 +1,7 @@
 # Plan: Notes on people and places
 
 _Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17 and widened to places the same
-day, committed locally, not pushed. Steps 2 to 5 not started.** Decisions below were made with the user in conversation
+day; step 2 (notes kept out of the journal) built 2026-11-17; both committed locally, not pushed. Steps 3 to 5 not started.** Decisions below were made with the user in conversation
 on 2026-11-16 and 2026-11-17. (The file keeps its old name, `person-notes-plan.md`, so older links still work.)
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step. **Push steps 2 and 3
 together**: after step 2 alone, notes would leave the journal with no page to show them on (search only)._
@@ -120,6 +120,18 @@ Week counts, the entry total, the histogram, `first`/`last` on a person or place
 a note.
 **Done when:** a seeded note appears only in search and in the Settings export; tests for `computeTagStats` and the week
 review with a note present; a person or place with only notes still has a Tags entry. **Not pushed on its own** (see top).
+_Built 2026-11-17, committed locally, not pushed (652 tests; tsc clean, lint 0 errors). `App.tsx` keeps `entries` (all:
+search index and results, tag statistics, backup reminder, Settings/export, the photo viewer) and adds `journal =
+journalEntries(entries)` (`lib/notes.ts`) for Journal, Calendar (so Month, Year, Week review and Events), Photos, Tags pages
+(so a person's page lists journal entries only: it runs its search over the entries it is given) and Tracking. `TagStat` got
+`notes` (note entries that carry the tag, as their own name or a mention); `count`, `first` and `last` count journal entries
+only and are 0 when only notes have the tag, which is still listed (so it can be renamed; the rename message counts both).
+Tags list shows "—" for Last used and the page leaves out first/last when there are no entries. `EntryItem` shows a note
+with a "📝 Note" label instead of its date and time (no "open this day") and hides the When field in its editor. Checked on
+localhost with typed test data: the journal and calendar show only the ordinary entry; a search for the person lists the
+entry and the notes, the notes labelled; the person's page counts and lists the entry only. Not checked: a person with only
+notes in the Tags list (covered by a unit test) and the export (unchanged code path; notes are entries).
+Noticed: in search results a note's marker shows as "=👤 Sam Test …" (the `=` stays visible); tidy that in step 3 or 4._
 
 ### 3. The page: Notes section and Add note
 

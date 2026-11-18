@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { type ImageRef, extractTags, makeEntry, replaceTag } from './entry'
 import { parseDay, serializeDay } from './markdown'
-import { canHaveNotes, computeNotes, isNote, noteOf, noteText } from './notes'
+import { canHaveNotes, computeNotes, isNote, journalEntries, noteOf, noteText } from './notes'
 
 const IMG: ImageRef = { hash: '3f9a2c1b7d04e8aa', ext: 'jpg', w: 640, h: 480 }
 
@@ -141,6 +141,13 @@ describe('computeNotes', () => {
   })
   it('gives an empty map with no notes', () => {
     expect(computeNotes([entry('A', 9, 'Lunch with @sam')]).size).toBe(0)
+  })
+})
+
+describe('journalEntries', () => {
+  it('leaves out notes and keeps every other entry, in order', () => {
+    const list = [entry('A', 9, 'Lunch with @sam'), entry('B', 10, '=@sam fact'), entry('C', 11, 'x =@sam not a note'), entry('D', 12, '=~home fact')]
+    expect(journalEntries(list).map((e) => e.id)).toEqual(['A', 'C'])
   })
 })
 

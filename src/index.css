@@ -243,6 +243,7 @@ button.attach { display: inline-flex; align-items: center; gap: 0.35rem; margin-
 .entry.flash { animation: flash 2.2s ease-out; }
 @keyframes flash { 0%, 40% { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); } 100% { } }
 .entry-meta { display: flex; align-items: baseline; gap: 0.6rem; font-size: 0.85rem; }
+.entry-meta .note-label { color: var(--muted); font-weight: 500; } /* a note on a person or place: no date or time */
 .gap { color: var(--muted); font-size: 0.8rem; }
 .entry-actions { opacity: 0.35; transition: opacity 0.15s; }
 .entry:hover .entry-actions, .entry:focus-within .entry-actions { opacity: 1; }
