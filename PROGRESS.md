@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-17 (pCloud built, tried and stopped; Notes on people and places finished and pushed as build 6). Kept short on purpose:
+_Last updated: 2026-11-18 (build 8: the entry box grows, the last event is suggested; apps rebuilt). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -15,11 +15,12 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   on each person's/place's page; [person-notes-plan.md](person-notes-plan.md)), photos (phases 1 to 3, filters), export, three storage
   modules (folder, browser files, **Dropbox**: working Windows ↔ Android per the user), installable PWA, data-safety
   features, Settings (the gear) > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut +
-  text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
+  text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save, the
+  entry box grows with wrapped lines, `!"` offers the last event's title (build 8).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
   every push to `main`. Pushed and live: **8** (2026-11-18, entry box + last event; `f38eefa`, run 44332869492; apps
-  rebuilt with it: run 44374189547). Before: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
+  rebuilt with it: run 44374189547, the APK installed by the user). Before: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
   44216122403 green; Claude's browser pane showed "A new version is ready", Reload, then Settings > About "Build 7" and
   no pCloud option; **apps rebuilt with it**: run 44216731203 green, the bundled web build checked for build 7 and no
 pCloud, APK 10,193,599 bytes and `.exe` 6,338,560 copied to the session folder's `builds\`, the `.exe` started from a
@@ -72,7 +73,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 679 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 685 tests (2026-11-18); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits are docs-only and
   usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
@@ -121,22 +122,11 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**In progress (2026-11-18): "a couple of changes" from the user, one at a time.** 1. **The entry box shrank to one
-scrolling line** with a long sentence on Android (its height counted only typed line breaks, not wrapped lines): fixed in
-`0d508d7` (`useAutoGrow` in `src/lib/hooks.ts`, capped at about 8 lines / a third of the screen in `.capture textarea`);
-checked in Claude's browser at phone size (5 wrapped lines shown, stops at 208 px, shrinks when cleared); 680 tests.
-2. **Event titles had no autocomplete** (by design until now): `f57356b` suggested every title used; the user then
-chose **only the last event** instead (`9cafc02`): after `!"` / `!“` the entry box offers the title of the most recently
-written entry's event ("last event"), while what is typed still fits its start (`lastEventTitle`, `suggestLastEvent`
-in `src/lib/events.ts`; the hook in `components/text.tsx`); picking closes the quote. Not in the Edit box or the
-search bar. `f57356b` also fixed a sub-pixel scrollbar the first fix gave a one-line box. Checked in Claude's browser; 685 tests.
-**Both pushed as build 8** (2026-11-18, `f38eefa`, deploy run 44332869492 green; Claude's browser pane on the live site:
-Settings > About "Build 8"). **The user tried build 8: "I'm happy with the test"** (2026-11-18; device not said). **Apps rebuilt with build 8**
-(run 44374189547 green; its `web-dist` has the "last event" code; APK 10,193,599 bytes and `.exe` 6,339,584 copied to
-`builds\`; the `.exe` started from a scratch copy: window "Interstitial Diary", its own `journal-data`); installing
-them is the user's. Next: any further change from the user.
+Nothing in progress. **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
+lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
+installed by the user: "seems good" (the Windows `.exe` is in `builds\`, copying it to the real folder is the user's).
 
-Before this, nothing was in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
+**pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
 [pcloud-plan.md](pcloud-plan.md)): a web page can save to pCloud but not read files back. The code stays, unregistered;
 removed from Settings in **build 7** (pushed). **If the user picks it up again, they want pCloud's own login (email +
 password)**; check first that the read calls accept that token. The user may delete the test folder
@@ -145,7 +135,7 @@ password)**; check first that the read calls accept that token. The user may del
 **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
 story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
 **build 6** on the user's request; not yet tried on the user's devices (check 30); the native apps have it since their
-build 7 rebuild (2026-11-17, in `builds\`, not yet installed by the user). **Tracking is finished** (2026-11-15, [tracking-plan.md](tracking-plan.md)). Ask the user which of these, when
+build 7 rebuild (the Android app installed with build 8, 2026-11-18). **Tracking is finished** (2026-11-15, [tracking-plan.md](tracking-plan.md)). Ask the user which of these, when
 they want:
 
 1. **Try the rebuilt native apps** (check 29). (Rebuilding after any later web change: `gh workflow run 'Build apps'

@@ -19,10 +19,10 @@ Read these before changing anything substantial:
   Android (stage 1 built; stage 2, a native widget, not started).
 
 **Status:** this file does not track status; **PROGRESS.md does** (what is built, what is next, what the user still
-has to check). In one line (2026-11-17, build 7): everything in the code map below is built and **live on GitHub Pages,
+has to check). In one line (2026-11-18, build 8): everything in the code map below is built and **live on GitHub Pages,
 https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public), except the pCloud
 files, which are built but not offered; Dropbox sync works between the user's Windows PC and Android phone per the user;
-680 tests pass. **Never connect Dropbox on localhost:** the dev server shares the real app's Dropbox folder (it happened
+685 tests pass. **Never connect Dropbox on localhost:** the dev server shares the real app's Dropbox folder (it happened
 once, 2026-11-17; before asking the user to try localhost, have them check the badge says "Only in this browser").
 
 **Native apps (second repo, started 2026-11-14):** `~/projects/interstitial-diary-app` (public,
@@ -130,7 +130,9 @@ src/
     events.ts           events (`!"Title"` in entry text, NOT a tag kind): eventSpans/eventSegments/blankEvents, eventKey,
                         computeEvents (same title within 7 days = one event; a marker may carry its own date
                         `!"Title" (2026-05-12)`: same title + date = one event, its day is that date), eventOfMarker,
-                        parseEventTitle, renameEventInText (keeps the date), eventAfterRename; imports only a type from
+                        parseEventTitle, renameEventInText (keeps the date), eventAfterRename; eventBeingTyped +
+                        lastEventTitle + suggestLastEvent (the entry box offers only the LAST event's title after `!"`,
+                        the user's choice 2026-11-18; do not widen it to every title); imports only a type from
                         entry.ts (entry.ts imports it back)
     tracking.ts         tracking (`+"Name"` tracking, `+*"Name"` starred, `+x"Name" (2026-11-20)` done; in entry text, NOT a
                         tag kind): trackingSpans/trackingSegments/blankTracking, setTrackingState (rewrites only the marker),
@@ -156,7 +158,8 @@ src/
     (search/syntax.ts   SEARCH_SYNTAX: the search help table, shared by SearchBar and the Manual)
     purge.ts            delete permanently: scrubEntry, restorable (the Deleted entries list), purgedIds/parsePurged
                         (`.meta/purged.json`); merge.ts takes the purged ids; manager.ts `purgeDeleted` orders the steps
-    hooks.ts            useLive: a Dexie liveQuery as React state
+    hooks.ts            useLive: a Dexie liveQuery as React state; useAutoGrow (a text box as tall as its wrapped text,
+                        capped by CSS `max-height`; the entry box uses it)
     dom.ts              isTyping (keyboard shortcuts ignore typing); enterAction (Enter saves or adds a line; touch screens
                         add a line) + hasCoarsePointer; hooks.ts also has useCoarsePointer
     journalRows.ts      entries -> flat chat rows (day headers + entries) for the virtualised journal
@@ -207,7 +210,7 @@ src/
     restore or delete permanently),
     TrackingView (Tracking tab: Active|Done|All cards with Star/Done/Track again/Delete; the item page reuses EntryItem),
     EventsView (list + event page + rename; shown inside CalendarView), eventNav.ts (OpenEventContext: event chips open their event),
-    text.tsx (tag and event display + tag autocomplete)
+    text.tsx (tag and event display + tag autocomplete, and the last-event suggestion when given `lastEvent`)
     DraftImages.tsx + useDraftImages.ts   photos on a draft (new or edited entry): paste/drop/pick; useImageInput
     EntryImages.tsx     photos in a bubble
     Thumb.tsx + useThumbUrl.ts   thumbnails via the shared URL cache; "Not synced yet" from manager's missingImages

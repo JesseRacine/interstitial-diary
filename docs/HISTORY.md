@@ -85,6 +85,10 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | fe95c31 | pCloud step 3: read through `getzip` after `getfilelink` answered 7010 (turned out not to work either) |
 | 777289b | pCloud stopped: a web page cannot read files back (measured); module kept, not offered; Settings shows why a sign-in is needed |
 | b14e17d | Build 7: pCloud removed from Settings. **Pushed 2026-11-17 on the user's request** (deploy run 44216122403 green); apps rebuilt (run 44216731203) |
+| 0d508d7 | The entry box grows with wrapped lines (`useAutoGrow`), capped at about 8 lines / a third of the screen |
+| f57356b | Event titles suggested after `!"` (all titles; replaced next) + the 1 px scrollbar fix for the entry box |
+| 9cafc02 | Only the last event's title is suggested, while what is typed still fits (the user's choice) |
+| f38eefa | Build 8: both changes. **Pushed 2026-11-18 on the user's request** (deploy run 44332869492 green); apps rebuilt (run 44374189547) |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old
 doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -174,6 +178,27 @@ Plan, decisions and the full table of API results: [pcloud-plan.md](../pcloud-pl
 - **Build 7** pushed on the user's request: pCloud gone from "coming later". Claude's pane showed the update banner ("A new
   version is ready", Reload → Build 7), the first time it was seen working. The apps were rebuilt the same night and copied
   to `builds\`; the `.exe` opened from a scratch copy.
+
+## Two small changes (2026-11-18): the entry box and the last event; build 8
+
+- **The entry box shrank to one scrolling line** (the user's Android screenshot: half a line cut off at the top of a long
+  sentence). Cause: its height was `rows` = the number of typed line breaks, so wrapped lines never counted. Fix
+  (`0d508d7`): `useAutoGrow` in `lib/hooks.ts` sets the height from `scrollHeight` on every change and window resize;
+  `.capture textarea` caps it at `min(13rem, 33dvh)` (about 8 lines, a third of the screen with the keyboard up) and
+  scrolls past that. A follow-up (in `f57356b`) adds 1 px: `scrollHeight` is rounded down (33 for 33.2 px), which showed a
+  scrollbar on a one-line box at desktop width. Checked in Claude's pane at 375 px: 5 wrapped lines shown, 208 px at the
+  cap, back to the hint text's height when cleared.
+- **Event titles had no autocomplete** (by design since the events work: a title is mostly used once). First built
+  (`f57356b`) as suggestions of every title used; the user then chose **only the last event** (`9cafc02`): after `!"` or
+  `!“` the entry box offers the title of the newest entry that has an event (`lastEventTitle`; its last marker; deleted
+  entries skipped; the date, if any, is not filled in), labelled "last event", only while what is typed still fits its
+  start (`suggestLastEvent`), so a new event is not pushed towards the old one. Picking it (Enter, Tab or a tap) closes
+  the quote with the matching straight or curly quote and adds a space. Detection is `eventBeingTyped` (same start rule
+  as a marker); the hook is `useTagAutocomplete(…, lastEvent)` in `components/text.tsx`, and inside a title it does not
+  look for tags. Not in the Edit box or the search bar. The Manual's Events section says so.
+- **Build 8** pushed on the user's request (`f38eefa`, deploy run 44332869492 green; Claude's pane: Settings > About
+  "Build 8"). The user: "I'm happy with the test". Apps rebuilt (run 44374189547; its `web-dist` has the new code; the
+  `.exe` opened from a scratch copy); the APK was sent to the user, who installed it: "seems good". 685 tests.
 
 ## Completed steps
 
