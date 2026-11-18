@@ -18,7 +18,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **6** (2026-11-17, notes; `001ac63`, deploy run 44208677386 green, the live
+  every push to `main`. Pushed and live: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
+  44216122403 green; Claude's browser pane showed "A new version is ready", Reload, then Settings > About "Build 7" and
+  no pCloud option; the apps are not rebuilt and still list pCloud under "coming later"). Build 6 (2026-11-17, notes; `001ac63`, deploy run 44208677386 green, the live
   site's Settings > About read "Build 6"; the apps are not rebuilt with it). Build 5: (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
@@ -122,7 +124,8 @@ stopped"): sign-in and saving worked against the real pCloud, but **a web page c
 7010 or no CORS on the download host; `getzip`/`gettextfile` 1000 "Log in required"), so it cannot sync. Steps 1 and 2
 stay in the code, unregistered (not in Settings, not in "coming later"). **If the user picks it up again, they want
 pCloud's own login (email + password → an `auth` token)**; check first that the content calls accept that token. Not
-pushed (nothing user-visible changed except Settings showing the reason after "Sign in to … again"). The user may
+pushed as **build 7** on the user's request (pCloud gone from "coming later"; Settings shows the reason after "Sign in
+to … again"). The user may
 delete the test folder `Applications/Interstitial Diary/dev-localhost` on pcloud.com and remove the app's access in
 pCloud's settings.
 
@@ -255,7 +258,8 @@ written on one device appear on the other, including edits made offline on both.
    used by another entry stays.
 5. A photo added on one device shows as a thumbnail on the other within one sync; its original downloads when opened.
 6. PWA install in Edge on `localhost:4173`: **confirmed 2026-11-10**, incl. the "New entry" shortcut.
-7. The update banner: never seen working (see "What next" 4).
+7. The update banner: **seen working once, by Claude, 2026-11-17** (build 6 → 7 in its browser pane on the live site:
+   "A new version is ready", Reload, Build 7). Not yet seen in the user's installed app.
 8. Data safety: Settings > Data safety shows the persistent-storage state; a real export sets "Last backup" to today;
    with the folder module there is no "Only in this browser" badge or reminder.
 9. The hosted install: "installed, works" (2026-11-12), without saying which of Edge/Android or whether the shortcut
