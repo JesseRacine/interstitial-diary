@@ -126,6 +126,20 @@ describe('pcloudStore: photos', () => {
   })
 })
 
+describe('pcloudStore: reading without download links (pCloud refuses them to web pages)', () => {
+  it('reads through getzip, never getfilelink, and refuses a download whose size does not match', async () => {
+    const fake = fakePCloud()
+    const store = storeOn(fake)
+    await store.write('2026/2026-11-08.md', 'hello')
+    expect(await store.read('2026/2026-11-08.md')).toBe('hello')
+    expect(fake.calls.map((c) => c.method)).not.toContain('getfilelink')
+    // Another device rewrites the file between the size check and the download: this read fails (the next sync tries
+    // again) instead of returning text that does not match what was listed.
+    fake.beforeHandle((c) => { if (c.method === 'getzip') fake.put('/2026/2026-11-08.md', 'hello, longer now') })
+    await expect(store.read('2026/2026-11-08.md')).rejects.toThrow(/incomplete|no file|could not read/)
+  })
+})
+
 describe('pcloudStore: errors', () => {
   it('a refused token means signing in again, without leaking the token', async () => {
     const fake = fakePCloud()

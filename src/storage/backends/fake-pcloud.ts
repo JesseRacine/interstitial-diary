@@ -2,9 +2,12 @@
  * A small in-memory imitation of the parts of pCloud's HTTP JSON API that pcloud-store.ts uses, behind a `fetch`.
  * For tests only. It follows pCloud's docs: errors as HTTP 200 with `result` ≠ 0 (2005 folder missing, 2009 file
  * missing, 2002 parent missing, 2094 bad token, 4000 slow down); uploads need the folder to exist, overwrite by default
- * and rename with `renameifexists`; `hash` is a content hash; `getfilelink` gives a host and path to download from.
+ * and rename with `renameifexists`; `hash` is a content hash; `getfilelink` refuses a web page (7010) and `getzip`
+ * returns a zip of the chosen file ids.
  * Paths are case-sensitive and start with "/".
  */
+
+import { zipSync } from 'fflate'
 
 interface FakeFile {
   bytes: Uint8Array
@@ -18,7 +21,6 @@ export interface FakeCall {
 }
 
 const API_HOST = 'api.pcloud.com'
-const DL_HOST = 'c1.pcloud.com'
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
 
@@ -52,7 +54,7 @@ export function fakePCloud() {
   }
 
   function write(path: string, bytes: Uint8Array) {
-    const f = { bytes, hash: hashOf(bytes), fileid: nextId++ }
+    const f = { bytes, hash: hashOf(bytes), fileid: files.get(path)?.fileid ?? nextId++ } // overwriting keeps the file id
     files.set(path, f)
     changeLog.push(path)
     return f
@@ -90,9 +92,15 @@ export function fakePCloud() {
         const path = join(p.path, name)
         return json({ result: 0, metadata: [fileMeta(path, write(path, new Uint8Array(await file.arrayBuffer())))] })
       }
-      case 'getfilelink': {
-        const f = files.get(p.path)
-        return f ? json({ result: 0, hosts: [DL_HOST], path: `/dl/${f.fileid}/${encodeURIComponent(nameOf(p.path))}` }) : err(2009)
+      case 'getfilelink':
+      case 'gettextfile':
+        return json({ result: 7010, error: 'Invalid link referer.' }) // what the real API answers a web page (2026-11-17)
+      case 'getzip': {
+        const ids = (p.fileids ?? '').split(',').filter(Boolean)
+        const chosen = [...files].filter(([, f]) => ids.includes(String(f.fileid)))
+        if (chosen.length !== ids.length) return err(2009)
+        const zip = zipSync(Object.fromEntries(chosen.map(([k, f]) => [nameOf(k), f.bytes])))
+        return new Response(new Blob([zip as Uint8Array<ArrayBuffer>]), { headers: { 'Content-Type': 'application/zip' } })
       }
       case 'stat': {
         const f = files.get(p.path)
@@ -124,11 +132,6 @@ export function fakePCloud() {
 
   const fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input))
-    if (url.host === DL_HOST) {
-      const id = url.pathname.split('/')[2]
-      const f = [...files.values()].find((x) => String(x.fileid) === id)
-      return f ? new Response(new Blob([f.bytes as Uint8Array<ArrayBuffer>])) : new Response('gone', { status: 404 })
-    }
     if (url.host !== API_HOST) throw new TypeError(`fake pCloud: unexpected host ${url.host}`)
     const params = Object.fromEntries(url.searchParams)
     const method = url.pathname.slice(1)

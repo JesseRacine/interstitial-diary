@@ -1,3 +1,4 @@
+import { unzipSync } from 'fflate'
 import { BlobCollisionError, type ChangeCheck, type RemovableBlobStore, type StoredFile, isAppFolder } from '../types'
 import { isDiaryFile, isImagePath } from './fs-store'
 import { signedOutError } from './oauth'
@@ -14,8 +15,10 @@ import { bodyBytes, fetchWithTimeout } from './timeout'
  * preflight). Errors come as HTTP 200 with `result` ≠ 0. Uploads do not create folders (2005) and overwrite by default
  * (pCloud keeps the old file as a revision); `renameifexists` never overwrites. `hash` is a content hash.
  *
- * Not settled until the first real try (plan step 3): whether `getfilelink` works from a web page (its docs say the
- * referrer must be pcloud.com; requests here send no referrer), and whether "/" is the app folder for this app's token.
+ * Reading a file: `getfilelink` and `gettextfile` refuse web pages ("7010 Invalid link referer", seen in the first real
+ * try on 2026-11-17; pCloud's SDK maintainers: downloading from a browser "is not currently supported"). `getzip`
+ * returns a zip of the chosen files straight from the API host and has no such note, so a read is `stat` (file id and
+ * size), `getzip` of that one file, unzip, and a size check. This is not an officially supported way.
  */
 
 const NAME = 'pCloud'
@@ -59,8 +62,7 @@ export interface PCloudStoreOptions {
 
 /** Small calls answer quickly; uploads and downloads move whole photos, plus time for the bytes (at least 20 KB/s). */
 function requestTimeoutMs(url: string, init?: RequestInit): number {
-  const download = !url.includes('access_token=') // a file link from getfilelink: the only request without our token
-  return download || url.includes('/uploadfile?') ? 120_000 + Math.ceil(bodyBytes(init?.body) / 20) : 45_000
+  return /\/(uploadfile|getzip)\?/.test(url) ? 120_000 + Math.ceil(bodyBytes(init?.body) / 20) : 45_000
 }
 
 export function pcloudStore(opts: PCloudStoreOptions): RemovableBlobStore {
@@ -71,19 +73,27 @@ export function pcloudStore(opts: PCloudStoreOptions): RemovableBlobStore {
   const root = session.folder ? `/${session.folder}` : ''
   const full = (path: string) => `${root}/${path}`
   const rootPath = root || '/'
-  // No referrer (getfilelink refuses web pages by referrer) and no cookies: nothing but the parameters identifies us.
+  // No referrer and no cookies: nothing but the parameters identifies us.
   const base: RequestInit = { referrerPolicy: 'no-referrer', credentials: 'omit' }
+
+  /** One API call (see `send`) whose answer is JSON. */
+  const call = async (method: string, params: Record<string, string | number>, what: string, okCodes: number[] = [], body?: FormData) =>
+    (await send(method, params, what, okCodes, body, false)) as Reply | null
 
   /**
    * One API call. Returns the reply, or null when its result is one of `okCodes` (e.g. not found). A refused token
-   * becomes "sign in again"; slow-down and server trouble are waited out a few times.
+   * becomes "sign in again"; slow-down and server trouble are waited out a few times. With `raw`, an answer that is not
+   * JSON (a file) is returned as the Response itself; an error still comes as JSON.
    */
-  async function call(method: string, params: Record<string, string | number>, what: string, okCodes: number[] = [], body?: FormData): Promise<Reply | null> {
+  async function send(
+    method: string, params: Record<string, string | number>, what: string, okCodes: number[], body: FormData | undefined, raw: boolean,
+  ): Promise<Reply | Response | null> {
     const url = new URL(`https://${session.hostname}/${method}`)
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
     url.searchParams.set('access_token', session.token)
     for (let attempt = 0; ; attempt++) {
       const res = await fetchFn(url.toString(), body ? { ...base, method: 'POST', body } : { ...base, method: 'GET' })
+      if (raw && res.ok && !(res.headers.get('Content-Type') ?? '').includes('json')) return res
       const data = res.ok ? ((await res.json().catch(() => null)) as Reply | null) : null
       const code = data && typeof data.result === 'number' ? data.result : res.ok ? 5000 : res.status === 429 ? 4000 : 5000 + res.status
       if (code === 0) return data
@@ -132,14 +142,27 @@ export function pcloudStore(opts: PCloudStoreOptions): RemovableBlobStore {
     return m
   }
 
-  async function download(path: string): Promise<Response | null> {
-    const link = await call('getfilelink', { path: full(path) }, `read ${path}`, NOT_FOUND)
-    if (!link) return null
-    const hosts = link.hosts as string[] | undefined
-    if (!hosts?.length || typeof link.path !== 'string') throw new PCloudError(5000, 'no download link', `read ${path}`)
-    const res = await fetchFn(`https://${hosts[0]}${link.path}`, base)
-    if (!res.ok) throw new PCloudError(5000 + res.status, `HTTP ${res.status}`, `read ${path}`)
-    return res
+  /** A file's bytes, or null if it does not exist: `stat`, then a zip of just that file, checked against its size. */
+  async function download(path: string): Promise<Uint8Array<ArrayBuffer> | null> {
+    const st = await call('stat', { path: full(path) }, `read ${path}`, NOT_FOUND)
+    const m = st?.metadata as Meta | undefined
+    if (!m || m.isfolder || m.fileid === undefined) return null
+    const res = await send('getzip', { fileids: m.fileid }, `read ${path}`, NOT_FOUND, undefined, true)
+    if (!res) return null // deleted in the meantime
+    if (!(res instanceof Response)) throw new PCloudError(5000, 'no file in the reply', `read ${path}`)
+    let files: Record<string, Uint8Array>
+    try {
+      files = unzipSync(new Uint8Array(await res.arrayBuffer()))
+    } catch {
+      throw new PCloudError(5000, 'the download was damaged', `read ${path}`)
+    }
+    const found = Object.entries(files).filter(([name]) => !name.endsWith('/'))
+    if (found.length !== 1) throw new PCloudError(5000, `${found.length} files in the download`, `read ${path}`)
+    const bytes = found[0][1]
+    // The size may have changed if another device wrote it between the two calls; a mismatch fails this read (the
+    // next sync tries again) rather than risk a cut-off file.
+    if (bytes.length !== (m.size ?? -1)) throw new PCloudError(5000, 'the download was incomplete', `read ${path}`)
+    return new Uint8Array(bytes)
   }
 
   async function hasBlob(path: string): Promise<{ size: number } | null> {
@@ -183,8 +206,8 @@ export function pcloudStore(opts: PCloudStoreOptions): RemovableBlobStore {
       return out
     },
     async read(path) {
-      const res = await download(path)
-      return res ? res.text() : null
+      const bytes = await download(path)
+      return bytes ? new TextDecoder().decode(bytes) : null
     },
     async write(path, text) {
       return revOf(await upload(path, new Blob([new TextEncoder().encode(text)]), false))
@@ -193,8 +216,8 @@ export function pcloudStore(opts: PCloudStoreOptions): RemovableBlobStore {
       await call('deletefile', { path: full(path) }, `delete ${path}`, NOT_FOUND)
     },
     async readBlob(path) {
-      const res = await download(path)
-      return res ? res.blob() : null
+      const bytes = await download(path)
+      return bytes ? new Blob([bytes]) : null
     },
     hasBlob,
     async writeBlob(path, blob) {
