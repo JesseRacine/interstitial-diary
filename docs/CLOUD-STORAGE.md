@@ -1,4 +1,4 @@
-# Cloud storage modules: Dropbox (built), pCloud (stopped), other ideas
+# Cloud storage modules: Dropbox (built), pCloud (stopped, code removed), other ideas
 
 _Read this when working on step 5a/5 (a cloud storage module). For the short state of things read
 [../PROGRESS.md](../PROGRESS.md) first. The storage contract is in [../DESIGN.md](../DESIGN.md) ("Storage modules")._
@@ -63,7 +63,10 @@ line in `backends/index.ts`, no changes to `sync.ts` (CLAUDE.md rule 3). It must
 - **Done when:** an entry (and a photo) written on Windows appears on Android and vice versa, including offline edits on
   both.
 
-## 5. pCloud storage module (STOPPED 2026-11-17: a web page cannot read files back; see [../pcloud-plan.md](../pcloud-plan.md))
+## 5. pCloud storage module (STOPPED 2026-11-17: a web page cannot read files back; code removed 2026-11-18, last in `ff75bef`; see [../pcloud-plan.md](../pcloud-plan.md))
+
+The plan below is kept as written.
+
 - See DESIGN.md "pCloud notes". The user registers an app in pCloud's developer console and provides the client id.
 - **Read in pCloud's docs on 2026-11-12** (docs.pcloud.com/methods/oauth_2.0/authorize.html): the sign-in page is
   `https://my.pcloud.com/oauth2/authorize` with `client_id`, `response_type=token` and a mandatory `redirect_uri`; for a

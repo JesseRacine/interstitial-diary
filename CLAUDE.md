@@ -20,9 +20,9 @@ Read these before changing anything substantial:
 
 **Status:** this file does not track status; **PROGRESS.md does** (what is built, what is next, what the user still
 has to check). In one line (2026-11-18, build 8): everything in the code map below is built and **live on GitHub Pages,
-https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public), except the pCloud
-files, which are built but not offered; Dropbox sync works between the user's Windows PC and Android phone per the user;
-685 tests pass. **Never connect Dropbox on localhost:** the dev server shares the real app's Dropbox folder (it happened
+https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public); Dropbox sync works
+between the user's Windows PC and Android phone per the user; 448 tests pass (trimmed from 685 on 2026-11-18: keep the
+tests that guard entries and photos, and prefer table rows to many one-line tests). **Never connect Dropbox on localhost:** the dev server shares the real app's Dropbox folder (it happened
 once, 2026-11-17; before asking the user to try localhost, have them check the badge says "Only in this browser").
 
 **Native apps (second repo, started 2026-11-14):** `~/projects/interstitial-diary-app` (public,
@@ -307,7 +307,7 @@ src/
 - **The Browser pane only repaints when it is asked to** (e.g. a screenshot). The virtualised views (react-virtuoso)
   measure with ResizeObserver, so right after a reload or a jump they can look empty or land on the wrong day until you
   take a screenshot and wait a moment. That is the pane, not a bug (the Calendar jump behaves the same).
-- **Only `localhost:5173` and `127.0.0.1:5173` are registered as sign-in return addresses** with Dropbox (and pCloud),
+- **Only `localhost:5173` and `127.0.0.1:5173` are registered as sign-in return addresses** with Dropbox,
   so the preview builds (4173, 4174) cannot sign in to a cloud module.
 - **Never seed fake data into `localhost:5173`**: that origin may have a storage backend, which would sync it into real
   files. Use `http://127.0.0.1:5173`: a different origin, so its own empty database and no sync.

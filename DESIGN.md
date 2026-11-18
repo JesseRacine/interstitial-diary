@@ -18,8 +18,8 @@
 
 ```
  UI (React) ──► Dexie / IndexedDB  ◄──►  sync engine  ◄──►  storage module (FileStore)
-                (working copy:            (sync.ts)          folder | browser files | Dropbox* | pCloud* | GitHub* ...
-                 search, offline)                            (* = planned)
+                (working copy:            (sync.ts)          folder | browser files | Dropbox | GitHub* ...
+                 search, offline)                            (* = an idea)
 ```
 
 - **IndexedDB (Dexie)** holds every entry, including soft-deleted ones. All UI reads come from here via `liveQuery`,
@@ -407,7 +407,8 @@ device first); "Folder on this computer" can't reach other copies of that folder
 **pCloud notes** (from a CORS check on 2026-11-08; sign-in details read in pCloud's docs on 2026-11-12). **Stopped
 2026-11-17:** measured against the real API, a web page with an OAuth token can list, save and delete, but every way to
 read a file's content is refused (`getfilelink` 7010 or a download host without CORS; `getzip`/`gettextfile` 1000).
-The table of calls and the idea for later (pCloud's own login and an `auth` token) are in pcloud-plan.md. The app's
+The code was removed on 2026-11-18 (last in `ff75bef`). The table of calls and the idea for later (pCloud's own login
+and an `auth` token) are in pcloud-plan.md. The app's
 token sees its app folder (`Applications/Interstitial Diary/`) as "/". The notes below are the original plan:
 - Use the **HTTP API** (`api.pcloud.com` US / `eapi.pcloud.com` EU). It returns `Access-Control-Allow-Origin: *`.
 - **WebDAV has no CORS headers**, so browsers can't use it.

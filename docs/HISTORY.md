@@ -290,8 +290,8 @@ in practice (a custom domain later, about $10/year, would be a new origin and in
    the sub-path, `configure-pages`, `upload-pages-artifact`, then a second job `deploy-pages`; permissions
    `contents: read`, `pages: write`, `id-token: write`; concurrency group `pages`. Action versions (looked up 2026-11-10):
    checkout v7, setup-node v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5 (all first-party, pinned to a
-   major version; re-check if a run warns about a deprecated version). `src/deployWorkflow.test.ts` guards trigger, order,
-   base path, permissions and pinning. Both runs so far were green (about 40 s). GitHub's only warning: `ubuntu-latest`
+   major version; re-check if a run warns about a deprecated version). `src/deployWorkflow.test.ts` guarded trigger, order,
+   base path, permissions and pinning (dropped in the 2026-11-18 test trim). Both runs so far were green (about 40 s). GitHub's only warning: `ubuntu-latest`
    is moving to Ubuntu 26.
 4. **Repo and push:** created public and empty with `gh repo create`, `main` pushed (45 commits at the time, all under the
    noreply identity, history scanned first); the user set Settings > Pages > Source: GitHub Actions.

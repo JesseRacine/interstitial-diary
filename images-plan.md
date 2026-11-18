@@ -221,9 +221,10 @@ downloads when opened, and failures recover on the next sync. Tests pass.
 
 ### Phase 4: pCloud — BUILT, THEN STOPPED (2026-11-17)
 
-`pcloud-store.ts` implements `readBlob`/`writeBlob`/`hasBlob`/`removeBlob` (`stat`, `uploadfile` with `renameifexists`,
+`pcloud-store.ts` implemented `readBlob`/`writeBlob`/`hasBlob`/`removeBlob` (`stat`, `uploadfile` with `renameifexists`,
 `deletefile`) and passed the two-device photo test against a fake pCloud. Against the real pCloud a web page could save a
-photo but not read one back, so the module is not offered (pcloud-plan.md "Why it stopped"). Dropbox carries photos.
+photo but not read one back, so the module was never offered, and its code was removed on 2026-11-18 (last in
+`ff75bef`; pcloud-plan.md "Why it stopped"). Dropbox carries photos.
 
 ## Testing
 
