@@ -12,8 +12,9 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   time in a day file by hand (`## 09:14`) is ignored when the heading has the id comment: use the app's "When" field.
   A time edit and a text edit of the same entry on two devices before they sync keep only the newer one.
 - The folder module needs Chrome/Edge on desktop and usually needs "Reconnect folder" after a browser restart.
-- On Android there is currently no copy outside the browser (the app warns about this in the header and Settings, and
-  reminds you to export every couple of weeks) until a cloud module (Dropbox, then pCloud) works.
+- On Android the only copy outside the app is Dropbox (or an Export); without Dropbox the app warns about this in the
+  header and Settings and reminds you to export every couple of weeks. pCloud is not possible from a web page
+  (pcloud-plan.md).
 - No import of existing notes from other apps yet (export only).
 - Export with photos only includes originals currently on the device; on a computer with the folder module, photos
   dropped from the browser cache (over the cache limit, 1 GB by default) are left out of the zip (they are still in the folder).

@@ -9,7 +9,8 @@ Read these before changing anything substantial:
   photos, data safety).
 - **[PROGRESS.md](PROGRESS.md)**: **short on purpose; read it at the start of a session**: where things stand, what's
   next, what the user still has to do or confirm. **Update it when you finish a step, and keep it short.** Detail lives in
-  `docs/`: [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md) (Dropbox/pCloud plans: read when working on storage modules),
+  `docs/`: [docs/CLOUD-STORAGE.md](docs/CLOUD-STORAGE.md) (Dropbox built, pCloud stopped, other ideas: read when working on
+  storage modules; pCloud's own story and API results: [pcloud-plan.md](pcloud-plan.md)),
   [docs/HISTORY.md](docs/HISTORY.md) (commit table, how finished steps were done and checked, how to push: look things up
   there, don't read it whole), [docs/LIMITS-AND-IDEAS.md](docs/LIMITS-AND-IDEAS.md). Don't grow PROGRESS.md again: put new
   history in HISTORY.md and new plans in their own `docs/` file.
@@ -18,10 +19,11 @@ Read these before changing anything substantial:
   Android (stage 1 built; stage 2, a native widget, not started).
 
 **Status:** this file does not track status; **PROGRESS.md does** (what is built, what is next, what the user still
-has to check). In one line (2026-11-14): everything in the code map below is built and **live on GitHub Pages,
-https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public); Dropbox sync works
-between the user's Windows PC and Android phone per the user; 524 tests pass. **Never connect Dropbox on localhost:**
-the dev server shares the real app's Dropbox folder.
+has to check). In one line (2026-11-17, build 7): everything in the code map below is built and **live on GitHub Pages,
+https://jesseracine.github.io/interstitial-diary/** (repo `JesseRacine/interstitial-diary`, public), except the pCloud
+files, which are built but not offered; Dropbox sync works between the user's Windows PC and Android phone per the user;
+680 tests pass. **Never connect Dropbox on localhost:** the dev server shares the real app's Dropbox folder (it happened
+once, 2026-11-17; before asking the user to try localhost, have them check the badge says "Only in this browser").
 
 **Native apps (second repo, started 2026-11-14):** `~/projects/interstitial-diary-app` (public,
 `JesseRacine/interstitial-diary-app`) is a Tauri 2 shell around this repo's build: an Android APK and a portable
@@ -35,6 +37,12 @@ the page's address (the Dropbox redirect, the service worker, share target) beha
 sign-ins happen in the user's own browser; a stopped dev server makes an already-open localhost tab fail to make photo
 thumbnails ("Not synced yet"), so restart it and reload; any change that other devices must follow (like Start over)
 has to work for a device that updates *after* the change happened.
+
+**Lesson from pCloud (2026-11-17):** a cloud API that lets a web page sign in and save may still refuse to let it read a
+file back (pCloud: download links refused by referrer or without CORS, content calls refusing the OAuth token). Before
+building a new cloud module, **check from a real web page, with a real token, that a file can be read back**, and test
+a read of a file that exists (an empty folder makes reading look fine). Claude can run such checks itself: the user
+signs in inside Claude's browser pane, Claude calls the API from the page and prints only result codes, never the token.
 
 **This repo is public** (`origin` = https://github.com/JesseRacine/interstitial-diary; every push to `main` runs the tests
 and deploys the site). Keep it free of personal data: no machine paths, personal email addresses, keys or tokens (scan
@@ -57,9 +65,8 @@ never commit an app secret, access token or refresh token.
   `CLAUDE.md`, which is not part of this repo).
 - **Claude session folder (Windows, outside this repo):** holds `.claude/launch.json` (dev servers `interstitial-dev`
   5173, `interstitial-preview` 4173, `interstitial-preview-sub` 4174), a pointer `CLAUDE.md`, the newest native builds
-  (`builds\`), and **read-only backups** (dated `archive-YYYY-MM-DD/` folders + zips, listed in that pointer file, and
-  the oldest `archive/` + zip of f4ef4d9, which still has the old identity in its history: keep it private): source
-  snapshot, full git history as a `.bundle`, Claude's notes. No working code lives
+  (`builds\`), and **one read-only backup zip** (`Interstitial-Diary-archive-YYYY-MM-DD.zip`, named in that pointer
+  file; the user keeps only the newest): source snapshots of both repos, full git history as `.bundle`s, Claude's notes. No working code lives
   there; never edit or build in a snapshot. To refresh the backup after more work, make a new dated archive (`git archive
   HEAD` for the source, `git bundle create ... --all` for the history: test a clone of the bundle).
 - **Claude's own memory notes** (outside the repo, in the user's Claude profile) are a short summary of this file and
@@ -187,8 +194,11 @@ src/
     memory.ts           in-memory FileStore/LocalStore for tests (and a template for new modules)
     fs-access.d.ts      File System Access API typings
     backends/           one file per storage module (folder.ts, browser.ts, dropbox.ts; fs-store.ts = shared directory
-                        store; oauth.ts = PKCE sign-in for cloud modules; dropbox-store.ts = Dropbox FileStore;
-                        fake-dropbox.ts = test-only fake Dropbox API) + index.ts registry
+                        store; oauth.ts = sign-in for cloud modules: PKCE code flow, or the token flow with the reply in
+                        the URL fragment; dropbox-store.ts = Dropbox FileStore; fake-dropbox.ts = test-only fake Dropbox
+                        API; timeout.ts = fetchWithTimeout) + index.ts registry. pcloud.ts (module, isDevHost,
+                        DEV_FOLDER), pcloud-store.ts and fake-pcloud.ts are built and tested but NOT registered (pCloud
+                        stopped, pcloud-plan.md), so they are not in the app
     resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI
@@ -227,7 +237,7 @@ src/
      of deleted entries (`storage/cleanup.ts`); keep every rule and test there when changing it (live-entry check,
      name validation, sync first, exclusive run, atomic local removal, forget removed paths from `images:<id>`).
    - Bytes are saved to Dexie when a photo is *attached*, so a lost draft never loses a photo.
-3. **Storage is modular.** New storage (pCloud, GitHub, native folder...) = a new `StorageBackend` in
+3. **Storage is modular.** New storage (GitHub, native folder...) = a new `StorageBackend` in
    `storage/backends/` plus one line in `backends/index.ts`. Do not add backend-specific logic to `sync.ts`. To carry
    photos it must implement `readBlob`/`writeBlob`/`hasBlob` (and `removeBlob` for the cleanup).
 4. **The Markdown file format is a public contract.** Users edit these files by hand and older files must keep
@@ -296,6 +306,8 @@ src/
 - **The Browser pane only repaints when it is asked to** (e.g. a screenshot). The virtualised views (react-virtuoso)
   measure with ResizeObserver, so right after a reload or a jump they can look empty or land on the wrong day until you
   take a screenshot and wait a moment. That is the pane, not a bug (the Calendar jump behaves the same).
+- **Only `localhost:5173` and `127.0.0.1:5173` are registered as sign-in return addresses** with Dropbox (and pCloud),
+  so the preview builds (4173, 4174) cannot sign in to a cloud module.
 - **Never seed fake data into `localhost:5173`**: that origin may have a storage backend, which would sync it into real
   files. Use `http://127.0.0.1:5173`: a different origin, so its own empty database and no sync.
 - **Cleaning up after seeding:** the pane may refuse `indexedDB.deleteDatabase`. Instead `disconnect()` the module, delete

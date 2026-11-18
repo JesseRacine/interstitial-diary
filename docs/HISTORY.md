@@ -78,6 +78,13 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | 794e7d8 | Notes step 3: `NotesSection.tsx` on each person's/place's page (Add note, Edit, Delete); note counts in Tags |
 | 3c9fff9 | Notes step 4: the 📝 Note button in the capture box (`lib/noteTarget.ts`: "Note about" with suggestions, new person / `~` place); "Saved as a note · Open" |
 | (step 5 commit) | Notes step 5: Manual, DESIGN.md, this history; build 6. **Steps 1 to 5 pushed 2026-11-17 on the user's request** |
+| c56281e | pCloud plan agreed (2026-11-17): `pcloud-plan.md` (Client ID, app-folder access, the `dev-localhost/` rule, four steps) |
+| 4e6bfe9 | Docs: the four pCloud redirect URIs registered by the user |
+| 4b92d34 | pCloud step 1: OAuth token flow in `oauth.ts` (reply in the fragment), `pcloud.ts` (module, `isDevHost`, `DEV_FOLDER`) |
+| 50a6623 | pCloud step 2: `pcloud-store.ts` + `fake-pcloud.ts`, two-device sync test; pCloud listed in Settings |
+| fe95c31 | pCloud step 3: read through `getzip` after `getfilelink` answered 7010 (turned out not to work either) |
+| 777289b | pCloud stopped: a web page cannot read files back (measured); module kept, not offered; Settings shows why a sign-in is needed |
+| b14e17d | Build 7: pCloud removed from Settings. **Pushed 2026-11-17 on the user's request** (deploy run 44216122403 green); apps rebuilt (run 44216731203) |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old
 doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -144,6 +151,29 @@ at the top of the person's or place's page and in search.
   (localhost refuses Dropbox) was offered: "not now" (PROGRESS.md "What next" 4).
 - **Same day:** the user asked to trim the test suite some time ("700 unit tests" is too many for this app): PROGRESS.md
   "What next".
+
+## pCloud (2026-11-17): built in two steps, stopped at the first real try; build 7
+
+Plan, decisions and the full table of API results: [pcloud-plan.md](../pcloud-plan.md). pCloud approved the user's app
+(Client ID `8rKcvw6AboV`, its own app folder, US account, four redirect URIs).
+
+- **Built:** step 1, the sign-in (pCloud's OAuth token flow: the token comes back in the URL fragment and does not
+  expire); step 2, the file store against a fake pCloud. Decided first, after the Dropbox scare the same day: on a
+  development address (localhost, 127.0.0.1) the module only ever uses the `dev-localhost/` subfolder, decided from the
+  address every time, never saved (`tauri.localhost` is not a development address).
+- **The real try (step 3):** the user signed in on localhost; saving worked and the files landed in `My pCloud/Applications/
+  Interstitial Diary/dev-localhost/` (so "/" is the app folder). Reading failed: `getfilelink` 7010 "Invalid link
+  referer". A switch to `getzip` seemed to work, but only because nothing existed to read yet. On `127.0.0.1` (signed in by
+  the user inside Claude's browser pane) Claude ran each call from the page and printed only result codes: `getzip`,
+  `getziplink`, `gettextfile` answer 1000 "Log in required"; `getfilelink` as a POST gives a link, but the download host
+  has no CORS; only thumbnails (`getthumb`) can be read; `diff` is refused for app-folder apps (2096). pCloud's SDK
+  maintainers say browser downloads are not supported.
+- **Stopped on the user's decision.** The code stays (not registered, not in the build); a later try would use pCloud's
+  own login (email and password → an `auth` token), checking first that the read calls accept it. Kept improvements:
+  Settings shows the reason after "Sign in to … again", and the pCloud reply's `userid` is read and cleaned from the URL.
+- **Build 7** pushed on the user's request: pCloud gone from "coming later". Claude's pane showed the update banner ("A new
+  version is ready", Reload → Build 7), the first time it was seen working. The apps were rebuilt the same night and copied
+  to `builds\`; the `.exe` opened from a scratch copy.
 
 ## Completed steps
 

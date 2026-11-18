@@ -72,9 +72,8 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 679 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
-  43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
-  Check with `git status -sb`.
+- **Git state (2026-11-17):** `origin/main` is at `b14e17d` (build 7, deployed). Later local commits are docs-only and
+  usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-16.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-16 at **build 5** plus the app repo's saved-copy cleanup: **both repos**
   (commit ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; the
@@ -121,21 +120,17 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-Nothing in progress. **pCloud is stopped** (2026-11-17, the user's decision; [pcloud-plan.md](pcloud-plan.md) "Why it
-stopped"): sign-in and saving worked against the real pCloud, but **a web page cannot read files back** (`getfilelink`
-7010 or no CORS on the download host; `getzip`/`gettextfile` 1000 "Log in required"), so it cannot sync. Steps 1 and 2
-stay in the code, unregistered (not in Settings, not in "coming later"). **If the user picks it up again, they want
-pCloud's own login (email + password → an `auth` token)**; check first that the content calls accept that token. Not
-pushed as **build 7** on the user's request (pCloud gone from "coming later"; Settings shows the reason after "Sign in
-to … again"). The user may
-delete the test folder `Applications/Interstitial Diary/dev-localhost` on pcloud.com and remove the app's access in
-pCloud's settings.
+Nothing in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
+[pcloud-plan.md](pcloud-plan.md)): a web page can save to pCloud but not read files back. The code stays, unregistered;
+removed from Settings in **build 7** (pushed). **If the user picks it up again, they want pCloud's own login (email +
+password)**; check first that the read calls accept that token. The user may delete the test folder
+`Applications/Interstitial Diary/dev-localhost` on pcloud.com and remove the app's access in pCloud's settings.
+**Offer a new dated backup of both repos** (the last is build 5).
 
 **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
 story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
-**build 6** on the user's request; not yet tried on the user's devices (check 30); the native apps are not rebuilt (they show
-a note as an ordinary entry starting with `=@…` until they are). **Offer a new dated backup of both repos** (the last is
-build 5). **Tracking is finished** (2026-11-15, [tracking-plan.md](tracking-plan.md)). Ask the user which of these, when
+**build 6** on the user's request; not yet tried on the user's devices (check 30); the native apps have it since their
+build 7 rebuild (2026-11-17, in `builds\`, not yet installed by the user). **Tracking is finished** (2026-11-15, [tracking-plan.md](tracking-plan.md)). Ask the user which of these, when
 they want:
 
 1. **Try the rebuilt native apps** (check 29). (Rebuilding after any later web change: `gh workflow run 'Build apps'

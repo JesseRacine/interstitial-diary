@@ -1,7 +1,7 @@
 # Plan: images in journal entries
 
-**Status (2026-11-09): phases 1, 2 and 3 are built and committed; phase 4 (pCloud) comes with the pCloud module
-([PROGRESS.md](PROGRESS.md) step 5).** The "Build log" near the end records what each step decided and how it was checked;
+**Status: phases 1, 2 and 3 are built and committed (2026-11-09); photos in the cloud came with the Dropbox module
+(2026-11-12). Phase 4 (pCloud) was built and then stopped with the pCloud module on 2026-11-17 ([pcloud-plan.md](pcloud-plan.md)).** The "Build log" near the end records what each step decided and how it was checked;
 DESIGN.md describes the result. Still to confirm by the user on the real Windows folder / a second device: see
 PROGRESS.md "Waiting on the user". Written 2026-11-08; replaces an earlier junior plan (`junior-plan.md`, deleted before the repo
 went public; see "Review of the junior plan" at the end for what changed and why).
@@ -11,7 +11,7 @@ went public; see "Review of the junior plan" at the end for what changed and why
 | 1: attach, show, store | 1.1 data model, 1.2 Markdown, 1.3 sync comparisons, 1.4 image pipeline, 1.5 binary storage + `pushImages`, 1.6 capture UI, 1.7 bubbles, 1.8 lightbox, 1.9 export, 1.10 docs | done |
 | 2: images on other devices | 2.1 `pullImages`, 2.2 originals on demand + cache, 2.3 "Not synced yet", 2.4 badge, 2.5 docs | done |
 | 3: search, browse, housekeeping | 3.1 `has:image`, 3.2 Photos view, 3.3 storage in Settings, 3.4 cleanup of deleted entries' photos, 3.5 data-safety wording | done |
-| 4: pCloud | the pCloud module implements the blob methods | not started |
+| 4: pCloud | the pCloud module implements the blob methods | built, stopped (a web page cannot read files from pCloud) |
 
 Goal: attach photos to entries, show thumbnails in the chat, open them full size, and keep the originals in the
 storage folder, without hurting scroll performance or risking journal data.
@@ -219,11 +219,11 @@ downloads when opened, and failures recover on the next sync. Tests pass.
    yet) are never touched. Confirmation shows the count and size and says it can't be undone.
 5. **Data-safety wording:** with no file storage set up, the warning says photos are only in this browser.
 
-### Phase 4: pCloud — NOT STARTED
+### Phase 4: pCloud — BUILT, THEN STOPPED (2026-11-17)
 
-The pCloud module (PROGRESS step 5) implements `readBlob`/`writeBlob`/`hasBlob` and `removeBlob` (needed by the photo
-cleanup) with its HTTP API (`uploadfile`, `getfilelink`/`file_open`, `stat`, `deletefile`). Nothing else should need to
-change.
+`pcloud-store.ts` implements `readBlob`/`writeBlob`/`hasBlob`/`removeBlob` (`stat`, `uploadfile` with `renameifexists`,
+`deletefile`) and passed the two-device photo test against a fake pCloud. Against the real pCloud a web page could save a
+photo but not read one back, so the module is not offered (pcloud-plan.md "Why it stopped"). Dropbox carries photos.
 
 ## Testing
 
