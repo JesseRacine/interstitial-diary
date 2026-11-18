@@ -211,7 +211,7 @@ export default function App() {
           <>
             <JournalView entries={journal} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
               onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
-            <Capture tagStats={tagStats} inputRef={captureRef}
+            <Capture tagStats={tagStats} events={events} inputRef={captureRef}
               onOpenNotes={(key) => { setTagPage(key); setView('tags'); setQuery(''); setBackQuery(null) }} initialText={prefill} onPrefilled={() => setPrefill('')}
               onSaved={() => setBottomTick((t) => t + 1)} />
           </>

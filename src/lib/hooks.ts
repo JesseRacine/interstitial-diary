@@ -25,7 +25,8 @@ export function useAutoGrow(ref: React.RefObject<HTMLTextAreaElement | null>, va
     const fit = () => {
       el.style.height = 'auto' // shrink to `rows` first, so deleting text makes the box smaller again
       const border = el.offsetHeight - el.clientHeight
-      el.style.height = `${el.scrollHeight + border}px`
+      // +1: scrollHeight is rounded down (33 for 33.2 px of text), which would show a scrollbar on one line.
+      el.style.height = `${el.scrollHeight + border + 1}px`
     }
     fit()
     window.addEventListener('resize', fit) // a narrower box wraps into more lines (turning the phone, resizing the window)

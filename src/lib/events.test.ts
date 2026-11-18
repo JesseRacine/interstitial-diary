@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blankEvents, computeEvents, eventAfterRename, eventKey, eventOfMarker, eventSegments, eventSpans, parseEventTitle, renameEventInText } from './events'
+import { blankEvents, closingQuote, computeEvents, eventAfterRename, eventBeingTyped, eventKey, eventOfMarker, eventSegments, eventSpans, eventSuggestions, parseEventTitle, renameEventInText } from './events'
 import { extractTags, makeEntry, replaceTag } from './entry'
 import { parseDay, serializeDay } from './markdown'
 
@@ -10,6 +10,41 @@ const entry = (id: string, day: string, text: string, deleted: 0 | 1 = 0) => {
   const [y, m, d] = day.split('-').map(Number)
   return { ...makeEntry(text, new Date(y, m - 1, d, 12).getTime(), id), deleted }
 }
+
+describe('suggesting event titles while typing', () => {
+  it('sees a title being typed after !" or !“, with the same start rule as a marker', () => {
+    expect(eventBeingTyped('Went to !"Jack')).toEqual({ start: 8, open: '"', partial: 'Jack' })
+    expect(eventBeingTyped('!“Beach w')).toEqual({ start: 0, open: '“', partial: 'Beach w' })
+    expect(eventBeingTyped('at !"')).toEqual({ start: 3, open: '"', partial: '' })
+    expect(eventBeingTyped('(!"Jack')?.partial).toBe('Jack')
+  })
+  it('stops once the quote is closed, or for ordinary punctuation', () => {
+    expect(eventBeingTyped('!"Jack\'s party" and')).toBeNull()
+    expect(eventBeingTyped('!"Jack\'s party"')).toBeNull()
+    expect(eventBeingTyped('he said "stop!" and "go')).toBeNull()
+    expect(eventBeingTyped('wow!"ok')).toBeNull()
+    expect(eventBeingTyped('!"line one\nline two')).toBeNull()
+  })
+  it('suggests used titles: starting with the text first, then containing it, newest first, one per title', () => {
+    const events = computeEvents([
+      entry('a', '2025-05-12', 'At !"Jack\'s party"'),
+      entry('b', '2026-05-12', 'At !"jack\'s  party" again'), // a year later: its own event, same title
+      entry('c', '2026-06-01', '!"Beach weekend"'),
+      entry('d', '2026-07-01', '!"Surprise for Jack"'),
+      entry('e', '2026-08-01', '!"Old" gone', 1), // deleted: not an event
+    ])
+    expect(eventSuggestions('jack', events)).toEqual(["jack's party", 'Surprise for Jack'])
+    expect(eventSuggestions('JACK\'S   P', events)).toEqual(["jack's party"])
+    expect(eventSuggestions('', events)).toEqual(['Surprise for Jack', 'Beach weekend', "jack's party"])
+    expect(eventSuggestions('', events, 2)).toHaveLength(2)
+    expect(eventSuggestions('zzz', events)).toEqual([])
+    expect(eventSuggestions('old', events)).toEqual([])
+  })
+  it('closes with the quote that matches the one typed', () => {
+    expect(closingQuote('"')).toBe('"')
+    expect(closingQuote('“')).toBe('”')
+  })
+})
 
 describe('reading events', () => {
   it('finds a quoted title after a !, with an apostrophe, straight or curly quotes', () => {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { addEntry } from '../lib/db'
 import { enterAction, hasCoarsePointer } from '../lib/dom'
 import { extractTags, timeLabel } from '../lib/entry'
+import type { EventStat } from '../lib/events'
 import { useAutoGrow, useCoarsePointer } from '../lib/hooks'
 import { noteTargetSuggestions, resolveNoteTarget } from '../lib/noteTarget'
 import { canHaveNotes, noteText } from '../lib/notes'
@@ -23,8 +24,10 @@ function useClock() {
 
 type Mode = 'entry' | 'track' | 'note'
 
-export function Capture({ tagStats, onSaved, onOpenNotes, inputRef, initialText = '', onPrefilled }: {
+export function Capture({ tagStats, events, onSaved, onOpenNotes, inputRef, initialText = '', onPrefilled }: {
   tagStats: TagStat[]
+  /** The journal's events, for suggesting titles already used while `!"` is typed. */
+  events?: readonly EventStat[]
   onSaved: () => void
   /** Open the page of a person or place (the "Open" link after saving a note). */
   onOpenNotes?: (key: string) => void
@@ -38,7 +41,7 @@ export function Capture({ tagStats, onSaved, onOpenNotes, inputRef, initialText 
   const [caret, setCaret] = useState(initialText.length)
   const now = useClock()
   const coarse = useCoarsePointer()
-  const ac = useTagAutocomplete(text, caret, tagStats)
+  const ac = useTagAutocomplete(text, caret, tagStats, events)
   // Track mode: the box writes a tracked item (a name, a note, one photo; see lib/tracking.ts) instead of a plain entry.
   // Note mode: the box writes a note on a person or place (a fact with no day, text only; see lib/notes.ts).
   const [mode, setMode] = useState<Mode>('entry')

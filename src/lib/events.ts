@@ -4,7 +4,8 @@ import type { Entry } from './entry'
  * Events: the name of something that happened, written in an entry as `!"Jack's 40th birthday"`.
  *
  * An event is not a tag. A tag is a label you reuse; an event title is mostly used once (or a few times around the
- * same days), so events have no autocomplete, no counts of "most used" and no rename-everywhere. Nothing new is stored:
+ * same days), so events have no counts of "most used" and no rename-everywhere. Typing `!"` suggests titles already used
+ * (eventBeingTyped, eventSuggestions; added 2026-11-18 so the same event is not typed two ways). Nothing new is stored:
  * the marker stays in the entry's text exactly as typed, and the list of events is worked out from the text.
  *
  * This file only imports a type from `entry.ts`, because `entry.ts` imports it back (tags are not read inside titles).
@@ -93,6 +94,38 @@ export function blankEvents(text: string): string {
   }
   return out + text.slice(last)
 }
+
+/**
+ * An event title being typed at the end of `before` (the text up to the caret): `!"` or `!“` (same start rule as a
+ * marker) and the title so far, with no closing quote yet. `start` is where the `!` is, `open` the quote typed.
+ */
+export function eventBeingTyped(before: string): { start: number; open: string; partial: string } | null {
+  const m = new RegExp(`(?<![^\\s(\\[{])!(["“])([^"“”\\r\\n]{0,${MAX_TITLE}})$`, 'u').exec(before)
+  return m ? { start: m.index, open: m[1], partial: m[2] } : null
+}
+
+/**
+ * Titles already used that fit what has been typed (spacing and capitals do not matter), one per title: the ones that
+ * start with it first, then the ones that only contain it; each group newest event first. Nothing typed yet gives the
+ * newest titles. The spelling shown is the newest event's.
+ */
+export function eventSuggestions(partial: string, events: readonly EventStat[], n = 6): string[] {
+  const typed = partial.replace(/\s+/g, ' ').trimStart().toLowerCase()
+  const newest = [...events].sort((a, b) => (a.last < b.last ? 1 : a.last > b.last ? -1 : 0))
+  const seen = new Set<string>()
+  const starts: string[] = []
+  const contains: string[] = []
+  for (const ev of newest) {
+    if (seen.has(ev.key)) continue
+    seen.add(ev.key)
+    if (ev.key.startsWith(typed)) starts.push(ev.title)
+    else if (ev.key.includes(typed)) contains.push(ev.title)
+  }
+  return [...starts, ...contains].slice(0, n)
+}
+
+/** The closing quote that goes with the opening one the person typed (a phone keyboard's curly “ closes with ”). */
+export const closingQuote = (open: string): string => (open === '“' ? '”' : '"')
 
 /** Check a title typed by the user (for rename). */
 export function parseEventTitle(input: string): { title: string } | { error: string } {

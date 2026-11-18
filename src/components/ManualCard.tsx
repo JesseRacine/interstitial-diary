@@ -51,6 +51,8 @@ export function ManualCard() {
           <ul>
             <li>Name something that happened with <code>!&quot;Jack&apos;s 40th birthday&quot;</code>. The title goes in quotes and can have spaces
               (up to 120 characters, one line). The <code>!</code> must follow a space, the start of the text or an opening bracket.</li>
+            <li>After <code>!&quot;</code> the titles you have already used are suggested, newest first, so an event is spelt the same
+              way each time. Accepting one closes the quote.</li>
             <li>Add a date with <code>!&quot;Jack&apos;s 40th&quot; (2026-05-12)</code> (year-month-day). The same title and date is one event, however
               far apart you wrote about it.</li>
             <li>Without a date, entries with the same title within 7 days are one event; a longer gap is a new event with the same

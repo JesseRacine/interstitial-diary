@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode, useMemo, useState } from 'react'
 import { tagBeingTyped, tagSegments } from '../lib/entry'
 import { eventDateLabel } from '../lib/eventRows'
-import { EVENT_ICON } from '../lib/events'
+import { closingQuote, EVENT_ICON, eventBeingTyped, eventKey, type EventStat, eventSuggestions } from '../lib/events'
 import { markerSegments } from '../lib/markers'
 import { displayName, tagKindOf, tagLabel, tagName, tagToken } from '../lib/tagKinds'
 import { TRACKING_ICONS } from '../lib/tracking'
@@ -75,25 +75,48 @@ export function EntryText({ text, terms, onTag, onEvent, onTrack }: {
   )
 }
 
+/** One line in a suggestion list: `tag` is what picking it hands back; `label` (if set) is shown instead of the tag. */
+export interface SuggestionItem { tag: string; count: number; label?: string }
+
+/** Event suggestions carry this in front of the title, so `apply` can tell them from tags. */
+const EVENT_PICK = '!event:'
+
 /**
- * Tag autocomplete for a text field: suggests known tags of the kind being typed while the caret sits after a symbol
+ * Autocomplete for a text field: suggests known tags of the kind being typed while the caret sits after a symbol
  * and what has been typed of the name ("#wo", "@sa", "~ho"). Items and keys are stored keys (`work`, `@sarah`).
+ * Given `events`, it also suggests event titles already used while one is being typed (`!"Jack`, lib/events.ts);
+ * picking one closes the quote.
  */
-export function useTagAutocomplete(text: string, caret: number, tagStats: TagStat[]) {
+export function useTagAutocomplete(text: string, caret: number, tagStats: TagStat[], events?: readonly EventStat[]) {
   const [sel, setSel] = useState(0)
   const [dismissedAt, setDismissedAt] = useState<string | null>(null)
-  const typing = useMemo(() => tagBeingTyped(text.slice(0, caret)), [text, caret])
-  const key = typing ? `${caret}:${typing.kind.sigil}${typing.partial}` : null
-  const suggestions =
-    !typing || dismissedAt === key
+  const eventTyping = useMemo(() => (events ? eventBeingTyped(text.slice(0, caret)) : null), [events, text, caret])
+  // Inside an event title a `#` or `@` is part of the title, so tags are only looked for outside one.
+  const typing = useMemo(() => (eventTyping ? null : tagBeingTyped(text.slice(0, caret))), [eventTyping, text, caret])
+  const key = eventTyping ? `${caret}:!${eventTyping.partial}` : typing ? `${caret}:${typing.kind.sigil}${typing.partial}` : null
+  const suggestions: SuggestionItem[] =
+    dismissedAt === key
       ? []
-      : tagStats
-          .filter((t) => tagKindOf(t.tag) === typing.kind && tagName(t.tag).startsWith(typing.partial) && tagName(t.tag) !== typing.partial)
-          .slice(0, 6)
+      : eventTyping && events
+        ? eventSuggestions(eventTyping.partial, events).map((title) => ({
+            tag: EVENT_PICK + title,
+            count: events.filter((ev) => ev.key === eventKey(title)).reduce((n, ev) => n + ev.count, 0),
+            label: `${EVENT_ICON} ${title}`,
+          }))
+        : !typing
+          ? []
+          : tagStats
+              .filter((t) => tagKindOf(t.tag) === typing.kind && tagName(t.tag).startsWith(typing.partial) && tagName(t.tag) !== typing.partial)
+              .slice(0, 6)
   const index = Math.min(sel, Math.max(0, suggestions.length - 1))
 
-  /** Returns the new text and caret position after inserting the tag. */
+  /** Returns the new text and caret position after inserting the tag (or event title). */
   const apply = (tag: string) => {
+    if (tag.startsWith(EVENT_PICK) && eventTyping) {
+      const rest = text.slice(caret).replace(/^["”]/, '') // a closing quote the keyboard already added
+      const before = `${text.slice(0, eventTyping.start)}!${eventTyping.open}${tag.slice(EVENT_PICK.length)}${closingQuote(eventTyping.open)}${/^\s/.test(rest) ? '' : ' '}`
+      return { text: before + rest, caret: before.length }
+    }
     const before = (typing ? text.slice(0, typing.start) : text.slice(0, caret)) + `${tagToken(tag)} `
     return { text: before + text.slice(caret).replace(/^\S*/, ''), caret: before.length }
   }
@@ -111,14 +134,14 @@ export function useTagAutocomplete(text: string, caret: number, tagStats: TagSta
   return { suggestions, index, apply, onKey }
 }
 
-export function Suggestions({ items, index, onPick }: { items: TagStat[]; index: number; onPick: (tag: string) => void }) {
+export function Suggestions({ items, index, onPick }: { items: readonly SuggestionItem[]; index: number; onPick: (tag: string) => void }) {
   if (!items.length) return null
   return (
     <ul className="suggestions" role="listbox">
       {items.map((t, i) => (
         <li key={t.tag} role="option" aria-selected={i === index}>
           <button type="button" tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); onPick(t.tag) }}>
-            {tagLabel(t.tag)} <span className="muted">{t.count}</span>
+            {t.label ?? tagLabel(t.tag)} <span className="muted">{t.count}</span>
           </button>
         </li>
       ))}
