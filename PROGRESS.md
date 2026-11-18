@@ -74,8 +74,8 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 448 tests (2026-11-18, after the test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits are docs-only and
-  usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits (docs and the
+  2026-11-18 test trim, no app change) stay unpushed until the next app change, by the user's choice ("Not now"). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
   ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; 680 tests
