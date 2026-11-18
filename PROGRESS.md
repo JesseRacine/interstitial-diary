@@ -124,10 +124,11 @@ to the Claude session folder, `builds\`.
 scrolling line** with a long sentence on Android (its height counted only typed line breaks, not wrapped lines): fixed in
 `0d508d7` (`useAutoGrow` in `src/lib/hooks.ts`, capped at about 8 lines / a third of the screen in `.capture textarea`);
 checked in Claude's browser at phone size (5 wrapped lines shown, stops at 208 px, shrinks when cleared); 680 tests.
-2. **Event titles had no autocomplete** (by design until now): `f57356b`, the entry box suggests titles already used
-after `!"` / `!“` (`eventBeingTyped`, `eventSuggestions` in `src/lib/events.ts`; the hook in `components/text.tsx`;
-newest first, starts-with before contains); picking closes the quote. Not in the Edit box or the search bar
-(`event:"`). Also fixed a sub-pixel scrollbar the first fix gave a one-line box. Checked in Claude's browser; 684 tests.
+2. **Event titles had no autocomplete** (by design until now): `f57356b` suggested every title used; the user then
+chose **only the last event** instead (`9cafc02`): after `!"` / `!“` the entry box offers the title of the most recently
+written entry's event ("last event"), while what is typed still fits its start (`lastEventTitle`, `suggestLastEvent`
+in `src/lib/events.ts`; the hook in `components/text.tsx`); picking closes the quote. Not in the Edit box or the
+search bar. `f57356b` also fixed a sub-pixel scrollbar the first fix gave a one-line box. Checked in Claude's browser; 685 tests.
 **Both not pushed** (raise `BUILD_NUMBER` first); not yet seen on the phone. Next: any further change from the user.
 
 Before this, nothing was in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
