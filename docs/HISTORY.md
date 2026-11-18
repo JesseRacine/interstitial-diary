@@ -200,6 +200,30 @@ Plan, decisions and the full table of API results: [pcloud-plan.md](../pcloud-pl
   "Build 8"). The user: "I'm happy with the test". Apps rebuilt (run 44374189547; its `web-dist` has the new code; the
   `.exe` opened from a scratch copy); the APK was sent to the user, who installed it: "seems good". 685 tests.
 
+## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
+
+The user (2026-11-17): "I don't think we need like 700 unit tests in a small app like this". Reviewed first: 685
+tests in 0.9 s, so the gain is less to rewrite when a detail changes on purpose, not speed. **Kept untouched:** every
+test that guards entries and photos (sync, manager, attachments, cleanup, markdown + merge, db, purge, start over,
+Dropbox, oauth, timeout, originals, attach, export, retime), about 290. Six steps, one per turn, each with tests, type
+check and lint, one commit each:
+
+1. `3f8c64d`: the pCloud module, its fake and tests, and the pCloud-only OAuth token flow removed (685 → 663).
+2. `515099c`: `build.test.ts` and `deployWorkflow.test.ts` dropped: they matched file text, and one read PROGRESS.md, so
+   a docs edit could fail a deploy (→ 655).
+3. `26ba080`: `dataSafety` checks facts (counts, "not a backup", days ago), not whole sentences; reminder timing kept
+   (→ 644).
+4. `322c838`: screen helpers (photo grid, journal rows, events list, week review, zoom, tag names, Enter key, launch,
+   `?view=`) folded to 1 to 3 tests each; a 7,300-entry "scales" test dropped (→ 580).
+5. `8e1ccae`: search folded into "query → expected" tables, every old query kept as a row; a 300-entry "scales" test
+   dropped (→ 520).
+6. Events, tracking and notes (112 → 40): marker edge cases as table rows; every text-changing test kept (rename,
+   state change, segments joining back, blanking, tags inside titles, day-file round trips) (→ 448).
+
+In steps 5 and 6 a deliberately wrong table row (on a throwaway copy) was confirmed to fail in each rewritten file.
+Two expectations written wrongly during the rewrite were the test's mistake, not the app's (the photo grid's day count
+is photos; the events list is in writing order, not date order).
+
 ## Completed steps
 
 ### 1. Images in entries: phases 1–3 done; phase 4 comes with the first cloud module (Dropbox, then pCloud)

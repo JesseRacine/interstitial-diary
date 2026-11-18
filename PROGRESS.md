@@ -73,7 +73,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 520 tests (2026-11-18, after trim step 5); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 448 tests (2026-11-18, after the test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits are docs-only and
   usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
@@ -122,7 +122,8 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**In progress: the test-suite trim (item 6 below; steps 1 to 5 of 6 done).** **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
+Nothing in progress. **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
+the ones guarding entries and photos untouched; no app change, commits local (no push needed). **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
 installed by the user: "seems good" (the Windows `.exe` is in `builds\`, copying it to the real folder is the user's).
 
@@ -156,24 +157,7 @@ they want:
 5. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
    installed app should show "A new version is ready" with Reload. Closes older check 7. (The Tracking push on
    2026-11-15 was a chance to see it; the user did not say whether it appeared.)
-6. **Trim the test suite: IN PROGRESS** (the user, 2026-11-17: "I don't think we need like 700 unit tests in a small
-   app like this"). Reviewed 2026-11-18: 685 tests, 0.9 s; about 290 guard entries and photos (sync, manager,
-   attachments, cleanup, markdown + merge, db, purge, start over, Dropbox, oauth, timeout, originals, attach, export,
-   retime) and stay, plus the text-preserving rename / state-change / day-file tests in events, tracking and notes.
-   Target about 400. Steps, one per turn, no push needed (no app change):
-   1. ~~Remove the pCloud code and its tests~~ **done 2026-11-18** (685 → 663; also the pCloud-only token flow in
-      `oauth.ts`).
-   2. ~~Drop `build.test.ts` and `deployWorkflow.test.ts`~~ **done 2026-11-18** (663 → 655; they matched file text,
-      and one read PROGRESS.md, so a docs edit could fail a deploy).
-   3. ~~`dataSafety`: keep when warnings/reminders show, drop exact-sentence checks~~ **done 2026-11-18** (25 → 14
-      tests, 655 → 644; the reminder timing tests kept as they were).
-   4. ~~Screen helpers (imageLayout, photoRows, journalRows, eventRows, weekReview, zoom, tagKinds, dom, launch,
-      startView, keySet): 2 or 3 each~~ **done 2026-11-18** (87 → 23 tests, 644 → 580; folded, the main cases kept;
-      the 7,300-entry "scales" test dropped).
-   5. ~~Search (query, engine): fold the one-liners into a few tables~~ **done 2026-11-18** (74 → 14 tests, 580 →
-      520; every query kept as a table row; a wrong row was checked to fail; the 300-entry "scales" test dropped).
-   6. Parsing in events, tracking, notes: fold edge cases, keep text-preserving ones.
-7. **pCloud** is stopped (see above; a later try would use pCloud's own login). Also: photo sharing into the app, and the ideas in
+6. **pCloud** is stopped (see above; a later try would use pCloud's own login). Also: photo sharing into the app, and the ideas in
    docs/LIMITS-AND-IDEAS.md.
 
 ## Waiting on the user
