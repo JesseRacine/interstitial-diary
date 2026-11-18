@@ -24,6 +24,11 @@ export function bodyBytes(body: RequestInit['body'] | undefined): number {
   if (typeof body === 'string') return body.length
   if (body instanceof Blob) return body.size
   if (ArrayBuffer.isView(body) || body instanceof ArrayBuffer) return body.byteLength
+  if (typeof FormData !== 'undefined' && body instanceof FormData) {
+    let n = 0
+    for (const [, v] of body) n += typeof v === 'string' ? v.length : v.size
+    return n
+  }
   return 0
 }
 

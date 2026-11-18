@@ -1,6 +1,6 @@
 # Plan: pCloud storage module
 
-_Status: **PLAN AGREED 2026-11-17 (with the `dev-localhost/` folder on localhost); step 1 done 2026-11-17; step 2 next.** Written after
+_Status: **PLAN AGREED 2026-11-17 (with the `dev-localhost/` folder on localhost); steps 1 and 2 done 2026-11-17; step 3 (the user's first real try on localhost) next.** Written after
 the user registered the app with pCloud. Decisions below were agreed in the conversation on 2026-11-17; the steps are built one per turn, each tested and committed, asking before the
 next. Older background: docs/CLOUD-STORAGE.md section 5 and DESIGN.md "pCloud notes"._
 
@@ -55,6 +55,20 @@ apps by referrer; the alternatives are `gettextfile` for text and `file_open`/`f
 2. **The files.** `pcloud-store.ts` (the FileStore: `list`, `read`, `write`, `remove`, the photo methods,
    `removeAll`, the `diff` change check; waits and retries on 4xxx/5xxx; 1000/2000 → "Sign in to pCloud again") and
    `fake-pcloud.ts`; tests through the sync engine as `dropbox-store.test.ts` does.
+   **Done 2026-11-17.** `pcloud-store.ts`: every call is a GET (or a plain multipart POST for `uploadfile`) with
+   `access_token` as a parameter, no referrer, no cookies; `result` 1000/2000/2094 → "sign in again", 2002/2005/2009 =
+   not found, 2008 = "Your pCloud is full.", 4xxx/5xxx (and HTTP 429/5xx) waited out up to 4 times (1, 2, 4, 8 s);
+   uploads create missing folders (`createfolderifnotexists`, level by level) once on 2005; text overwrites; photos use
+   `stat` first and `renameifexists`, and a renamed copy (another device won) is deleted by `fileid` and the size
+   checked again; reading is `getfilelink` + a GET of `https://<hosts[0]><path>`; `rev` = `hash:size`; `list()` walks
+   the root, the year folders and `.meta` only; `removeAll` = `deletefolderrecursive` per app folder; the change check
+   is `diff` (`last=0` bookmark, then `diffid` + `limit=1`). `timeout.ts` now counts a FormData body's size. Registered
+   in `backends/index.ts` (`pcloudBackend`, `location.hostname` decides the development folder); pCloud left
+   `PLANNED_BACKENDS`. 12 new tests (679 in all; two devices through the sync engine with a photo and offline edits, the
+   development folder never touching the real files and surviving the real Start over, the photo race, sign-in refused,
+   slow-down retries, the change check), tsc clean, lint 0 errors. Seen in the local preview build (port 4173):
+   Settings lists pCloud with the development-folder text, no console errors; **not signed in** (the user's step 3).
+   Note: only `localhost:5173` and `127.0.0.1:5173` are registered, so the preview builds (4173/4174) cannot sign in.
 3. **First real try (the user, on localhost, writing into `dev-localhost/` only).** Sign in, write entries and a photo,
    look at the files on pcloud.com; Claude settles the unknowns above from what happens and fixes what differs.
    Settings text and the Manual's storage section.

@@ -1,5 +1,7 @@
+import { metaPending } from '../oauthPending'
 import type { FileStore, StorageBackend } from '../types'
 import { OAuthError, type OAuthProvider, type PendingStore, beginSignIn, completeSignIn } from './oauth'
+import { pcloudStore } from './pcloud-store'
 
 /*
  * The pCloud storage module (pcloud-plan.md). Sign-in is pCloud's OAuth token flow: no secret, the token comes back in
@@ -119,3 +121,15 @@ export function makePCloudBackend(deps: PCloudDeps): StorageBackend<PCloudConfig
     },
   }
 }
+
+/** The app folder's URL, e.g. https://jesseracine.github.io/interstitial-diary/ or http://localhost:5173/ (as for Dropbox). */
+const appUrl = () => new URL(import.meta.env.BASE_URL, location.origin).href
+
+export const pcloudBackend = makePCloudBackend({
+  clientId: PCLOUD_CLIENT_ID,
+  pending: metaPending,
+  redirectUri: appUrl,
+  hostname: () => location.hostname,
+  navigate: (url) => location.assign(url),
+  store: (session) => pcloudStore({ session }),
+})
