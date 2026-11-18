@@ -1,8 +1,8 @@
 # Plan: pCloud storage module
 
 _Status: **STOPPED 2026-11-17 at step 3, on the user's decision: pCloud lets a web page save files but not read them
-back** (see "Why it stopped" at the end). Steps 1 and 2 are built and kept in the code, but pCloud is not offered in
-Settings. If it is picked up again, the user wants it done with pCloud's own login (email and password) instead of
+back** (see "Why it stopped" at the end). Steps 1 and 2 were built; **the code was removed on 2026-11-18** (with the
+test-suite trim); the last commit that has it is `ff75bef` (`git show ff75bef:src/storage/backends/pcloud.ts`). If it is picked up again, the user wants it done with pCloud's own login (email and password) instead of
 OAuth; see the end._
 
 _Earlier status: plan agreed 2026-11-17 (with the `dev-localhost/` folder on localhost); steps 1 and 2 done 2026-11-17._ Written after
@@ -109,8 +109,8 @@ So a web page can save into pCloud but cannot read a day file or a photo back, a
 sync. pCloud's SDK maintainers said the same (pcloud-sdk-js issue 4: downloading from a browser "is not currently
 supported"). Other facts learned: the reply's fragment holds `userid` (the docs say `uid`), now handled.
 
-**What stays in the code:** `oauth.ts` token flow, `pcloud.ts` (module, `isDevHost`, `DEV_FOLDER`), `pcloud-store.ts`,
-`fake-pcloud.ts` and their tests; nothing in `backends/index.ts` uses them, so the app does not include them. Also kept:
+**Removed from the code on 2026-11-18** (last in `ff75bef`): the `oauth.ts` token flow, `pcloud.ts` (module,
+`isDevHost`, `DEV_FOLDER`), `pcloud-store.ts`, `fake-pcloud.ts` and their 22 tests. Kept:
 Settings now shows the reason after "Sign in to … again" (any module), and a refused pCloud call names pCloud's code.
 
 **If the user picks pCloud up again: pCloud's own login (the user's decision, 2026-11-17).** pCloud's `userinfo` with

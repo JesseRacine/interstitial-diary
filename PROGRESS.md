@@ -73,7 +73,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 685 tests (2026-11-18); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 663 tests (2026-11-18, after trim step 1); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits are docs-only and
   usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
@@ -122,13 +122,13 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-Nothing in progress. **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
+**In progress: the test-suite trim (item 6 below; step 1 of 6 done).** **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
 installed by the user: "seems good" (the Windows `.exe` is in `builds\`, copying it to the real folder is the user's).
 
 **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
-[pcloud-plan.md](pcloud-plan.md)): a web page can save to pCloud but not read files back. The code stays, unregistered;
-removed from Settings in **build 7** (pushed). **If the user picks it up again, they want pCloud's own login (email +
+[pcloud-plan.md](pcloud-plan.md)): a web page can save to pCloud but not read files back. Removed from Settings in
+**build 7** (pushed); **the code and its tests were removed 2026-11-18** (test trim step 1; last in `ff75bef`). **If the user picks it up again, they want pCloud's own login (email +
 password)**; check first that the read calls accept that token. The user may delete the test folder
 `Applications/Interstitial Diary/dev-localhost` on pcloud.com and remove the app's access in pCloud's settings.
 
@@ -156,9 +156,20 @@ they want:
 5. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
    installed app should show "A new version is ready" with Reload. Closes older check 7. (The Tracking push on
    2026-11-15 was a chance to see it; the user did not say whether it appeared.)
-6. **Trim the test suite** (the user, 2026-11-17: "I don't think we need like 700 unit tests in a small app like this";
-   a to-do for later, not now): keep the tests that guard against losing entries (sync, merge, file format, delete,
-   storage modules) and fold or drop the ones that only pin small details; the user may raise the model's effort for it.
+6. **Trim the test suite: IN PROGRESS** (the user, 2026-11-17: "I don't think we need like 700 unit tests in a small
+   app like this"). Reviewed 2026-11-18: 685 tests, 0.9 s; about 290 guard entries and photos (sync, manager,
+   attachments, cleanup, markdown + merge, db, purge, start over, Dropbox, oauth, timeout, originals, attach, export,
+   retime) and stay, plus the text-preserving rename / state-change / day-file tests in events, tracking and notes.
+   Target about 400. Steps, one per turn, no push needed (no app change):
+   1. ~~Remove the pCloud code and its tests~~ **done 2026-11-18** (685 → 663; also the pCloud-only token flow in
+      `oauth.ts`).
+   2. Drop `build.test.ts` and `deployWorkflow.test.ts` (they match file text; one reads PROGRESS.md, so a docs edit
+      could fail a deploy).
+   3. `dataSafety`: keep when warnings/reminders show, drop exact-sentence checks.
+   4. Screen helpers (imageLayout, photoRows, journalRows, eventRows, weekReview, zoom, tagKinds, dom, launch,
+      startView, keySet): 2 or 3 each.
+   5. Search (query, engine): fold the one-liners into a few tables.
+   6. Parsing in events, tracking, notes: fold edge cases, keep text-preserving ones.
 7. **pCloud** is stopped (see above; a later try would use pCloud's own login). Also: photo sharing into the app, and the ideas in
    docs/LIMITS-AND-IDEAS.md.
 

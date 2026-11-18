@@ -197,11 +197,9 @@ src/
     memory.ts           in-memory FileStore/LocalStore for tests (and a template for new modules)
     fs-access.d.ts      File System Access API typings
     backends/           one file per storage module (folder.ts, browser.ts, dropbox.ts; fs-store.ts = shared directory
-                        store; oauth.ts = sign-in for cloud modules: PKCE code flow, or the token flow with the reply in
-                        the URL fragment; dropbox-store.ts = Dropbox FileStore; fake-dropbox.ts = test-only fake Dropbox
-                        API; timeout.ts = fetchWithTimeout) + index.ts registry. pcloud.ts (module, isDevHost,
-                        DEV_FOLDER), pcloud-store.ts and fake-pcloud.ts are built and tested but NOT registered (pCloud
-                        stopped, pcloud-plan.md), so they are not in the app
+                        store; oauth.ts = sign-in for cloud modules (PKCE code flow); dropbox-store.ts = Dropbox
+                        FileStore; fake-dropbox.ts = test-only fake Dropbox API; timeout.ts = fetchWithTimeout) +
+                        index.ts registry. The pCloud module was removed 2026-11-18 (last in ff75bef; pcloud-plan.md)
     resume.ts           finishes a cloud sign-in when the page loads again (oauthPending.ts keeps it in IndexedDB)
     startOver.ts        "Start over": empty the storage + marker file; the rules other devices follow (DESIGN.md)
   components/           React UI

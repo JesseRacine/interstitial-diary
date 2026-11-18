@@ -1,7 +1,7 @@
 import type { Entry } from '../lib/entry'
 
 /*
- * Storage is modular. A storage module (local folder, browser files, pCloud, GitHub, ...)
+ * Storage is modular. A storage module (local folder, browser files, Dropbox, ...)
  * only has to move files around; it knows nothing about entries or merging.
  * The shared sync engine (sync.ts) does the rest, so every module behaves the same.
  */

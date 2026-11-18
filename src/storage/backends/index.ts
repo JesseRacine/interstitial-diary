@@ -4,15 +4,14 @@ import { dropboxBackend } from './dropbox'
 import { folderBackend } from './folder'
 
 /**
- * All storage modules. To add one (pCloud, GitHub, WebDAV...), implement StorageBackend
+ * All storage modules. To add one (GitHub, WebDAV...), implement StorageBackend
  * in its own file and add it here; the sync engine and Settings screen pick it up automatically.
  */
 export const BACKENDS: StorageBackend<never>[] = [
   folderBackend as StorageBackend<never>,
   browserBackend as StorageBackend<never>,
   dropboxBackend as StorageBackend<never>,
-  // pCloud (backends/pcloud.ts) is built but not offered: pCloud lets a web page save files but not read them back
-  // (pcloud-plan.md, stopped 2026-11-17).
+  // pCloud was built and removed (2026-11-18): it lets a web page save files but not read them back (pcloud-plan.md).
 ]
 
 /** Shown in Settings as "coming later". */

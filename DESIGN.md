@@ -354,7 +354,7 @@ browser's data (OPFS): then a stored file is not a separate copy, so the app kee
 | `folder`: Folder on this computer | done | Text and images. File System Access API. Chrome/Edge desktop only. Permission usually has to be re-granted after a browser restart ("Reconnect folder" badge). Choosing a folder inside pCloud Drive/OneDrive/Syncthing gives sync for free. |
 | `browser`: Files inside this browser | done | Text and images; `insideBrowser`. OPFS. Works everywhere incl. Android, but is wiped together with browser data. |
 | `dropbox`: Dropbox | done (2026-11-12) | Text and images, in `Apps/<app name>/`. OAuth PKCE redirect with a refresh token. Works everywhere incl. Android. The user reported Windows ↔ Android on the hosted app "appears to be working" (details in PROGRESS.md item 10). See "Dropbox notes" below and docs/CLOUD-STORAGE.md. |
-| `pcloud` | stopped (2026-11-17) | Built (`backends/pcloud.ts`, `pcloud-store.ts`) but not offered: with an OAuth token a web page can save to pCloud but not read files back. See "pCloud notes" below and pcloud-plan.md. |
+| `pcloud` | stopped (2026-11-17), code removed 2026-11-18 | Was built (`backends/pcloud.ts`, `pcloud-store.ts`; last in `ff75bef`) but never offered: with an OAuth token a web page can save to pCloud but not read files back. See "pCloud notes" below and pcloud-plan.md. |
 | `github` | idea | Files in a private repo via the GitHub contents API (a token pasted into the app; free version history). |
 | `onedrive`, `gdrive` | ideas | OneDrive simple upload is 4 MB (photos need upload sessions); Google Drive has fiddly sign-in rules. |
 | native folder (Tauri) | idea | Real folders on Android once there's a native build. |
