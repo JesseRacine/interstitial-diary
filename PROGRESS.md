@@ -18,8 +18,8 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **8** (2026-11-18, entry box + last event; `f38eefa`, run 44332869492; apps not
-  rebuilt). Before: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
+  every push to `main`. Pushed and live: **8** (2026-11-18, entry box + last event; `f38eefa`, run 44332869492; apps
+  rebuilt with it: run 44374189547). Before: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
   44216122403 green; Claude's browser pane showed "A new version is ready", Reload, then Settings > About "Build 7" and
   no pCloud option; **apps rebuilt with it**: run 44216731203 green, the bundled web build checked for build 7 and no
 pCloud, APK 10,193,599 bytes and `.exe` 6,338,560 copied to the session folder's `builds\`, the `.exe` started from a
@@ -131,8 +131,10 @@ written entry's event ("last event"), while what is typed still fits its start (
 in `src/lib/events.ts`; the hook in `components/text.tsx`); picking closes the quote. Not in the Edit box or the
 search bar. `f57356b` also fixed a sub-pixel scrollbar the first fix gave a one-line box. Checked in Claude's browser; 685 tests.
 **Both pushed as build 8** (2026-11-18, `f38eefa`, deploy run 44332869492 green; Claude's browser pane on the live site:
-Settings > About "Build 8"). **The user tried build 8: "I'm happy with the test"** (2026-11-18; device not said); **the native apps are not rebuilt with it** (still build
-7). Next: any further change from the user.
+Settings > About "Build 8"). **The user tried build 8: "I'm happy with the test"** (2026-11-18; device not said). **Apps rebuilt with build 8**
+(run 44374189547 green; its `web-dist` has the "last event" code; APK 10,193,599 bytes and `.exe` 6,339,584 copied to
+`builds\`; the `.exe` started from a scratch copy: window "Interstitial Diary", its own `journal-data`); installing
+them is the user's. Next: any further change from the user.
 
 Before this, nothing was in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
 [pcloud-plan.md](pcloud-plan.md)): a web page can save to pCloud but not read files back. The code stays, unregistered;
