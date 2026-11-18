@@ -78,7 +78,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
   ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; 680 tests
   and the type check passed on the web clone; the app clone cannot be built locally). The build 5 zip
-  (`...-2026-11-16.zip`) is superseded; it stays until the user says to delete it. All older archives, including the
+  (`...-2026-11-16.zip`) was deleted at the user's request (2026-11-17). All older archives, including the
   one with the personal Gmail address in its history, were deleted at the user's request. It is on the same disk as the
   project: the user was advised to copy it elsewhere (not confirmed). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
