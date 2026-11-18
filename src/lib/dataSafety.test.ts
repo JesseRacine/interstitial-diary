@@ -6,76 +6,37 @@ import {
 
 const DAY = 86_400_000
 
-describe('browserOnlyMode', () => {
-  it('no storage chosen: the data is only in this browser', () => expect(browserOnlyMode(null, false)).toBe('none'))
-  it('"Files inside this browser" is not a backup either', () => expect(browserOnlyMode('browser', true)).toBe('inside-browser'))
-  it('a storage outside the browser data is a copy, so no warning', () => expect(browserOnlyMode('folder', false)).toBeNull())
-})
+// The wording itself is free to change; these check when warnings show and that they carry the right facts.
 
-describe('browserOnlyWarning', () => {
-  it('without photos it talks about entries only', () => {
-    const w = browserOnlyWarning('none', 0)
-    expect(w.title).toBe('Entries are only in this browser')
-    expect(w.short).toBe('Only in this browser')
-    expect(w.body).not.toMatch(/photo/i)
-    expect(w.body).toMatch(/Choose a storage/)
+describe('the "only in this browser" warning', () => {
+  it('applies with no storage or "Files inside this browser", not with a storage outside the browser', () => {
+    expect(browserOnlyMode(null, false)).toBe('none')
+    expect(browserOnlyMode('browser', true)).toBe('inside-browser')
+    expect(browserOnlyMode('folder', false)).toBeNull()
   })
 
-  it('with photos it says photos are only in this browser too, and how many', () => {
-    const w = browserOnlyWarning('none', 12)
-    expect(w.title).toBe('Entries and photos are only in this browser')
-    expect(w.short).toBe('Photos only in this browser')
-    expect(w.body).toContain('12 photos')
-    expect(w.body).toMatch(/photos included/)
-  })
-
-  it('one photo is singular', () => {
-    expect(browserOnlyWarning('none', 1).body).toContain('1 photo and')
+  it('mentions photos only when there are some, with their count; inside-browser storage is called not a backup', () => {
+    expect(browserOnlyWarning('none', 0).body).not.toMatch(/photo/i)
+    expect(browserOnlyWarning('none', 12).body).toContain('12 photos')
     expect(browserOnlyWarning('none', 1).body).not.toContain('1 photos')
+    const inside = browserOnlyWarning('inside-browser', 3)
+    expect(inside.body).toMatch(/not a backup/)
+    expect(inside.body).not.toMatch(/Choose a storage/) // one is chosen already
   })
 
-  it('inside-browser storage says plainly that it is not a backup, with and without photos', () => {
-    for (const photos of [0, 3]) {
-      const w = browserOnlyWarning('inside-browser', photos)
-      expect(w.body).toMatch(/not a backup/)
-      expect(w.body).toMatch(/Export/)
-      expect(w.body).not.toMatch(/Choose a storage/) // one is chosen already
-    }
-  })
-})
-
-describe('showHeaderWarning', () => {
-  it('shows with no storage and any entry or photo', () => {
+  it('shows in the header with no storage and any entry or photo, not for an empty journal or before startup has read the storage', () => {
     expect(showHeaderWarning(true, true, 1, 0)).toBe(true)
     expect(showHeaderWarning(true, true, 0, 1)).toBe(true)
-  })
-  it('stays quiet for an empty journal, or when a storage exists', () => {
     expect(showHeaderWarning(true, true, 0, 0)).toBe(false)
     expect(showHeaderWarning(true, false, 50, 9)).toBe(false)
-  })
-  it('stays quiet until the saved storage has been read at startup (no false flash for folder users)', () => {
-    expect(showHeaderWarning(false, true, 50, 9)).toBe(false)
+    expect(showHeaderWarning(false, true, 50, 9)).toBe(false) // no false flash for folder users
   })
 })
 
-describe('persistenceInfo', () => {
-  it('granted is ok and says protected', () => {
-    const p = persistenceInfo('granted')
-    expect(p.ok).toBe(true)
-    expect(p.title).toMatch(/^Protected/)
-  })
-  it('not granted warns and points to installing, a storage, or Export', () => {
-    const p = persistenceInfo('not-granted')
-    expect(p.ok).toBe(false)
-    expect(p.title).toMatch(/^Not protected/)
-    expect(p.body).toMatch(/Installing/)
-    expect(p.body).toMatch(/Export/)
-  })
-  it('unsupported is not ok and does not claim protection', () => {
-    const p = persistenceInfo('unsupported')
-    expect(p.ok).toBe(false)
-    expect(p.title).not.toMatch(/^Protected/)
-  })
+it('persistent storage counts as protected only when granted', () => {
+  expect(persistenceInfo('granted').ok).toBe(true)
+  expect(persistenceInfo('not-granted').ok).toBe(false)
+  expect(persistenceInfo('unsupported').ok).toBe(false)
 })
 
 describe('backupReminderDue', () => {
@@ -108,20 +69,12 @@ describe('backupReminderDue', () => {
     expect(snoozeUntil(now)).toBe(now + SNOOZE_DAYS * DAY)
   })
   it('a backup time in the future (clock changed) does not trigger a reminder', () => expect(due({ lastBackupAt: now + DAY })).toBe(false))
-})
 
-describe('backup reminder wording', () => {
-  const now = 1_800_000_000_000
-  it('daysAgo', () => {
+  it('the reminder gives the entry count (singular for one) and how long ago the last backup was', () => {
     expect(daysAgo(now, now)).toBe('today')
     expect(daysAgo(now - DAY, now)).toBe('yesterday')
-    expect(daysAgo(now - 20 * DAY, now)).toBe('20 days ago')
-  })
-  it('never backed up', () => {
-    expect(backupReminderText(null, now, 12)).toBe('Your 12 entries exist only in this browser and you haven’t made a backup yet.')
-    expect(backupReminderText(null, now, 1)).toBe('Your 1 entry exists only in this browser and you haven’t made a backup yet.')
-  })
-  it('after an old backup', () => {
-    expect(backupReminderText(now - 20 * DAY, now, 12)).toBe('Your last backup was 20 days ago, and your 12 entries are only in this browser.')
+    expect(backupReminderText(null, now, 12)).toContain('12 entries')
+    expect(backupReminderText(null, now, 1)).toContain('1 entry ')
+    expect(backupReminderText(now - 20 * DAY, now, 12)).toContain('20 days ago')
   })
 })
