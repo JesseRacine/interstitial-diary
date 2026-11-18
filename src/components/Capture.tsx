@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { addEntry } from '../lib/db'
 import { enterAction, hasCoarsePointer } from '../lib/dom'
 import { extractTags, timeLabel } from '../lib/entry'
-import { useCoarsePointer } from '../lib/hooks'
+import { useAutoGrow, useCoarsePointer } from '../lib/hooks'
 import { noteTargetSuggestions, resolveNoteTarget } from '../lib/noteTarget'
 import { canHaveNotes, noteText } from '../lib/notes'
 import { displayName, tagKindOf, tagLabel, tagToken } from '../lib/tagKinds'
@@ -138,7 +138,7 @@ export function Capture({ tagStats, onSaved, onOpenNotes, inputRef, initialText 
     }
   }
 
-  const rows = Math.min(8, Math.max(1, text.split('\n').length))
+  useAutoGrow(inputRef, text) // grows with wrapped lines too; capped in index.css (.capture textarea)
 
   return (
     <form
@@ -215,7 +215,7 @@ export function Capture({ tagStats, onSaved, onOpenNotes, inputRef, initialText 
         <textarea
           ref={inputRef}
           value={text}
-          rows={rows}
+          rows={1}
           autoFocus
           placeholder={track ? 'Note (optional): price, where, why…' : noting ? 'The fact, e.g. allergic to shellfish' : "What did you just finish? How do you feel? What's next?"}
           aria-label={track ? 'Note for the tracked item' : noting ? 'Note text' : 'New entry'}

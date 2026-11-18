@@ -174,7 +174,8 @@ button.icon.on { color: var(--accent); border-color: var(--accent); }
 .capture { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; box-shadow: var(--shadow); margin-top: 0.6rem; flex: none; }
 .capture .suggestions { top: auto; bottom: 100%; margin: 0 0 4px; }
 .capture-head { display: flex; gap: 0.75rem; align-items: baseline; margin-bottom: 0.4rem; font-size: 0.8rem; flex-wrap: wrap; }
-.capture textarea { border: 0; padding: 0.25rem 0; background: transparent; resize: none; font-size: 1.05rem; }
+/* Height set by useAutoGrow; about 8 lines at most, and never more than a third of the screen (the phone keyboard). */
+.capture textarea { border: 0; padding: 0.25rem 0; background: transparent; resize: none; font-size: 1.05rem; max-height: min(13rem, 33dvh); overflow-y: auto; }
 .capture textarea:focus-visible { outline: none; }
 .capture-actions { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; }
 .capture.dragging { border-color: var(--accent); background: var(--accent-soft); }
