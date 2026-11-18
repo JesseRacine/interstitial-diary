@@ -65,7 +65,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 645 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 648 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
@@ -115,11 +115,13 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Person notes: in progress** ([person-notes-plan.md](person-notes-plan.md)): facts about a
-person (not time-bound), written as `=@sam_jones fact` or with an Add note button on the person's page; shown on the
-person's page and in search only, not in the journal stream, calendar or week review; people first. Five steps. **Step 1
-(the marker and its logic, `src/lib/personNotes.ts`, no UI) built 2026-11-17, committed locally, not pushed** (645 tests).
-Next: step 2 (keep notes out of the journal: split `entries` in `App.tsx`), once the user says go. Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+**Notes on people and places: in progress** ([person-notes-plan.md](person-notes-plan.md)):
+facts that are not time-bound ("allergic to shellfish", "closed on Mondays"), written with a **Note button** in the entry
+box or **Add note** on the person's/place's page (both write `=@sam_jones fact` / `=~blue_door fact`; typing it is never
+needed); shown on that page and in search only, not in the journal stream, calendar or week review. Not for events or
+`#tags`. Five steps. **Step 1 (the marker and its logic, `src/lib/notes.ts`, no UI) built 2026-11-17 for people and places,
+committed locally, not pushed** (648 tests). Next: step 2 (keep notes out of the journal: split `entries` in `App.tsx`),
+once the user says go; **push steps 2 and 3 together**. Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
@@ -246,6 +248,6 @@ written on one device appear on the other, including edits made offline on both.
 | [docs/LIMITS-AND-IDEAS.md](docs/LIMITS-AND-IDEAS.md) | Known limitations and the ideas backlog |
 | [images-plan.md](images-plan.md) | The photo feature's plan and build log |
 | [tracking-plan.md](tracking-plan.md) | The Tracking feature: decisions, the marker, the five steps |
-| [person-notes-plan.md](person-notes-plan.md) | Person notes (planned 2026-11-16): decisions, the `=@name` marker, the five steps |
+| [person-notes-plan.md](person-notes-plan.md) | Notes on people and places (2026-11-16/17): decisions, the `=@name` / `=~name` marker, the Note button, the five steps |
 | [android-capture-plan.md](android-capture-plan.md) | Quick capture on Android: stage 1 built, stage 2 (native widget) not started |
 | The app repo's `README.md` | The native apps: how the build works, releasing, the signing key, the Windows folder |

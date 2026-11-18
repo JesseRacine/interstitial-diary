@@ -1,22 +1,24 @@
-# Plan: Person notes (facts about a person)
+# Plan: Notes on people and places
 
-_Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17, committed locally, not pushed.
-Steps 2 to 5 not started.** Decisions below were made with the user in conversation on 2026-11-16.
-Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step._
+_Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17 and widened to places the same
+day, committed locally, not pushed. Steps 2 to 5 not started.** Decisions below were made with the user in conversation
+on 2026-11-16 and 2026-11-17. (The file keeps its old name, `person-notes-plan.md`, so older links still work.)
+Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step. **Push steps 2 and 3
+together**: after step 2 alone, notes would leave the journal with no page to show them on (search only)._
 
 ## What it is
 
-A **person note** is a fact about someone that is not a journal entry and does not belong to a day: "allergic to
-shellfish", "birthday 3 March", "moved to Denver". It sits on the person's page, under their name, until the user edits
-or deletes it. It is not part of the journal stream, the calendar or the weekly review.
+A **note** is a fact about a person or a place that is not a journal entry and does not belong to a day: "Sam is
+allergic to shellfish", "Maria's birthday is 3 March", "Blue Door is closed on Mondays". It sits on the person's or
+place's page until the user edits or deletes it. It is not part of the journal stream, the calendar or the weekly review.
 
 Decided with the user:
 
 | Question | Decision |
 |---|---|
-| How is a note written? | A **marker typed in the entry box** and an **Add note button on the person's page** that writes the marker for the user (like Tracking: marker + button) |
-| Where does it show? | The **person's page** (a Notes section at the top) and **search**. Not in the journal stream, the calendar, the week review, the Photos view or the Tracking tab |
-| Only people? | **People first.** Keep the design open so places could follow (`~blue_door`: "closed Mondays") |
+| Who can have notes? | **People and places** (2026-11-17; first planned for people only). **Not events**: an event is a moment, and what you write about it is already the journal. **Not plain `#tags`**: a tag is a label, not a thing with facts of its own |
+| How is a note written? | Mainly with a **Note button in the entry box** (a small form: who or where, then the fact), and with **Add note on the person's or place's page**. Both write the marker for the user. Typing the marker by hand also works but is never needed (the user found `=@sam` too much to remember) |
+| Where does it show? | The **person's or place's page** (a Notes section at the top) and **search**. Not in the journal stream, the calendar, the week review, the Photos view or the Tracking tab |
 
 ## The key idea: no new storage
 
@@ -28,28 +30,54 @@ shows a note as an ordinary entry whose text starts with `=@sam ...`, so nothing
 The entry does have a `createdAt` and a day (that is where it is saved: `2026/2026-11-16.md`). The app simply **never
 shows the day** of a note and **never counts it** as a day's entry.
 
-## The marker (proposed, confirm while building step 1)
+## The marker (settled in step 1)
 
 ```
 =@sam_jones Allergic to shellfish
-=@maria Birthday is 3 March. Prefers a call to a text.
+=@maria: Birthday is 3 March. Prefers a call to a text.
+=~blue_door Closed on Mondays, ask for the window table
 ```
 
-- **Syntax:** `=` immediately followed by an ordinary person tag (`@sam_jones`), at the **start of the entry's text**
-  (leading whitespace allowed). The rest of the text is the note. Anywhere else `=@sam` is plain text, so an ordinary
-  entry cannot turn into a note by accident. Why `=`: it is one key on the phone's symbol page and reads as "equals
-  fact"; `#`, `@`, `~`, `!` and `+` are taken.
-- **One note, one person, one entry.** A note about two people is two notes. Another `@maria` inside the text of a note
-  about Sam is an ordinary mention (search finds it); it does **not** put the note on Maria's page.
-- **The person is a normal `@` tag.** The `@sam_jones` after the `=` is **not blanked** like an event or tracking
-  title: it stays a real tag of the entry, so **Rename** and **Merge** of a person (`replaceTag`) rewrite the note's
-  marker for free, and search `@sam_jones` finds the note.
+- **Syntax:** `=` immediately followed by an ordinary person tag (`@sam_jones`) or place tag (`~blue_door`), at the
+  **start of the entry's text** (spaces and line breaks before it are fine). The rest of the text is the note, without the
+  spaces and **one `:`** right after the marker. Anywhere else `=@sam` is plain text (also `(=@sam`), so an ordinary entry
+  cannot turn into a note by accident. `=@sam` alone is an **empty note** (still a note; the forms never write one). Why
+  `=`: one key on the phone's symbol page; `#`, `@`, `~`, `!` and `+` are taken.
+- **One note, one person or place, one entry.** A note about two is two notes. Another `@maria` or `~home` inside the text
+  is an ordinary mention (search finds it); it does **not** put the note on that page.
+- **The name is a normal tag.** It is **not blanked** like an event or tracking title: it stays a real tag of the entry,
+  so **Rename** and **Merge** (`replaceTag`) rewrite the marker for free, and search `@sam_jones` finds the note. No
+  change to `entry.ts` was needed (`=` is not in the tag code's "not before" list).
 - **Not a tag kind.** The marker is not a new `TAG_KINDS` row: it is about an entry's shape, not a reusable label.
-- A note typed by hand in a Markdown file works the same way.
+  `NOTE_KINDS` in `notes.ts` lists the kinds that can have notes (person, place).
+- A note typed by hand in a Markdown file works the same way. The day file trims leading spaces of any entry, so
+  `  =@sam x` comes back as `=@sam x` (still a note).
 
 ## What the user sees
 
-**Person's page** (`TagPage.tsx`, people only):
+**Note button in the entry box** (next to Photo and Track; it opens a form the way Track does):
+
+```
+ [ 📷 Photo ]  [ 📌 Track ]  [ 📝 Note ]                  [ Save ]
+
+ Note about  [ sa_______________ ]
+             ┌───────────────────┐
+             │ 👤 Sam Jones       │   ← people and places, as you type
+             │ 📍 Salt Bar        │
+             └───────────────────┘
+┌──────────────────────────────────────────┐
+│ Allergic to shellfish                    │
+└──────────────────────────────────────────┘
+ [ Cancel ]                         [ Save note ]
+```
+
+- **Note about:** type part of a name and pick, or Enter for the first suggestion. A new name is allowed and makes a new
+  person or place (the field needs a way to say which: a 👤 / 📍 switch, or `@`/`~` typed first; settle while building).
+- If the entry box already names exactly one person or place when Note is tapped, the field starts filled with it.
+- **Save note** writes `noteText(key, text)` as a new entry. A short message follows: "Saved as a note for Sam Jones ·
+  Open" (Open goes to the page), because the journal shows nothing new. An empty fact cannot be saved.
+
+**Person's or place's page** (`TagPage.tsx`):
 
 ```
 👤 Sam Jones
@@ -62,78 +90,76 @@ Notes                                                   [ + Add note ]
 [ Search these entries ]   (histogram, timeline as before: journal entries only)
 ```
 
-- Notes are listed **newest first with no date shown** (the day is not the point). Each has the entry's normal **Edit**
-  and **Delete** (soft delete, restorable from Settings > Deleted entries).
-- **Add note** opens a small box; Save writes `=@sam_jones <text>` as a new entry.
-- A person who has only notes (no journal entry yet) still appears in Tags > People and has a page: "0 entries · 3 notes".
+- Notes are listed **newest first with no date shown**. Each has the entry's normal **Edit** and **Delete** (soft delete,
+  restorable from Settings > Deleted entries).
+- **Add note** opens the same form as the Note button, with the person or place filled in and fixed.
+- A person or place that has only notes (no journal entry yet) still appears in Tags > People / Places and has a page:
+  "0 entries · 3 notes".
 
-**Entry box:** typing `=@sa` suggests people as `@sa` does. Saving writes the entry as typed; it then leaves the journal
-stream (it is a note). The box shows a small hint "Saved as a note for Sam Jones" so the entry's disappearance is not a
-surprise.
-
-**Search:** a note is found by its words and by `@sam_jones`; its result card carries a "📝 Note" label and no date line.
+**Search:** a note is found by its words and by `@sam_jones` / `~blue_door`; its result card carries a "📝 Note" label and
+no date line.
 
 ## Steps
 
-### 1. The marker and the logic (`src/lib/personNotes.ts`, no UI)
+### 1. The marker and the logic (`src/lib/notes.ts`, no UI) — built
 
-`personNoteOf(text)` (the person key and the note text, or none), `isPersonNote(entry)`, `personNoteText(key, text)` (the
-text the Add note button writes), `computePersonNotes(entries)` (notes grouped by person key, newest first). Edge cases
-with tests in the style of `tracking.test.ts`: marker at the start, with leading spaces, curly or odd spacing, `=@sam`
-mid-text (not a note), `=@` alone, `=@3pm` (not a name), a name with `-` and `/`, two people (only the first is the
-person), `x=@sam` (not a note), Rename and Merge rewrite the marker, a round trip through the Markdown file
-(`markdown.test.ts`), an older text with no marker unchanged.
-**Done when:** the new tests pass and all 620 existing still pass, `npx tsc -b` clean.
-_Built 2026-11-17 (`src/lib/personNotes.ts`, 20 tests in `personNotes.test.ts`, 645 in all; tsc clean, lint 0 errors):
-marker settled as proposed, `=@name` at the start of the text only (`(=@sam` is plain text). No change was needed in
-`entry.ts`: `=` is not in the tag code's "not before" list, so `extractTags` and `replaceTag` already treat the person as
-an ordinary tag, and Rename/Merge rewrite the marker. The note's text drops the spaces and **one `:`** after the marker
-(`=@sam: likes jazz`). `=@sam` alone is an **empty note** (still a note). The day file trims leading spaces of any entry,
-so `  =@sam x` comes back as `=@sam x` (still a note). Functions: `personNoteOf`, `isPersonNote`, `personNoteText` (throws
-for a key that is not a person), `computePersonNotes` (a Map by person key, newest first, ties by id, keeps photos)._
+`noteOf(text)` (the key and the note text, or none), `isNote(entry)`, `noteText(key, text)` (what the forms write),
+`computeNotes(entries)` (notes grouped by key, newest first), `NOTE_KINDS`, `canHaveNotes(key)`.
+_Built 2026-11-17 for people (`personNotes.ts`), widened to places the same day and renamed `notes.ts` (23 tests in
+`notes.test.ts`, 648 in all; tsc clean, lint 0 errors). Covered: both kinds, spaces before the marker, name characters and a
+trailing `-`/`/`, not-at-start, missing or wrong names (`=@3pm`, `=~5 min`, `=#work`, `=!"…"`, `=+"…"`), the colon, empty
+notes, a second mention, Rename and Merge of the note's own and of another name, a person and a place of the same name kept
+apart, `noteText` refusing a plain tag, newest-first order with ties by id, photos kept, a Markdown round trip._
 
 ### 2. Keep notes out of the journal
 
 In `App.tsx` the one live list `entries` (line 40) feeds everything. Split it: **`journalEntries`** (notes removed) goes to
 Journal, Calendar, Week review, Photos, Tracking, the backup reminder and the tag statistics; **`entries`** (all) goes to
-search, the people list's notes counts, Settings and export. Check every consumer one by one: a note must not count in
-Month, Year or Week counts, "On this day"-style views, the entry total, the histogram, `first`/`last` on a person, or the
-Photos view. Search results label a note.
-**Done when:** a seeded note appears only in search and in the Settings export; tests for `computeTagStats` and the
-week review with a note present; a person with only notes still has a Tags entry.
+search, the Notes counts, Settings and export. Check every consumer one by one: a note must not count in Month, Year or
+Week counts, the entry total, the histogram, `first`/`last` on a person or place, or the Photos view. Search results label
+a note.
+**Done when:** a seeded note appears only in search and in the Settings export; tests for `computeTagStats` and the week
+review with a note present; a person or place with only notes still has a Tags entry. **Not pushed on its own** (see top).
 
-### 3. The person's page: Notes section and Add note
+### 3. The page: Notes section and Add note
 
-`TagPage.tsx`: the Notes section, the Add note form (a text box, Save writes `personNoteText`), Edit and Delete on each
-note (reuse `EntryItem` or its editor, whichever step 2 of Tracking settled on), the empty state ("No notes yet" with the
-Add note button), the people list's "N notes" count. Phone layout checked at 375 px.
+`TagPage.tsx`, for people and places: the Notes section, Add note (the form from step 4, or a simple text box first if
+step 4 is not built yet), Edit and Delete on each note (reuse `EntryItem` or its editor), the empty state ("No notes yet"
+with the Add note button), the "N notes" count in Tags > People / Places. Phone layout checked at 375 px.
 **Done when:** with seeded data every button works and syncs as an ordinary edit; Delete removes the note and Restore
-brings it back; the journal stream never shows it.
+brings it back; the journal stream never shows it. Then steps 2 and 3 can be pushed together (with permission).
 
-### 4. Typing the marker in the entry box
+### 4. The Note button in the entry box
 
-`@` autocomplete after `=`; the "Saved as a note" hint; a "📝 Note" label in the search results (if not done in step 2).
-**Done when:** `=@sa` suggests people; saving a note from the box makes it show on the person's page and not in the
-journal.
+`Capture.tsx`, in the way the Track form is built: the Note button, the "Note about" field with people-and-places
+suggestions (reuse the `@`/`~` autocomplete data), the fact box, Save note, prefill from a single name in the box, the
+"Saved as a note for … · Open" message, a way to make a new person or place. Phone layout at 375 px.
+**Done when:** a note can be saved for an existing and a new person and place; the text written is `noteText`; it shows on
+the page and not in the journal; Cancel leaves the entry box as it was.
 
 ### 5. Docs, Manual, search help and backup
 
-DESIGN.md (a "Person notes" section next to "Tracking"), the Manual (`ManualCard.tsx`), the `?` search help if `has:note`
-is added, PROGRESS.md and docs/HISTORY.md, "Waiting on the user" checks. Then offer a dated backup of both repos.
+DESIGN.md (a "Notes" section next to "Tracking"), the Manual (`ManualCard.tsx`: the Note button first, the marker as an
+aside), the `?` search help if `has:note` is added, PROGRESS.md and docs/HISTORY.md, "Waiting on the user" checks. Then
+offer a dated backup of both repos.
 
 ## Left out on purpose
 
-- Notes for places or plain tags (see "Open decisions": the design is kept open for places).
+- Notes on events and on plain `#tags` (see the decisions above).
 - Pinning, ordering by hand, categories or a "birthday" field. A note is free text.
-- A note about two people at once (write two notes).
-- Photos on a note: the Add note form takes text only (an entry written another way may hold photos; the Photos view
-  leaves it out).
+- A note about two people or places at once (write two notes).
+- Photos on a note: the forms take text only (an entry written another way may hold photos; the Photos view leaves it out).
 - Showing the day a note was written (the entry keeps it in its file; the app does not show it).
+
+## Later (ideas, not planned)
+
+- **"Make this a note"** on an existing entry: write naturally ("Sam said he's allergic to shellfish @sam"), then turn the
+  entry into a note from its Edit; if it names more than one person or place, pick which.
+- A suggestion while typing `=` at the start of the entry box (people and places, like `@`).
 
 ## Open decisions (small, settled while building)
 
-- The exact marker (`=@name` proposed) and whether `=@` right after another character is accepted (`(=@sam ...)`).
-- Whether a note shows on the page of a **second person it mentions** (decided no above; revisit if it feels wrong).
-- Whether `has:note` and `note:` belong in search (an `@person` search already finds notes).
-- A person with only notes: listed in Tags > People with "0 entries" (proposed) or hidden until they have an entry.
-- Notes order: newest first (proposed); no date shown.
+- How the Note form makes a **new** person or place (a 👤/📍 switch, or `@`/`~` typed first).
+- Whether `has:note` belongs in search (an `@person` or `~place` search already finds notes).
+- A person or place with only notes: listed in Tags with "0 entries" (proposed) or hidden until it has an entry.
+- Whether a note shows on the page of a **second name it mentions** (decided no; revisit if it feels wrong).
