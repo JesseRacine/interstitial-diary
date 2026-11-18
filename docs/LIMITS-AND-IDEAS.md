@@ -41,7 +41,7 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   Two same-titled events far apart, or on different dates, stay two events (give their entries the same date to join them).
   Merge into… on a dated event keeps its date, so it can only join an event with the same date.
 - Events: only the quoted form `!"Title"` counts (an unquoted `!word` is plain text), and a title cannot contain quote
-  marks. The entry box suggests titles already used (not the Edit box or the search bar), but a title typed
+  marks. The entry box offers only the last event's title (not in the Edit box or the search bar), so a title typed
   differently anyway ("Jack's party" / "Jacks party") is two events
   until you use Rename event on one of them (spacing and capitals are ignored, spelling is not). Entries with the same
   title more than 7 days apart are separate events (that is how a yearly birthday stays separate); a long trip written

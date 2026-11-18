@@ -76,8 +76,8 @@ device without touching `dirty` or `updatedAt`, so the upgrade syncs nothing.
 **Events** are the name of something that happened (a party, a trip), written in an entry as `!"Jack's 40th birthday"`.
 They are deliberately **not a tag kind**: a tag is a label you reuse, an event title is mostly used once (or a few times
 around the same days), so events have no counts of "most used" and no tag-style rename. (Since 2026-11-18 the entry box
-does suggest titles already used after `!"`: `eventBeingTyped`/`eventSuggestions`, so one event is not typed two ways;
-the search bar does not.) Nothing new is
+offers the **last** event's title after `!"`, while what is typed still fits its start: `lastEventTitle`,
+`suggestLastEvent`; no other titles are offered, by the user's choice.) Nothing new is
 stored (no Dexie change, no file-format change): the marker stays in the entry's text exactly as typed, and the list of
 events is computed from the text of the live entries (`computeEvents` in `src/lib/events.ts`, memoised in `App.tsx`).
 - **Syntax:** `!` then a straight or curly quote, a title of 1–120 characters (no quote marks inside, no line break; an

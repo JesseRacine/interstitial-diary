@@ -19,7 +19,7 @@ import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
 import { useLive } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
-import { computeEvents, eventOfMarker } from './lib/events'
+import { computeEvents, eventOfMarker, lastEventTitle } from './lib/events'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
 import { computeNotes, journalEntries } from './lib/notes'
 import { computeTracking } from './lib/tracking'
@@ -48,6 +48,7 @@ export default function App() {
   const index = useMemo(() => buildIndex(entries), [entries])
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
   const events = useMemo(() => computeEvents(journal), [journal])
+  const lastEvent = useMemo(() => lastEventTitle(journal), [journal])
   const tracking = useMemo(() => computeTracking(journal), [journal])
   const notes = useMemo(() => computeNotes(entries), [entries])
 
@@ -211,7 +212,7 @@ export default function App() {
           <>
             <JournalView entries={journal} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
               onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
-            <Capture tagStats={tagStats} events={events} inputRef={captureRef}
+            <Capture tagStats={tagStats} lastEvent={lastEvent} inputRef={captureRef}
               onOpenNotes={(key) => { setTagPage(key); setView('tags'); setQuery(''); setBackQuery(null) }} initialText={prefill} onPrefilled={() => setPrefill('')}
               onSaved={() => setBottomTick((t) => t + 1)} />
           </>

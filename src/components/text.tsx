@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode, useMemo, useState } from 'react'
 import { tagBeingTyped, tagSegments } from '../lib/entry'
 import { eventDateLabel } from '../lib/eventRows'
-import { closingQuote, EVENT_ICON, eventBeingTyped, eventKey, type EventStat, eventSuggestions } from '../lib/events'
+import { closingQuote, EVENT_ICON, eventBeingTyped, suggestLastEvent } from '../lib/events'
 import { markerSegments } from '../lib/markers'
 import { displayName, tagKindOf, tagLabel, tagName, tagToken } from '../lib/tagKinds'
 import { TRACKING_ICONS } from '../lib/tracking'
@@ -75,8 +75,11 @@ export function EntryText({ text, terms, onTag, onEvent, onTrack }: {
   )
 }
 
-/** One line in a suggestion list: `tag` is what picking it hands back; `label` (if set) is shown instead of the tag. */
-export interface SuggestionItem { tag: string; count: number; label?: string }
+/**
+ * One line in a suggestion list: `tag` is what picking it hands back; `label` (if set) is shown instead of the tag, and
+ * `note` (if set) instead of the count.
+ */
+export interface SuggestionItem { tag: string; count?: number; label?: string; note?: string }
 
 /** Event suggestions carry this in front of the title, so `apply` can tell them from tags. */
 const EVENT_PICK = '!event:'
@@ -84,25 +87,23 @@ const EVENT_PICK = '!event:'
 /**
  * Autocomplete for a text field: suggests known tags of the kind being typed while the caret sits after a symbol
  * and what has been typed of the name ("#wo", "@sa", "~ho"). Items and keys are stored keys (`work`, `@sarah`).
- * Given `events`, it also suggests event titles already used while one is being typed (`!"Jack`, lib/events.ts);
- * picking one closes the quote.
+ * Given `lastEvent` (the last event's title), it offers that title while an event is being typed and it still fits
+ * (`!"Ja`, lib/events.ts); picking it closes the quote. No other event titles are offered.
  */
-export function useTagAutocomplete(text: string, caret: number, tagStats: TagStat[], events?: readonly EventStat[]) {
+export function useTagAutocomplete(text: string, caret: number, tagStats: TagStat[], lastEvent?: string) {
   const [sel, setSel] = useState(0)
   const [dismissedAt, setDismissedAt] = useState<string | null>(null)
-  const eventTyping = useMemo(() => (events ? eventBeingTyped(text.slice(0, caret)) : null), [events, text, caret])
+  const eventTyping = useMemo(() => (lastEvent ? eventBeingTyped(text.slice(0, caret)) : null), [lastEvent, text, caret])
   // Inside an event title a `#` or `@` is part of the title, so tags are only looked for outside one.
   const typing = useMemo(() => (eventTyping ? null : tagBeingTyped(text.slice(0, caret))), [eventTyping, text, caret])
   const key = eventTyping ? `${caret}:!${eventTyping.partial}` : typing ? `${caret}:${typing.kind.sigil}${typing.partial}` : null
   const suggestions: SuggestionItem[] =
     dismissedAt === key
       ? []
-      : eventTyping && events
-        ? eventSuggestions(eventTyping.partial, events).map((title) => ({
-            tag: EVENT_PICK + title,
-            count: events.filter((ev) => ev.key === eventKey(title)).reduce((n, ev) => n + ev.count, 0),
-            label: `${EVENT_ICON} ${title}`,
-          }))
+      : eventTyping
+        ? suggestLastEvent(eventTyping.partial, lastEvent)
+          ? [{ tag: EVENT_PICK + lastEvent, label: `${EVENT_ICON} ${lastEvent}`, note: 'last event' }]
+          : []
         : !typing
           ? []
           : tagStats
@@ -141,7 +142,7 @@ export function Suggestions({ items, index, onPick }: { items: readonly Suggesti
       {items.map((t, i) => (
         <li key={t.tag} role="option" aria-selected={i === index}>
           <button type="button" tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); onPick(t.tag) }}>
-            {t.label ?? tagLabel(t.tag)} <span className="muted">{t.count}</span>
+            {t.label ?? tagLabel(t.tag)} <span className="muted">{t.note ?? t.count}</span>
           </button>
         </li>
       ))}

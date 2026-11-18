@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blankEvents, closingQuote, computeEvents, eventAfterRename, eventBeingTyped, eventKey, eventOfMarker, eventSegments, eventSpans, eventSuggestions, parseEventTitle, renameEventInText } from './events'
+import { blankEvents, closingQuote, computeEvents, eventAfterRename, eventBeingTyped, eventKey, eventOfMarker, eventSegments, eventSpans, lastEventTitle, parseEventTitle, renameEventInText, suggestLastEvent } from './events'
 import { extractTags, makeEntry, replaceTag } from './entry'
 import { parseDay, serializeDay } from './markdown'
 
@@ -25,20 +25,23 @@ describe('suggesting event titles while typing', () => {
     expect(eventBeingTyped('wow!"ok')).toBeNull()
     expect(eventBeingTyped('!"line one\nline two')).toBeNull()
   })
-  it('suggests used titles: starting with the text first, then containing it, newest first, one per title', () => {
-    const events = computeEvents([
-      entry('a', '2025-05-12', 'At !"Jack\'s party"'),
-      entry('b', '2026-05-12', 'At !"jack\'s  party" again'), // a year later: its own event, same title
-      entry('c', '2026-06-01', '!"Beach weekend"'),
-      entry('d', '2026-07-01', '!"Surprise for Jack"'),
-      entry('e', '2026-08-01', '!"Old" gone', 1), // deleted: not an event
-    ])
-    expect(eventSuggestions('jack', events)).toEqual(["jack's party", 'Surprise for Jack'])
-    expect(eventSuggestions('JACK\'S   P', events)).toEqual(["jack's party"])
-    expect(eventSuggestions('', events)).toEqual(['Surprise for Jack', 'Beach weekend', "jack's party"])
-    expect(eventSuggestions('', events, 2)).toHaveLength(2)
-    expect(eventSuggestions('zzz', events)).toEqual([])
-    expect(eventSuggestions('old', events)).toEqual([])
+  it('finds the last event written: the last marker of the newest entry that has one, deleted entries left out', () => {
+    expect(lastEventTitle([])).toBeUndefined()
+    expect(lastEventTitle([entry('a', '2026-05-01', 'no event here')])).toBeUndefined()
+    const entries = [
+      entry('c', '2026-06-01', 'first !"Beach weekend" then !"Jack\'s   party" (2026-05-12)'),
+      entry('a', '2026-05-01', '!"Older one"'),
+      entry('d', '2026-07-01', 'plain text, no event'),
+      entry('e', '2026-08-01', '!"Deleted one"', 1),
+    ]
+    expect(lastEventTitle(entries)).toBe("Jack's party") // by when it was written, not by list order; the date is left out
+  })
+  it('offers the last event only while what is typed still fits its start', () => {
+    expect(suggestLastEvent('', "Jack's party")).toBe(true)
+    expect(suggestLastEvent('JACK\'S   p', "Jack's party")).toBe(true)
+    expect(suggestLastEvent("jack's party", "Jack's party")).toBe(true) // typed in full: picking still closes the quote
+    expect(suggestLastEvent('party', "Jack's party")).toBe(false) // a new event is not pushed towards the old one
+    expect(suggestLastEvent('', undefined)).toBe(false)
   })
   it('closes with the quote that matches the one typed', () => {
     expect(closingQuote('"')).toBe('"')

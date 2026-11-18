@@ -4,8 +4,8 @@ import type { Entry } from './entry'
  * Events: the name of something that happened, written in an entry as `!"Jack's 40th birthday"`.
  *
  * An event is not a tag. A tag is a label you reuse; an event title is mostly used once (or a few times around the
- * same days), so events have no counts of "most used" and no rename-everywhere. Typing `!"` suggests titles already used
- * (eventBeingTyped, eventSuggestions; added 2026-11-18 so the same event is not typed two ways). Nothing new is stored:
+ * same days), so events have no counts of "most used" and no rename-everywhere. Typing `!"` offers the last event's title
+ * only (eventBeingTyped, lastEventTitle, suggestLastEvent; added 2026-11-18 for writing about the same event again). Nothing new is stored:
  * the marker stays in the entry's text exactly as typed, and the list of events is worked out from the text.
  *
  * This file only imports a type from `entry.ts`, because `entry.ts` imports it back (tags are not read inside titles).
@@ -105,23 +105,27 @@ export function eventBeingTyped(before: string): { start: number; open: string; 
 }
 
 /**
- * Titles already used that fit what has been typed (spacing and capitals do not matter), one per title: the ones that
- * start with it first, then the ones that only contain it; each group newest event first. Nothing typed yet gives the
- * newest titles. The spelling shown is the newest event's.
+ * The title of the last event written: the last marker in the most recently written entry that has one (deleted entries
+ * do not count). Undefined if no entry has an event. Only this one is suggested (the user, 2026-11-18): it helps write
+ * several entries about the same event without offering every old title.
  */
-export function eventSuggestions(partial: string, events: readonly EventStat[], n = 6): string[] {
-  const typed = partial.replace(/\s+/g, ' ').trimStart().toLowerCase()
-  const newest = [...events].sort((a, b) => (a.last < b.last ? 1 : a.last > b.last ? -1 : 0))
-  const seen = new Set<string>()
-  const starts: string[] = []
-  const contains: string[] = []
-  for (const ev of newest) {
-    if (seen.has(ev.key)) continue
-    seen.add(ev.key)
-    if (ev.key.startsWith(typed)) starts.push(ev.title)
-    else if (ev.key.includes(typed)) contains.push(ev.title)
+export function lastEventTitle(entries: readonly EventSource[]): string | undefined {
+  let best: EventSource | undefined
+  let title: string | undefined
+  for (const e of entries) {
+    if (e.deleted || (best && (e.createdAt < best.createdAt || (e.createdAt === best.createdAt && e.id < best.id)))) continue
+    const spans = eventSpans(e.text)
+    if (!spans.length) continue
+    best = e
+    title = spans[spans.length - 1].title
   }
-  return [...starts, ...contains].slice(0, n)
+  return title
+}
+
+/** Whether to offer `last` for what has been typed after `!"`: only while it still fits (spacing and capitals do not matter). */
+export function suggestLastEvent(partial: string, last: string | undefined): boolean {
+  const typed = partial.replace(/\s+/g, ' ').trimStart().toLowerCase()
+  return !!last && eventKey(last).startsWith(typed)
 }
 
 /** The closing quote that goes with the opening one the person typed (a phone keyboard's curly “ closes with ”). */
