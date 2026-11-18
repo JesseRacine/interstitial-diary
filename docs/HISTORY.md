@@ -71,6 +71,13 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | 90aa2f8 | Tracking step 3: the Tracking tab (`TrackingView.tsx`: Active \| Done \| All, Newest \| Oldest \| A–Z, cards, Star / Done / Track again / Delete, the item page); the phone header became two rows (five tabs); `?view=tracking` |
 | 17eadef | Tracking step 4: the Track button in the capture box (name, note, one photo), tracking chips in the journal (`lib/markers.ts`, `EntryText`), `useDraftImages` photo limit, Manual text. **Steps 1 to 4 pushed 2026-11-15 on the user's request (deploy green); confirmed working on the phone** |
 | (docs commit after these) | Docs: PROGRESS.md split into a short file plus `docs/` (history, cloud storage, limits and ideas) so a new session reads little; Dropbox set as the next step |
+| f2250f2 | Notes plan (2026-11-16): `person-notes-plan.md` |
+| 87ca0f9 | Notes step 1 (2026-11-17): the `=@name` marker and its logic (`lib/personNotes.ts`), no UI; 20 tests |
+| 33c0684 | Notes: widened to places (`=~name`), renamed `lib/notes.ts`; the plan gains the Note button |
+| 11faf6b | Notes step 2: notes kept out of the journal, calendar, photos, events, tracking and page entry lists (`journalEntries`); `TagStat.notes`; "📝 Note" label in search |
+| 794e7d8 | Notes step 3: `NotesSection.tsx` on each person's/place's page (Add note, Edit, Delete); note counts in Tags |
+| 3c9fff9 | Notes step 4: the 📝 Note button in the capture box (`lib/noteTarget.ts`: "Note about" with suggestions, new person / `~` place); "Saved as a note · Open" |
+| (step 5 commit) | Notes step 5: Manual, DESIGN.md, this history; build 6. **Steps 1 to 5 pushed 2026-11-17 on the user's request** |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old
 doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -111,6 +118,32 @@ photos, search, export and delete are the entry's own. States are in the marker:
   green, web `main` at `b084a7c`): `builds\` holds the new APK and Windows folder; only the Windows program's start was
   checked by Claude, the rest is the user's (PROGRESS check 29).
 - **Limits and ideas:** docs/LIMITS-AND-IDEAS.md.
+
+## Notes on people and places (2026-11-16/17): built, tried by the user on localhost, pushed as build 6
+
+What it is and every decision: [person-notes-plan.md](../person-notes-plan.md). In short: a fact about a person or place
+that does not belong to a day, written as an ordinary entry starting with `=@sam_jones` or `=~blue_door` (the forms write
+it; nobody has to type it). Nothing new is stored. Notes stay out of the journal, calendar, week review and photos, and show
+at the top of the person's or place's page and in search.
+
+- **How it was decided:** the user first thought of a "quote" feature and dropped it (a `#quote` tag does it), then asked
+  for notes about a person that are not time-bound. Decided: a marker plus buttons (like Tracking); shown on the page and in
+  search only; people first. Next day the user found `=@sam` too much to remember, so a **Note button** became the main way
+  in, and asked for **places** too (not events: what you write about an event is the journal). "Make this a note" on an
+  existing entry was left for later.
+- **Step 1** logic (`87ca0f9`, widened in `33c0684`): no change to the tag code was needed (`=` is not in its "not before"
+  list), so Rename and Merge rewrite notes. The day file trims leading spaces of any entry (a note stays a note). 23 tests.
+- **Step 2** (`11faf6b`): one split in `App.tsx` (`entries` vs `journal`). Checked on localhost with typed test data.
+- **Step 3** (`794e7d8`): the Notes section; Add note, Edit, Delete checked in the browser, stored texts read back from
+  IndexedDB; 375 px measured (the browser pane was hidden, so screenshots were unusable).
+- **Step 4** (`3c9fff9`): the Note form; suggestions, pick, save, the message, Open, the prefill, the new-person and
+  new-place hints, Esc checked in the browser. **The user tried it on localhost: "This works, I like it".**
+- **A scare on 2026-11-17:** localhost in the user's own browser still had an old Dropbox connection, synced with the real
+  folder, met the old Start-over marker and cleared only its own copy ("Journal started over"). Nothing in Dropbox was erased;
+  test entries typed there while connected could have reached the real journal (the user was told to check 17 Nov). A guard
+  (localhost refuses Dropbox) was offered: "not now" (PROGRESS.md "What next" 4).
+- **Same day:** the user asked to trim the test suite some time ("700 unit tests" is too many for this app): PROGRESS.md
+  "What next".
 
 ## Completed steps
 

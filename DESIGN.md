@@ -136,6 +136,36 @@ spaces and is used once.
   and no search additions on purpose: entries have no position field, and ordinary search finds the words of a name.
 - **Not tags:** `extractTags` and `replaceTag` skip tracking markers like event markers, so a `#word` in a name is part of it.
 
+**Notes on people and places** (facts with no day: "allergic to shellfish", "closed on Mondays"; plan and decisions in
+[person-notes-plan.md](person-notes-plan.md); the logic is in `src/lib/notes.ts` and `src/lib/noteTarget.ts`, the page
+section in `NotesSection.tsx`, the Note form in `Capture.tsx`) also works with a marker and stores nothing new: a note is an
+ordinary entry, so sync, export, delete and Restore are the entry's own. Only people and places have notes (not events: what
+you write about an event is the journal; not plain tags: a label, not a thing).
+- **Syntax:** `=@sam_jones fact` or `=~blue_door fact`: `=` and a person or place tag at the **start of the text** (spaces
+  and line breaks before it are fine). Anywhere else `=@sam` is plain text. The note's text is the rest, without the spaces
+  and one `:` right after the marker. `=@sam` alone is an empty note. One note is about one person or place; another
+  `@name` in its text is an ordinary mention (search finds it) and does not put the note on that page.
+- **The name is a real tag:** it is not blanked like event or tracking titles (`=` is not in the tag code's "not before"
+  list), so `extractTags`, search and `replaceTag` treat it as any tag: **Rename and Merge rewrite notes for free**.
+- **Out of the journal:** `App.tsx` keeps `entries` (all: search index and results, tag statistics, backup reminder,
+  Settings/export, the photo viewer) and `journal = journalEntries(entries)` (no notes) for Journal, Calendar (Month, Year,
+  Week review, Events), Photos, the person/place page's entry list and Tracking. A note's day is never shown: in search
+  results (and anywhere `EntryItem` draws one) it is labelled "📝 Note" with no date, time or "open this day", its `=` is
+  not drawn, and its editor has no When field. The day file still holds it under the day and time it was written.
+- **Counts:** `TagStat.count`, `first` and `last` count journal entries only (0 when only notes have the tag); `notes` counts
+  note entries that carry the tag. A name only notes have is still listed in Tags (Last used "—"), so it can be found and
+  renamed; the rename prompt counts both. The "N notes" shown on pages and in the Tags list come from `computeNotes` (notes
+  *about* that name, not mentions).
+- **Page:** `NotesSection` at the top of a person's or place's page: newest first, no dates, the fact only (the marker is
+  never shown or typed there), **+ Add note**, Edit (the fact; saved as `noteText(key, fact)`) and Delete (soft delete).
+- **Note form** (📝 Note next to Track; off while photos are attached, the Photo button hides): "Note about" suggests people
+  and places (`noteTargetSuggestions`: by the start of the name or of a shown word, most used first; `@`/`~` typed keeps to
+  that kind), and the box becomes the fact. `resolveNoteTarget`: a known name by name, shown name or token; a new name
+  without a symbol is a **new person**, `~` in front a new place; a name that is both a person and a place asks for the
+  symbol. If the box names exactly one person or place when Note is tapped, the field starts filled. Saving shows "Saved as a
+  note for … · Open" (Open sets App's `tagPage` and goes to Tags).
+- **Older app versions** show a note as an ordinary entry whose text starts with `=@…`: nothing is lost.
+
 **Editing an entry's time** (`src/lib/retime.ts`, `updateEntry(id, text, images, pickedTime)` in `db.ts`, the "When"
 field in the editor): the person picks a date and time to the minute; the entry keeps its own seconds (so entries in the
 same minute keep their order), a time in the future or an unreadable one is refused (the editor disables Save and says

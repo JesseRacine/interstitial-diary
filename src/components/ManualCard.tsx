@@ -44,7 +44,7 @@ export function ManualCard() {
             <li>While you type a symbol, up to six matching known names are suggested: <kbd>↑</kbd> <kbd>↓</kbd> to choose,
               <kbd>Tab</kbd> or <kbd>Enter</kbd> to accept, <kbd>Esc</kbd> to dismiss.</li>
             <li>Click a chip to search for it. The <strong>Tags</strong> tab lists them (Tags, People, Places) and can rename or merge
-              one, which fixes every entry at once. A person or place has its own page.</li>
+              one, which fixes every entry at once. A person or place has its own page, with its notes at the top (see below).</li>
           </ul>
 
           <h4>Events</h4>
@@ -71,6 +71,20 @@ export function ManualCard() {
               the Done list (you bought it, you saw it) and <strong>Track again</strong> brings it back. Newest, Oldest or A–Z sorts the list.</li>
             <li><strong>Delete</strong> removes the entry from the journal too; you can restore it under Settings &gt; Deleted entries.
               Tap a name to see the whole entry and edit it.</li>
+          </ul>
+
+          <h4>Notes on people and places</h4>
+          <ul>
+            <li>For facts that do not belong to a day: “allergic to shellfish”, “birthday 3 March”, “closed on Mondays”. On the
+              Journal tab tap <strong>📝 Note</strong> next to Track, pick who or where it is about (type a few letters and choose),
+              write the fact and Save.</li>
+            <li>A name that is not known yet makes a new person; put <code>~</code> in front for a new place. If the box already
+              names one person or place when you tap Note, it is filled in for you. Notes are text only.</li>
+            <li>A note does not show in the journal, the calendar, the week review or Photos. It shows at the top of the person’s or
+              place’s page (Tags tab), newest first, where <strong>+ Add note</strong>, <strong>Edit</strong> and
+              <strong> Delete</strong> are too. Search finds notes as well; they are marked 📝 Note.</li>
+            <li>In the file a note is an ordinary entry that starts with <code>=@sam_jones</code> or <code>=~blue_door</code>; typing
+              that at the start of an entry makes a note too. Renaming the person or place updates its notes.</li>
           </ul>
 
           <h4>Search</h4>

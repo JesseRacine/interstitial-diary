@@ -1,12 +1,9 @@
 # Plan: Notes on people and places
 
-_Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17 and widened to places the same
-day; step 2 (notes kept out of the journal) and step 3 (the Notes section and Add note on the page) built 2026-11-17; all
-committed locally, not pushed (steps 2 and 3 may now be pushed together, with the user's permission); step 4 (the Note
-button) built 2026-11-17, committed locally, not pushed. Step 5 (docs, Manual) not started.** Decisions below were made with the user in conversation
-on 2026-11-16 and 2026-11-17. (The file keeps its old name, `person-notes-plan.md`, so older links still work.)
-Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step. **Push steps 2 and 3
-together**: after step 2 alone, notes would leave the journal with no page to show them on (search only)._
+_Status: **FINISHED 2026-11-17: steps 1 to 5 built; the user tried steps 1 to 4 on localhost ("This works, I like it");
+pushed as build 6 on the user's request (story in docs/HISTORY.md). Not yet tried on the user's devices; the native apps
+are not rebuilt.** The step notes below are kept as written. Decisions were made with the user in conversation on
+2026-11-16 and 2026-11-17. (The file keeps its old name, `person-notes-plan.md`, so older links still work.)_
 
 ## What it is
 
@@ -181,6 +178,8 @@ at 375 px (no sideways scroll; measured, the hidden pane gave no usable screensh
 DESIGN.md (a "Notes" section next to "Tracking"), the Manual (`ManualCard.tsx`: the Note button first, the marker as an
 aside), the `?` search help if `has:note` is added, PROGRESS.md and docs/HISTORY.md, "Waiting on the user" checks. Then
 offer a dated backup of both repos.
+_Done 2026-11-17: DESIGN.md "Notes on people and places", a Manual section "Notes on people and places" (and a pointer in
+"Tags, people and places"), docs/HISTORY.md, PROGRESS.md check 30. No `has:note` (not asked for). Build 6._
 
 ## Left out on purpose
 

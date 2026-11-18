@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-15 (Tracking finished, pushed and working on the phone; the native apps rebuilt with it, not yet tried). Kept short on purpose:
+_Last updated: 2026-11-17 (Notes on people and places finished and pushed as build 6). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -11,13 +11,15 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   redeploys. The user has it installed on Windows and Android.
 - **Built and live:** journal, search, calendar (Month | Year | Week review | Events), tags + people + places, events
   (`!"Title"`, own date, search, rename, merge), **Tracking** (`+"Name"`: the Tracking tab, Track button, Star, Done,
-  Delete, journal chips; [tracking-plan.md](tracking-plan.md)), photos (phases 1 to 3, filters), export, three storage
+  Delete, journal chips; [tracking-plan.md](tracking-plan.md)), **notes on people and places** (📝 Note button, Notes
+  on each person's/place's page; [person-notes-plan.md](person-notes-plan.md)), photos (phases 1 to 3, filters), export, three storage
   modules (folder, browser files, **Dropbox**: working Windows ↔ Android per the user), installable PWA, data-safety
   features, Settings (the gear) > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut +
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save.
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **5** (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
+  every push to `main`. Pushed: **6** (2026-11-17, notes; deploy run: see the next docs commit; the apps are not rebuilt
+  with it). Build 5: (deploy run 43805685363 green, built into the apps in run 43805769633; build 4 was runs 43803994684 and 43804086111, build 3 runs 43776852761 and 43776935182, build 2 runs 43774248654 and 43774335949, build 1 run 43769444518).
 - **Stuck on "Saving…" (reported 2026-11-15, Android):** cause found by reading the code, **not reproduced and not yet
   confirmed on the phone**: no Dropbox request had a timeout, so one that never answered kept the sync "running" forever
   (every later sync reused it). The user then pressed Stop and chose Dropbox again: still stuck, and **the entry has two
@@ -115,18 +117,12 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Notes on people and places: in progress** ([person-notes-plan.md](person-notes-plan.md)):
-facts that are not time-bound ("allergic to shellfish", "closed on Mondays"), written with a **Note button** in the entry
-box or **Add note** on the person's/place's page (both write `=@sam_jones fact` / `=~blue_door fact`; typing it is never
-needed); shown on that page and in search only, not in the journal stream, calendar or week review. Not for events or
-`#tags`. Five steps. **Steps 1 (the marker and its logic, `src/lib/notes.ts`), 2 (notes kept out of the journal,
-calendar, photos, events, tracking and tag pages; labelled "📝 Note" in search) and 3 (a Notes section with Add note,
-Edit and Delete on each person's/place's page, `NotesSection.tsx`) and 4 (the 📝 Note button in the entry box: "Note
-about" with suggestions, then the fact; "Saved as a note for … · Open") built 2026-11-17, committed locally, not pushed**
-(658 tests). Steps 1–4 can be pushed together (ask first; raise `BUILD_NUMBER` to 6). Left: step 5 (DESIGN.md, the
-Manual, HISTORY, "Waiting on the user" checks, a backup). Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
-docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
-again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
+Nothing in progress. **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
+story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
+**build 6** on the user's request; not yet tried on the user's devices (check 30); the native apps are not rebuilt (they show
+a note as an ordinary entry starting with `=@…` until they are). **Offer a new dated backup of both repos** (the last is
+build 5). **Tracking is finished** (2026-11-15, [tracking-plan.md](tracking-plan.md)). Ask the user which of these, when
+they want:
 
 1. **Try the rebuilt native apps** (check 29). (Rebuilding after any later web change: `gh workflow run 'Build apps'
    --ref main` in `~/projects/interstitial-diary-app`, about 5 minutes, then `gh run download <run id> --dir <an empty
@@ -157,6 +153,13 @@ again, Delete, Restore, the photo on a card, the one-photo limit and the sort. A
 Everything below is built and pushed. Until the user reports a check it is **not verified**; general remarks ("it
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
+
+**30. Notes on people and places** (build 6, pushed 2026-11-17; **the user tried it on localhost: "This works, I like
+it"**; not yet on the devices): on the phone and on Windows (installed web app, reloaded to Build 6 in Settings > About):
+a. 📝 Note in the entry box: pick a person, write a fact, Save: "Saved as a note for … · Open", nothing new in the
+journal; b. Open shows it at the top of the person's page; Add note, Edit, Delete there; c. with Dropbox the note shows
+on the other device's page (and not in its journal); d. a place note (`~` in front of a new name); e. the Manual's new
+"Notes on people and places" section reads well.
 
 **29. The rebuilt apps** (2026-11-15, `builds\`): a. Android: install `Interstitial-Diary-0.1.0.apk` over the old app (it
 should keep its data; if Android refuses, say so); the header has the gear and the five tabs on two rows, the Track
