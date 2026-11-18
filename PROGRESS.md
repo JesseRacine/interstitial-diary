@@ -135,7 +135,13 @@ again, Delete, Restore, the photo on a card, the one-photo limit and the sort. A
    them confirmed.
 3. **Tidy the apps:** the "install" hints inside the native apps (the service worker part is done, build 4).
 4. **Separate Dropbox app for development** (offered 2026-11-12, "not now"): the dev server shares the real app's
-   Dropbox folder, so **never connect Dropbox on localhost**. Plan: docs/CLOUD-STORAGE.md.
+   Dropbox folder, so **never connect Dropbox on localhost**. Plan: docs/CLOUD-STORAGE.md. **It happened on 2026-11-17:**
+   localhost in the user's own browser still had an old Dropbox connection, synced with the real folder, met the old
+   Start-over marker and cleared only its local copy ("Journal started over"), then downloaded the real entries again; the
+   user switched it to browser storage (a disconnect). Nothing in Dropbox was erased (only Settings > Start over can), but
+   anything typed there while connected went to the real journal (the user was told to check 17 Nov). Offered a guard
+   (localhost refuses Dropbox and drops an old connection): "not now". **Before asking the user to try localhost, have
+   them check its badge says "Only in this browser".**
 5. **The update-banner test** (step 4.6, skipped on request): make a small visible change, push with permission; the
    installed app should show "A new version is ready" with Reload. Closes older check 7. (The Tracking push on
    2026-11-15 was a chance to see it; the user did not say whether it appeared.)
