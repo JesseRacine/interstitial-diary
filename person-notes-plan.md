@@ -1,7 +1,9 @@
 # Plan: Notes on people and places
 
 _Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17 and widened to places the same
-day; step 2 (notes kept out of the journal) built 2026-11-17; both committed locally, not pushed. Steps 3 to 5 not started.** Decisions below were made with the user in conversation
+day; step 2 (notes kept out of the journal) and step 3 (the Notes section and Add note on the page) built 2026-11-17; all
+committed locally, not pushed (steps 2 and 3 may now be pushed together, with the user's permission). Steps 4 and 5 not
+started.** Decisions below were made with the user in conversation
 on 2026-11-16 and 2026-11-17. (The file keeps its old name, `person-notes-plan.md`, so older links still work.)
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step. **Push steps 2 and 3
 together**: after step 2 alone, notes would leave the journal with no page to show them on (search only)._
@@ -140,6 +142,18 @@ step 4 is not built yet), Edit and Delete on each note (reuse `EntryItem` or its
 with the Add note button), the "N notes" count in Tags > People / Places. Phone layout checked at 375 px.
 **Done when:** with seeded data every button works and syncs as an ordinary edit; Delete removes the note and Restore
 brings it back; the journal stream never shows it. Then steps 2 and 3 can be pushed together (with permission).
+_Built 2026-11-17, committed locally, not pushed (652 tests, no new ones: the logic underneath is tested and the user wants
+fewer tests; tsc clean, lint 0 errors). `NotesSection.tsx` on `TagPage` (people and places): heading, **+ Add note** (a
+plain text box for now; step 4's form can replace it), notes newest first with no date, the fact only (the marker is never
+shown or typed here), mentions inside clickable, a note's photos if it has any, Edit (the fact only; saved as
+`noteText(key, fact)` with `updateEntryText`) and Delete (asks, soft delete). Empty state: "No notes yet. A note is a fact
+about … that does not belong to a day." The summary line says "· N notes"; the Tags list's Entries column says
+"1 · 3 notes" (counted from `computeNotes`, so a name only *mentioned* in someone else's note shows no notes). App computes
+`computeNotes(entries)` once and hands it to TagsView. `openPhoto` takes any `{ id }`. In search results a note no longer
+shows its `=` (the text is drawn without it). Checked on localhost in the browser: the section and counts, Add note (new
+note on top, stored as `=@sam_test Birthday is 3 March`), Edit (stored text rewritten, still `dirty`), Delete (soft delete,
+`deleted: 1`), the journal still one entry, the page at 375 px (no sideways scroll). Not checked: Restore from Settings >
+Deleted entries (the ordinary code path), a place's page (same component), a note with photos._
 
 ### 4. The Note button in the entry box
 

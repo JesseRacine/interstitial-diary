@@ -122,7 +122,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
         </div>
       ) : (
         <>
-          <EntryText text={entry.text} terms={terms} onTag={onTag} onEvent={openEvent ? (title, date) => openEvent(entry, title, date) : undefined}
+          <EntryText text={note ? entry.text.replace(/^(\s*)=/, '$1') : entry.text} terms={terms} onTag={onTag} onEvent={openEvent ? (title, date) => openEvent(entry, title, date) : undefined}
             onTrack={openTracking ? () => openTracking(entry) : undefined} />
           <EntryImages images={images} onOpen={onOpenImage ? (i) => onOpenImage(entry, i) : undefined} />
         </>

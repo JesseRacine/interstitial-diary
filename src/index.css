@@ -393,6 +393,22 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .tag-page .summary { margin: 0.25rem 0 0.75rem; }
 .tag-page-actions { margin-bottom: 0.75rem; }
 
+/* Notes on a person's or place's page (NotesSection.tsx): facts with no date, above the entries. */
+.notes { margin: 0 0 1rem; }
+.notes-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; }
+.notes-head h3 { margin: 0; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+.notes-head button { padding: 0.2rem 0.6rem; font-size: 0.85rem; }
+.notes-empty { margin: 0.25rem 0; font-size: 0.9rem; }
+.note-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.note-item { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.5rem 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.note-item.editing { display: block; }
+.note-body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.note-item .entry-actions { flex: none; font-size: 0.85rem; }
+.note-editor { margin-bottom: 0.5rem; }
+.note-item .note-editor { margin-bottom: 0; }
+.note-editor textarea { width: 100%; box-sizing: border-box; }
+.note-editor .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
+
 /* Events */
 .events .day-nav input { flex: 1; min-width: 8rem; }
 .event-group h3 { margin: 1rem 0 0.4rem; font-size: 0.85rem; color: var(--muted); font-weight: 600; }

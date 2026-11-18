@@ -2,18 +2,20 @@ import { useMemo, useState } from 'react'
 import { renameTag } from '../lib/db'
 import { type Entry, dayKey, shortDayLabel } from '../lib/entry'
 import { TAG_KINDS, type TagKind, displayName, parseTagName, tagKey, tagKindOf, tagLabel, tagName } from '../lib/tagKinds'
+import type { Note } from '../lib/notes'
 import type { SearchIndex, TagStat } from '../search/engine'
 import { TagPage } from './TagPage'
 
 type Sort = 'count' | 'name' | 'recent'
 
-export function TagsView({ tagStats, entries, index, onSearch, onOpenDay, onOpenImage }: {
+export function TagsView({ tagStats, entries, notes, index, onSearch, onOpenDay, onOpenImage }: {
   tagStats: TagStat[]
-  entries: Entry[]
+  entries: Entry[] // journal entries only (no notes)
+  notes: Map<string, Note[]> // notes on people and places, by key (lib/notes.ts)
   index: SearchIndex
   onSearch: (tag: string) => void
   onOpenDay: (e: Entry) => void
-  onOpenImage: (e: Entry, index: number) => void
+  onOpenImage: (e: Pick<Entry, 'id'>, index: number) => void
 }) {
   const [kind, setKind] = useState<TagKind>(TAG_KINDS[0])
   const [selected, setSelected] = useState<string | null>(null) // the person or place whose page is open
@@ -49,7 +51,7 @@ export function TagsView({ tagStats, entries, index, onSearch, onOpenDay, onOpen
   const noun = kind.plural.toLowerCase()
   if (selected !== null) {
     return (
-      <TagPage key={selected} tag={selected} stat={tagStats.find((s) => s.tag === selected)} entries={entries} index={index}
+      <TagPage key={selected} tag={selected} stat={tagStats.find((s) => s.tag === selected)} entries={entries} notes={notes.get(selected) ?? []} index={index}
         backLabel={kind.plural} onBack={() => setSelected(null)} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
   }
@@ -82,7 +84,7 @@ export function TagsView({ tagStats, entries, index, onSearch, onOpenDay, onOpen
             {list.map((t) => (
               <tr key={t.tag}>
                 <td><button type="button" className={kind.className} onClick={() => (kind.hasPage ? setSelected(t.tag) : onSearch(t.tag))}>{tagLabel(t.tag)}</button></td>
-                <td>{t.count}</td>
+                <td>{t.count}{notes.get(t.tag)?.length ? <span className="muted"> · {notes.get(t.tag)!.length} {notes.get(t.tag)!.length === 1 ? 'note' : 'notes'}</span> : null}</td>
                 <td className="muted">{t.count ? shortDayLabel(dayKey(t.last)) : '—'}</td>
                 <td><button type="button" className="ghost" onClick={() => rename(t)}>Rename</button></td>
               </tr>

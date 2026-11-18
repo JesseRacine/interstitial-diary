@@ -21,7 +21,7 @@ import { useLive } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker } from './lib/events'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
-import { journalEntries } from './lib/notes'
+import { computeNotes, journalEntries } from './lib/notes'
 import { computeTracking } from './lib/tracking'
 import { tagToken } from './lib/tagKinds'
 import { buildIndex, computeTagStats } from './search/engine'
@@ -49,6 +49,7 @@ export default function App() {
   const tagStats = useMemo(() => computeTagStats(entries), [entries])
   const events = useMemo(() => computeEvents(journal), [journal])
   const tracking = useMemo(() => computeTracking(journal), [journal])
+  const notes = useMemo(() => computeNotes(entries), [entries])
 
   // How the app was opened: the "New entry" shortcut or Android's Share sheet (see lib/launch.ts).
   const [launch] = useState(() => parseLaunch(location.search))
@@ -136,7 +137,7 @@ export default function App() {
   }
 
   // The photo viewer is a history entry, so the browser's / Android's back button closes it.
-  const openPhoto = useCallback((e: Entry, index: number) => {
+  const openPhoto = useCallback((e: Pick<Entry, 'id'>, index: number) => {
     history.pushState({ photo: true }, '')
     setPhoto({ entryId: e.id, index })
   }, [])
@@ -220,7 +221,7 @@ export default function App() {
         ) : view === 'photos' ? (
           <PhotosView entries={journal} index={index} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
-          <TagsView tagStats={tagStats} entries={journal} index={index} onSearch={searchTag}
+          <TagsView tagStats={tagStats} entries={journal} notes={notes} index={index} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'tracking' ? (
           <TrackingView entries={journal} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />

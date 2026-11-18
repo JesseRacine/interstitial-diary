@@ -3,7 +3,9 @@ import { type Entry, MONTH_NAMES, dayKey, shortDayLabel } from '../lib/entry'
 import { displayName, tagKindOf, tagToken } from '../lib/tagKinds'
 import { type SearchIndex, type TagStat, runSearch } from '../search/engine'
 import { parseQuery } from '../search/query'
+import { type Note, canHaveNotes } from '../lib/notes'
 import { EntryItem } from './EntryItem'
+import { NotesSection } from './NotesSection'
 import { Histogram } from './Results'
 
 const PAGE = 100
@@ -15,16 +17,17 @@ const monthLabel = (m: string) => (m.length === 4 ? m : `${MONTH_NAMES[Number(m.
  * Everything about one person or place: how often and when they appear, and their entries, newest first.
  * Clicking a bar of the chart shows only that month; clicking it again shows all.
  */
-export function TagPage({ tag, stat, entries, index, backLabel, onBack, onSearch, onOpenDay, onOpenImage }: {
+export function TagPage({ tag, stat, entries, notes, index, backLabel, onBack, onSearch, onOpenDay, onOpenImage }: {
   tag: string // stored key, e.g. `@sarah_jones`
   stat: TagStat | undefined // undefined once no entry has it any more (renamed, merged or deleted while open)
-  entries: Entry[]
+  entries: Entry[] // journal entries only: notes are shown apart, at the top
+  notes: Note[] // this person's or place's notes, newest first
   index: SearchIndex
   backLabel: string
   onBack: () => void
   onSearch: (tag: string) => void
   onOpenDay: (e: Entry) => void
-  onOpenImage: (e: Entry, index: number) => void
+  onOpenImage: (e: Pick<Entry, 'id'>, index: number) => void
 }) {
   const kind = tagKindOf(tag)
   const [month, setMonth] = useState<string | null>(null)
@@ -41,8 +44,10 @@ export function TagPage({ tag, stat, entries, index, backLabel, onBack, onSearch
           <p className="summary">
             {stat.count} {stat.count === 1 ? 'entry' : 'entries'}
             {stat.count > 0 && <> · first {shortDayLabel(dayKey(stat.first))} · last {shortDayLabel(dayKey(stat.last))}</>}
+            {notes.length > 0 && <> · {notes.length} {notes.length === 1 ? 'note' : 'notes'}</>}
             <span className="muted"> · written as {tagToken(tag)}</span>
           </p>
+          {canHaveNotes(tag) && <NotesSection tag={tag} notes={notes} onTag={onSearch} onOpenImage={(id, i) => onOpenImage({ id }, i)} />}
           <div className="tag-page-actions">
             <button type="button" onClick={() => onSearch(tag)}>Search these entries</button>
           </div>

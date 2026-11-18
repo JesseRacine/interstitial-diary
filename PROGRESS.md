@@ -119,10 +119,11 @@ to the Claude session folder, `builds\`.
 facts that are not time-bound ("allergic to shellfish", "closed on Mondays"), written with a **Note button** in the entry
 box or **Add note** on the person's/place's page (both write `=@sam_jones fact` / `=~blue_door fact`; typing it is never
 needed); shown on that page and in search only, not in the journal stream, calendar or week review. Not for events or
-`#tags`. Five steps. **Steps 1 (the marker and its logic, `src/lib/notes.ts`) and 2 (notes kept out of the journal,
-calendar, photos, events, tracking and tag pages; labelled "📝 Note" in search) built 2026-11-17, committed locally, not
-pushed** (652 tests). Next: step 3 (the Notes section and Add note on the person's/place's page), once the user says go;
-**push steps 2 and 3 together** (after step 2 alone, notes are only findable by search). Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+`#tags`. Five steps. **Steps 1 (the marker and its logic, `src/lib/notes.ts`), 2 (notes kept out of the journal,
+calendar, photos, events, tracking and tag pages; labelled "📝 Note" in search) and 3 (a Notes section with Add note,
+Edit and Delete on each person's/place's page, `NotesSection.tsx`) built 2026-11-17, committed locally, not pushed**
+(652 tests). They can now be pushed together (ask first; raise `BUILD_NUMBER` to 6). Next: step 4 (the Note button in the
+entry box), once the user says go. Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 
