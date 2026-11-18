@@ -264,6 +264,15 @@ button.tag-place { color: var(--place); }
 .track-name .error { flex-basis: 100%; font-size: 0.8rem; }
 button.track-toggle { display: inline-flex; align-items: center; gap: 0.3rem; }
 button.track-toggle.on { color: var(--track); border-color: var(--track); }
+/* The Note form (Capture.tsx): "Note about" a person or place, with suggestions above the field. */
+button.note-toggle { display: inline-flex; align-items: center; gap: 0.3rem; }
+button.note-toggle.on { color: var(--person); border-color: var(--person); }
+.note-who label { color: var(--person); }
+.note-who .who-field { flex: 1; min-width: 8rem; display: flex; }
+.note-who .who-field input { flex: 1; min-width: 0; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.note-who .hint { flex-basis: 100%; }
+.capture-notice.note-saved { color: var(--muted); }
+.capture-notice.note-saved button.ghost { padding: 0 0.3rem; }
 .tag-event .event-date { font-weight: 400; opacity: 0.85; }
 .edit { margin-top: 0.4rem; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }

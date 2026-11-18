@@ -8,17 +8,19 @@ import { TagPage } from './TagPage'
 
 type Sort = 'count' | 'name' | 'recent'
 
-export function TagsView({ tagStats, entries, notes, index, onSearch, onOpenDay, onOpenImage }: {
+export function TagsView({ tagStats, entries, notes, index, selected, onSelect, onSearch, onOpenDay, onOpenImage }: {
   tagStats: TagStat[]
   entries: Entry[] // journal entries only (no notes)
   notes: Map<string, Note[]> // notes on people and places, by key (lib/notes.ts)
   index: SearchIndex
+  selected: string | null // the person or place whose page is open (App holds it, so "Open" after saving a note can set it)
+  onSelect: (key: string | null) => void
   onSearch: (tag: string) => void
   onOpenDay: (e: Entry) => void
   onOpenImage: (e: Pick<Entry, 'id'>, index: number) => void
 }) {
-  const [kind, setKind] = useState<TagKind>(TAG_KINDS[0])
-  const [selected, setSelected] = useState<string | null>(null) // the person or place whose page is open
+  const [kind, setKind] = useState<TagKind>(() => (selected ? tagKindOf(selected) : TAG_KINDS[0]))
+  const setSelected = onSelect
   const [filter, setFilter] = useState('')
   const [sort, setSort] = useState<Sort>('count')
 
@@ -52,7 +54,7 @@ export function TagsView({ tagStats, entries, notes, index, onSearch, onOpenDay,
   if (selected !== null) {
     return (
       <TagPage key={selected} tag={selected} stat={tagStats.find((s) => s.tag === selected)} entries={entries} notes={notes.get(selected) ?? []} index={index}
-        backLabel={kind.plural} onBack={() => setSelected(null)} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
+        backLabel={tagKindOf(selected).plural} onBack={() => { setKind(tagKindOf(selected)); setSelected(null) }} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
   }
   return (

@@ -2,8 +2,8 @@
 
 _Status: **planned 2026-11-16; step 1 (the marker and its logic, no UI) built 2026-11-17 and widened to places the same
 day; step 2 (notes kept out of the journal) and step 3 (the Notes section and Add note on the page) built 2026-11-17; all
-committed locally, not pushed (steps 2 and 3 may now be pushed together, with the user's permission). Steps 4 and 5 not
-started.** Decisions below were made with the user in conversation
+committed locally, not pushed (steps 2 and 3 may now be pushed together, with the user's permission); step 4 (the Note
+button) built 2026-11-17, committed locally, not pushed. Step 5 (docs, Manual) not started.** Decisions below were made with the user in conversation
 on 2026-11-16 and 2026-11-17. (The file keeps its old name, `person-notes-plan.md`, so older links still work.)
 Build one step per turn: finish, test, commit, update PROGRESS.md, then ask before the next step. **Push steps 2 and 3
 together**: after step 2 alone, notes would leave the journal with no page to show them on (search only)._
@@ -162,6 +162,19 @@ suggestions (reuse the `@`/`~` autocomplete data), the fact box, Save note, pref
 "Saved as a note for … · Open" message, a way to make a new person or place. Phone layout at 375 px.
 **Done when:** a note can be saved for an existing and a new person and place; the text written is `noteText`; it shows on
 the page and not in the journal; Cancel leaves the entry box as it was.
+_Built 2026-11-17, committed locally, not pushed (658 tests, 6 new in `noteTarget.test.ts`; tsc clean, lint 0 errors).
+`lib/noteTarget.ts`: `resolveNoteTarget` (a known name by name, shown name or token; **a new name without a symbol is a new
+person, `~` in front makes a place** — the open decision, settled; a name shared by a person and a place asks for the
+symbol) and `noteTargetSuggestions` (people and places, by the start of the name or of a shown word, most used first; a
+typed `@`/`~` keeps to that kind). `Capture.tsx`: a mode (`entry` / `track` / `note`) replaces the old track flag; the
+📝 Note button (off while photos are attached; the Photo button hides in note mode) opens a "Note about" field with
+suggestions (↑↓, Enter or Tab picks, then the cursor moves to the fact box; Esc or × goes back), a "New person: … · type ~
+in front for a place" hint, and the box becomes the fact. If the box already names exactly one person or place, the field
+starts filled with it. Save writes `noteText(key, fact)` and shows "Saved as a note for 👤 Sam Test · Open ×"; Open goes to
+the page (App now holds the open Tags page, `tagPage`, and passes it to TagsView). Checked on localhost: suggestions for
+"sa" (a person and a place), Enter to pick, save, the message, the journal unchanged, Open landing on the page with the new
+note on top, the prefill from "Cash only at ~salt_bar", the new-place and new-person hints, Esc keeping the text, the form
+at 375 px (no sideways scroll; measured, the hidden pane gave no usable screenshot). Not checked by the user yet._
 
 ### 5. Docs, Manual, search help and backup
 
@@ -185,7 +198,7 @@ offer a dated backup of both repos.
 
 ## Open decisions (small, settled while building)
 
-- How the Note form makes a **new** person or place (a 👤/📍 switch, or `@`/`~` typed first).
+- ~~How the Note form makes a **new** person or place~~ Settled in step 4: a new name is a person; `~` in front makes a place.
 - Whether `has:note` belongs in search (an `@person` or `~place` search already finds notes).
 - A person or place with only notes: listed in Tags with "0 entries" (proposed) or hidden until it has an entry.
 - Whether a note shows on the page of a **second name it mentions** (decided no; revisit if it feels wrong).

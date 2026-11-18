@@ -65,7 +65,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 652 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 658 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-15):** `origin/main` is at `eeec68a` (pushed on the user's request and deployed: run
   43761235371 green; it includes the search-help table fix for phones, CSS only in `src/index.css`). Later local commits may be docs-only. A push publishes and redeploys: **ask the user before every push**.
   Check with `git status -sb`.
@@ -121,9 +121,10 @@ box or **Add note** on the person's/place's page (both write `=@sam_jones fact` 
 needed); shown on that page and in search only, not in the journal stream, calendar or week review. Not for events or
 `#tags`. Five steps. **Steps 1 (the marker and its logic, `src/lib/notes.ts`), 2 (notes kept out of the journal,
 calendar, photos, events, tracking and tag pages; labelled "📝 Note" in search) and 3 (a Notes section with Add note,
-Edit and Delete on each person's/place's page, `NotesSection.tsx`) built 2026-11-17, committed locally, not pushed**
-(652 tests). They can now be pushed together (ask first; raise `BUILD_NUMBER` to 6). Next: step 4 (the Note button in the
-entry box), once the user says go. Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
+Edit and Delete on each person's/place's page, `NotesSection.tsx`) and 4 (the 📝 Note button in the entry box: "Note
+about" with suggestions, then the fact; "Saved as a note for … · Open") built 2026-11-17, committed locally, not pushed**
+(658 tests). Steps 1–4 can be pushed together (ask first; raise `BUILD_NUMBER` to 6). Left: step 5 (DESIGN.md, the
+Manual, HISTORY, "Waiting on the user" checks, a backup). Otherwise nothing in progress. **Tracking is finished** (planned 2026-11-15, [tracking-plan.md](tracking-plan.md); story in
 docs/HISTORY.md): pushed, and the user confirmed on the phone the header, the Track button, chips, Star, Done, Track
 again, Delete, Restore, the photo on a card, the one-photo limit and the sort. Ask the user which of these, when they want:
 

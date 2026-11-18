@@ -63,6 +63,7 @@ export default function App() {
   }, [launch])
   const [eventId, setEventId] = useState<string | null>(null) // the event whose page is open in Calendar > Events
   const [trackId, setTrackId] = useState<string | null>(null) // the tracked item (an entry's id) whose page is open in Tracking
+  const [tagPage, setTagPage] = useState<string | null>(null) // the person or place whose page is open in Tags
   const [jump, setJump] = useState<Jump | null>(null)
   const [bottomTick, setBottomTick] = useState(0)
   const [layout, setLayoutState] = useState<JournalLayout>(loadLayout)
@@ -180,7 +181,7 @@ export default function App() {
         <nav>
           {VIEWS.map(([v, label]) => (
             <button key={v} type="button" className={view === v && !searching ? 'on' : ''}
-              onClick={() => { setView(v); setQuery(''); setBackQuery(null); setEventId(null); setTrackId(null) }}>
+              onClick={() => { setView(v); setQuery(''); setBackQuery(null); setEventId(null); setTrackId(null); setTagPage(null) }}>
               {label}
             </button>
           ))}
@@ -210,7 +211,8 @@ export default function App() {
           <>
             <JournalView entries={journal} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
               onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
-            <Capture tagStats={tagStats} inputRef={captureRef} initialText={prefill} onPrefilled={() => setPrefill('')}
+            <Capture tagStats={tagStats} inputRef={captureRef}
+              onOpenNotes={(key) => { setTagPage(key); setView('tags'); setQuery(''); setBackQuery(null) }} initialText={prefill} onPrefilled={() => setPrefill('')}
               onSaved={() => setBottomTick((t) => t + 1)} />
           </>
         ) : view === 'calendar' ? (
@@ -221,7 +223,7 @@ export default function App() {
         ) : view === 'photos' ? (
           <PhotosView entries={journal} index={index} onOpenImage={openPhoto} onOpenDay={(d) => openDay(d)} />
         ) : view === 'tags' ? (
-          <TagsView tagStats={tagStats} entries={journal} notes={notes} index={index} onSearch={searchTag}
+          <TagsView tagStats={tagStats} entries={journal} notes={notes} index={index} selected={tagPage} onSelect={setTagPage} onSearch={searchTag}
             onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : view === 'tracking' ? (
           <TrackingView entries={journal} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
