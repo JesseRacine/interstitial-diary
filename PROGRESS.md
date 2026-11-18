@@ -73,7 +73,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 580 tests (2026-11-18, after trim step 4); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 520 tests (2026-11-18, after trim step 5); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits are docs-only and
   usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
@@ -122,7 +122,7 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**In progress: the test-suite trim (item 6 below; steps 1 to 4 of 6 done).** **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
+**In progress: the test-suite trim (item 6 below; steps 1 to 5 of 6 done).** **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
 installed by the user: "seems good" (the Windows `.exe` is in `builds\`, copying it to the real folder is the user's).
 
@@ -170,7 +170,8 @@ they want:
    4. ~~Screen helpers (imageLayout, photoRows, journalRows, eventRows, weekReview, zoom, tagKinds, dom, launch,
       startView, keySet): 2 or 3 each~~ **done 2026-11-18** (87 → 23 tests, 644 → 580; folded, the main cases kept;
       the 7,300-entry "scales" test dropped).
-   5. Search (query, engine): fold the one-liners into a few tables.
+   5. ~~Search (query, engine): fold the one-liners into a few tables~~ **done 2026-11-18** (74 → 14 tests, 580 →
+      520; every query kept as a table row; a wrong row was checked to fail; the 300-entry "scales" test dropped).
    6. Parsing in events, tracking, notes: fold edge cases, keep text-preserving ones.
 7. **pCloud** is stopped (see above; a later try would use pCloud's own login). Also: photo sharing into the app, and the ideas in
    docs/LIMITS-AND-IDEAS.md.
