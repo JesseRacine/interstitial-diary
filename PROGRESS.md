@@ -120,7 +120,13 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-Nothing in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
+**In progress (2026-11-18): "a couple of changes" from the user, one at a time.** 1. **The entry box shrank to one
+scrolling line** with a long sentence on Android (its height counted only typed line breaks, not wrapped lines): fixed in
+`0d508d7` (`useAutoGrow` in `src/lib/hooks.ts`, capped at about 8 lines / a third of the screen in `.capture textarea`);
+checked in Claude's browser at phone size (5 wrapped lines shown, stops at 208 px, shrinks when cleared); 680 tests.
+**Not pushed** (raise `BUILD_NUMBER` first); not yet seen on the phone. Next: the user's other change(s).
+
+Before this, nothing was in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
 [pcloud-plan.md](pcloud-plan.md)): a web page can save to pCloud but not read files back. The code stays, unregistered;
 removed from Settings in **build 7** (pushed). **If the user picks it up again, they want pCloud's own login (email +
 password)**; check first that the read calls accept that token. The user may delete the test folder
