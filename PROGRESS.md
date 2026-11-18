@@ -74,13 +74,13 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
 - **Numbers:** 679 tests (2026-11-17); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-17):** `origin/main` is at `b14e17d` (build 7, deployed). Later local commits are docs-only and
   usually stay unpushed. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
-- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-16.zip` in the Claude session folder (no unzipped
-  folder, as the user prefers), made 2026-11-16 at **build 5** plus the app repo's saved-copy cleanup: **both repos**
-  (commit ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; the
-  web tests and type check passed on the web clone; the app clone cannot be built locally). The previous zip
-  (`...-2026-11-15b.zip`, build 4) is superseded. All older archives, including the one with the personal Gmail address
-  in its history, were deleted on 2026-11-15 at the user's request. It is on the same disk as the project: the user was
-  advised to copy it elsewhere (not confirmed). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
+- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
+  folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
+  ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; 680 tests
+  and the type check passed on the web clone; the app clone cannot be built locally). The build 5 zip
+  (`...-2026-11-16.zip`) is superseded; it stays until the user says to delete it. All older archives, including the
+  one with the personal Gmail address in its history, were deleted at the user's request. It is on the same disk as the
+  project: the user was advised to copy it elsewhere (not confirmed). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Native apps (second repo `interstitial-diary-app`, started 2026-11-14)
@@ -125,7 +125,6 @@ Nothing in progress. **pCloud is stopped** (2026-11-17, the user's decision; sto
 removed from Settings in **build 7** (pushed). **If the user picks it up again, they want pCloud's own login (email +
 password)**; check first that the read calls accept that token. The user may delete the test folder
 `Applications/Interstitial Diary/dev-localhost` on pcloud.com and remove the app's access in pCloud's settings.
-**Offer a new dated backup of both repos** (the last is build 5).
 
 **Notes on people and places are finished** (2026-11-16/17, [person-notes-plan.md](person-notes-plan.md);
 story in docs/HISTORY.md): built in five steps, tried by the user on localhost ("This works, I like it") and pushed as
