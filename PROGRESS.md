@@ -131,7 +131,7 @@ written entry's event ("last event"), while what is typed still fits its start (
 in `src/lib/events.ts`; the hook in `components/text.tsx`); picking closes the quote. Not in the Edit box or the
 search bar. `f57356b` also fixed a sub-pixel scrollbar the first fix gave a one-line box. Checked in Claude's browser; 685 tests.
 **Both pushed as build 8** (2026-11-18, `f38eefa`, deploy run 44332869492 green; Claude's browser pane on the live site:
-Settings > About "Build 8"). Not yet seen on the user's phone; **the native apps are not rebuilt with it** (still build
+Settings > About "Build 8"). **The user tried build 8: "I'm happy with the test"** (2026-11-18; device not said); **the native apps are not rebuilt with it** (still build
 7). Next: any further change from the user.
 
 Before this, nothing was in progress. **pCloud is stopped** (2026-11-17, the user's decision; story in docs/HISTORY.md, API results in
