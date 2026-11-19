@@ -79,14 +79,17 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 450 tests (2026-11-19, build 11; 448 after the 2026-11-18 test trim, +2 for typing mode); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-19):** `origin/main` is at `09d8952` (build 11, deployed; build 10 was `8c765e2`, build 9 `31031c7`). This PROGRESS update is a later local commit. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
-- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
-  folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
-  ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; 680 tests
-  and the type check passed on the web clone; the app clone cannot be built locally). The build 5 zip
-  (`...-2026-11-16.zip`) was deleted at the user's request (2026-11-17). All older archives, including the
-  one with the personal Gmail address in its history, were deleted at the user's request. It is on the same disk as the
-  project: the user was advised to copy it elsewhere (not confirmed). Offer a new one after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup); not confirmed.
+- **Git state (2026-11-19):** `origin/main` is at `09d8952` (build 11, deployed; build 10 was `8c765e2`, build 9 `31031c7`). The latest commits after it are **local and unpushed** (docs only: PROGRESS, HISTORY, the code map, the limits list; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19.zip` in the Claude session folder (no unzipped
+  folder, as the user prefers), made 2026-11-19 at **build 11** at the user's request: **both repos** (commit ids and
+  test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a patch**
+  (`history/app-uncommitted-edits.patch`); restore tested (both bundles cloned with matching heads and identical files;
+  450 tests and the type check passed on the web clone; the app clone cannot be built locally). The build 7 zip
+  (`...-2026-11-17.zip`) is **still there**: the user keeps only the newest, so ask whether to delete it. All older
+  archives, including the one with the personal Gmail address in its history, were deleted at the user's request. The
+  zip is on the same disk as the project: the user was advised to copy it elsewhere (not confirmed). Offer a new one
+  after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup);
+  not confirmed.
 - **Workflow with this user:** one plan step per turn, then ask before the next (CLAUDE.md "How we work").
 
 ## Native apps (second repo `interstitial-diary-app`, started 2026-11-14)
@@ -199,7 +202,7 @@ should slide away, leaving the title bar with "Done typing", the last entries an
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
 hide the keyboard, brings the header back; e. the search box still works as before.
-**32. Editing an old entry** (builds 10 and 11, 2026-11-19; the user used it and said "I'm happy with it"): press Edit on
+**32. Editing an old entry** (builds 10 and 11, 2026-11-19; the user said "I'm happy with it" after build 11 was sent; which of a–d they tried one by one is not known): press Edit on
 an older entry: the new-entry box disappears (phone and PC), the edit box is full width and at least about 14 lines
 (less on a short window), grows as you type, and Save or Cancel (Esc) brings the new-entry box back with any draft
 still in it. Open question: Edit sometimes needs two presses (above).
