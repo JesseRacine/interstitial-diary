@@ -19,8 +19,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   entry box grows with wrapped lines, `!"` offers the last event's title (build 8).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **8** (2026-11-18, entry box + last event; `f38eefa`, run 44332869492; apps
-  rebuilt with it: run 44374189547, the APK installed by the user). Before: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
+  every push to `main`. Pushed and live: **9** (2026-11-19, typing mode on the phone; `31031c7`, deploy run 44588046433;
+  apps rebuilt with it: run 44588204073; installing the APK is the user's). Before: **8** (2026-11-18, entry box + last
+  event; `f38eefa`, run 44332869492; apps rebuilt with it: run 44374189547, the APK installed by the user). Before that: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
   44216122403 green; Claude's browser pane showed "A new version is ready", Reload, then Settings > About "Build 7" and
   no pCloud option; **apps rebuilt with it**: run 44216731203 green, the bundled web build checked for build 7 and no
 pCloud, APK 10,193,599 bytes and `.exe` 6,338,560 copied to the session folder's `builds\`, the `.exe` started from a
@@ -74,8 +75,8 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 448 tests (2026-11-18, after the test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-18):** `origin/main` is at `f38eefa` (build 8, deployed). Later local commits (docs and the
-  2026-11-18 test trim, no app change) stay unpushed until the next app change, by the user's choice ("Not now"). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-19):** `origin/main` is at `31031c7` (build 9, deployed; this push also published the 2026-11-18
+  docs and test-trim commits that had waited). This PROGRESS update is a later local commit. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
   ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; 680 tests
@@ -115,6 +116,11 @@ to the Claude session folder, `builds\`.
   appeared under the app id in `AppData\Local` or `AppData\Roaming`. **Not checked:** writing entries, Dropbox sign-in
   in the window, and Settings > Export. The user accepted a database in `journal-data` instead of readable `.md` files
   **only as long as exporting to Markdown works in the app**, so Export is the important one.
+- **Found 2026-11-19 (not Claude's work, left alone):** the app repo's working folder has **uncommitted edits that change the
+  Android/Windows app id** from `io.github.jesseracine.interstitialdiary` to `net.alpacatech.interstitialdiary`
+  (`tauri.conf.json`, `MainActivity.kt`, the README, the Windows read-me). Builds use only what is pushed, so build 9
+  kept the old id. Android treats a new id as a different app (a separate install with its own data), so the user should
+  decide before that is ever committed.
 - **Open points for the apps:** Dropbox needs `https://tauri.localhost/` as a redirect URI and the sign-in inside the
   app window is untried (passkeys may not work there); the "install" hints still show inside the apps (the PWA service
   worker no longer runs there since build 4, see "Native apps: no saved copy" above); the share target and the "New entry" shortcut do not exist
@@ -122,9 +128,11 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Typing mode on the phone, step 1 of 2, built 2026-11-19, local, not pushed** (story in docs/HISTORY.md): with the cursor
-in the entry box or an edit box on a phone-sized touch screen, the header, search and date row hide, with a thin
-"Done typing" bar; checked in Claude's pane only (check 31). Step 2 (a full-screen writing sheet) only if the user finds
+**Typing mode on the phone, step 1 of 2, pushed 2026-11-19 as build 9** (`31031c7`, deploy run 44588046433 green; apps
+rebuilt: run 44588204073 green, the bundled web build has the typing bar and reads "Build 9", APK 10,193,599 bytes and `.exe`
+6,341,120 copied to `builds\`; story in docs/HISTORY.md): with the cursor in the entry box or an edit box on a
+phone-sized touch screen, the header, search and date row hide, with a thin "Done typing" bar; checked in Claude's pane
+only, the user's phone is untried (check 31). The same push also published the older local docs and test-trim commits. Step 2 (a full-screen writing sheet) only if the user finds
 it not enough; a small extra (hide the new-entry box while editing) is open. HEIC conversion was **dropped** by the user
 (2026-11-19, no LGPL library; [heic-plan.md](heic-plan.md), docs/LIMITS-AND-IDEAS.md). **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
 the ones guarding entries and photos untouched; no app change, commits local (no push needed). **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
@@ -170,8 +178,7 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**31. Typing mode** (built 2026-11-19, **not pushed yet**: it needs a push with build 9, then an app rebuild for the
-native apps): on the phone (Android app and the installed web app), tap the entry box: the header, search and date row
+**31. Typing mode** (build 9, pushed 2026-11-19; the Android APK and Windows `.exe` are rebuilt with it): on the phone (Android app and the installed web app), tap the entry box: the header, search and date row
 should slide away, leaving the title bar with "Done typing", the last entries and the box above the keyboard; a. is
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
