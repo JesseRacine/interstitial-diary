@@ -8,7 +8,7 @@
  * query, a fragment, spaces, "..") is rejected, so a typo in the workflow fails the build instead of shipping a site
  * whose scripts and icons 404.
  */
-export function normaliseBase(value: string | undefined): string {
+export function normalizeBase(value: string | undefined): string {
   const raw = (value ?? '').trim()
   if (raw === '' || raw === '/') return '/'
   if (/^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.startsWith('//')) {

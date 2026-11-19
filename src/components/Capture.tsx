@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { addEntry } from '../lib/db'
 import { enterAction, hasCoarsePointer } from '../lib/dom'
-import { extractTags, timeLabel } from '../lib/entry'
+import { clockLabel } from '../lib/clock'
+import { extractTags } from '../lib/entry'
 import { useAutoGrow, useCoarsePointer } from '../lib/hooks'
 import { noteTargetSuggestions, resolveNoteTarget } from '../lib/noteTarget'
 import { canHaveNotes, noteText } from '../lib/notes'
@@ -149,7 +150,7 @@ export function Capture({ tagStats, lastEvent, onSaved, onOpenNotes, inputRef, i
       {...input.dropHandlers}
     >
       <div className="capture-head">
-        <span className="time">{timeLabel(now)}</span>
+        <span className="time">{clockLabel(now)}</span>
         <span className="muted">
           {coarse ? 'Enter for a new line · Save button saves' : 'Enter to save · Shift+Enter for a new line'}
           {' '}· # tags · @ people · ~ places · !"event" · +"item"

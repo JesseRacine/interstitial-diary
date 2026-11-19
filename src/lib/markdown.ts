@@ -1,4 +1,4 @@
-import { type Entry, type ImageRef, entryImages, longDayLabel, parseDayKey, timeLabel, withDerived } from './entry'
+import { type Entry, type ImageRef, entryImages, fileDayHeading, parseDayKey, timeLabel, withDerived } from './entry'
 
 /*
  * One Markdown file per day, oldest entry first:
@@ -41,7 +41,7 @@ const escapeLine = (l: string) => (LOOKS_LIKE_HEAD.test(l) || LOOKS_LIKE_IMAGE.t
 
 export function serializeDay(day: string, entries: Entry[]): string {
   const live = entries.filter((e) => !e.deleted && e.day === day).sort((a, b) => a.createdAt - b.createdAt)
-  let out = `# ${longDayLabel(day)}\n`
+  let out = `# ${fileDayHeading(day)}\n`
   for (const e of live) {
     const text = e.text.trim()
     let body = text ? text.split('\n').map(escapeLine).join('\n') : ''

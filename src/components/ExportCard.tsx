@@ -45,7 +45,7 @@ export function ExportCard({ entries, tagCount }: { entries: Entry[]; tagCount: 
         sink = blobSink()
       }
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return // save dialog cancelled
+      if (e instanceof DOMException && e.name === 'AbortError') return // save dialog canceled
       setMessage(`Export failed: ${e instanceof Error ? e.message : String(e)}`)
       return
     }

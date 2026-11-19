@@ -3,7 +3,7 @@ import { hashBytes } from '../lib/images'
 import { memoryStore } from './memory'
 import {
   type CachedOriginal, ORIGINALS_CACHE_BYTES, ORIGINALS_LIMIT_CHOICES, chooseEvictions, fetchOriginal, limitBytes, limitMode,
-  normaliseLimit,
+  normalizeLimit,
 } from './originals'
 
 const photo = async (seed: number) => {
@@ -84,13 +84,13 @@ describe('cache limit setting', () => {
   })
 
   it('keeps a valid saved value, including 0 (no limit)', () => {
-    for (const c of ORIGINALS_LIMIT_CHOICES) expect(normaliseLimit(c.bytes)).toBe(c.bytes)
-    expect(normaliseLimit(0)).toBe(0)
+    for (const c of ORIGINALS_LIMIT_CHOICES) expect(normalizeLimit(c.bytes)).toBe(c.bytes)
+    expect(normalizeLimit(0)).toBe(0)
   })
 
   it('anything else falls back to the default, so a bad value can never make the cache drop photos', () => {
     for (const bad of [undefined, null, 'abc', '1024', -1, NaN, 1, 123456, Infinity, {}]) {
-      expect(normaliseLimit(bad)).toBe(ORIGINALS_CACHE_BYTES)
+      expect(normalizeLimit(bad)).toBe(ORIGINALS_CACHE_BYTES)
     }
   })
 

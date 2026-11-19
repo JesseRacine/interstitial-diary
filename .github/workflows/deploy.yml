@@ -13,7 +13,7 @@ permissions:
   pages: write
   id-token: write
 
-# One deploy at a time; a newer push waits for the running deploy instead of cancelling it half-way.
+# One deploy at a time; a newer push waits for the running deploy instead of canceling it half-way.
 concurrency:
   group: pages
   cancel-in-progress: false

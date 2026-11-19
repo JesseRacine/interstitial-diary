@@ -1,7 +1,7 @@
 /*
  * Zoom and pan maths for the lightbox (pure, tested in Node).
- * The image is drawn centred in the stage, fitted at scale 1, then `translate(x, y) scale(scale)`.
- * Points (px, py) are relative to the stage centre.
+ * The image is drawn centered in the stage, fitted at scale 1, then `translate(x, y) scale(scale)`.
+ * Points (px, py) are relative to the stage center.
  */
 
 export interface View {

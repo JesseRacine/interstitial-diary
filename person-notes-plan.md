@@ -128,7 +128,7 @@ only and are 0 when only notes have the tag, which is still listed (so it can be
 Tags list shows "—" for Last used and the page leaves out first/last when there are no entries. `EntryItem` shows a note
 with a "📝 Note" label instead of its date and time (no "open this day") and hides the When field in its editor. Checked on
 localhost with typed test data: the journal and calendar show only the ordinary entry; a search for the person lists the
-entry and the notes, the notes labelled; the person's page counts and lists the entry only. Not checked: a person with only
+entry and the notes, the notes labeled; the person's page counts and lists the entry only. Not checked: a person with only
 notes in the Tags list (covered by a unit test) and the export (unchanged code path; notes are entries).
 Noticed: in search results a note's marker shows as "=👤 Sam Test …" (the `=` stays visible); tidy that in step 3 or 4._
 

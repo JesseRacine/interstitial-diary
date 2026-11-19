@@ -14,7 +14,7 @@ import type { BlobStore } from './types'
 export const ORIGINALS_CACHE_BYTES = 1024 * 1024 * 1024
 
 const MB = 1024 * 1024
-/** What Settings offers. `bytes: 0` means no limit. The saved setting must be one of these (see `normaliseLimit`). */
+/** What Settings offers. `bytes: 0` means no limit. The saved setting must be one of these (see `normalizeLimit`). */
 export const ORIGINALS_LIMIT_CHOICES: { bytes: number; label: string }[] = [
   { bytes: 256 * MB, label: '256 MB' },
   { bytes: 512 * MB, label: '512 MB' },
@@ -26,7 +26,7 @@ export const ORIGINALS_LIMIT_CHOICES: { bytes: number; label: string }[] = [
 ]
 
 /** A saved limit setting, or the default if it is missing or isn't one of the choices (so a bad value can't drop photos). */
-export function normaliseLimit(v: unknown): number {
+export function normalizeLimit(v: unknown): number {
   return ORIGINALS_LIMIT_CHOICES.some((c) => c.bytes === v) ? (v as number) : ORIGINALS_CACHE_BYTES
 }
 

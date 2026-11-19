@@ -9,7 +9,7 @@ it('zooming keeps the point under the cursor in place and stays between 1x and 8
   expect(zoomAt({ scale: 6, x: 0, y: 0 }, 4, 0, 0).scale).toBe(8)
 })
 
-it('the image fits without enlarging, recentres at 1x and cannot be dragged past its edges', () => {
+it('the image fits without enlarging, recenters at 1x and cannot be dragged past its edges', () => {
   expect(fitSize(3000, 4000, 800, 600)).toEqual({ w: 450, h: 600 })
   expect(fitSize(200, 100, 800, 600)).toEqual({ w: 200, h: 100 })
   expect(clampView({ scale: 1, x: 40, y: -20 }, 400, 300, 800, 600)).toEqual(FIT)

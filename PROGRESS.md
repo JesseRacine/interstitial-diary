@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-19 (build 11: typing mode on the phone, the new-entry box hides while editing, a big edit box; apps rebuilt). Kept short on purpose:
+_Last updated: 2026-11-19 (build 12 in the working folder, not pushed: US conventions, times follow the device's 12/24-hour setting; build 11, live, was a big edit box). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -78,7 +78,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 450 tests (2026-11-19, build 11; 448 after the 2026-11-18 test trim, +2 for typing mode); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 458 tests (2026-11-19, build 12; 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `09d8952` (build 11, deployed; build 10 was `8c765e2`, build 9 `31031c7`). The latest commits after it are **local and unpushed** (docs only: PROGRESS, HISTORY, the code map, the limits list; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 11** at the user's request: **both repos** (commit ids and
@@ -133,6 +133,14 @@ to the Claude session folder, `builds\`.
   natively; no native widget (quick capture stage 2, android-capture-plan.md).
 
 ## What next
+
+**Build 12, US conventions (2026-11-19, committed locally, NOT pushed, apps not rebuilt; the user asked for it: "update
+everything", including the texts, Manual and search; story in docs/HISTORY.md):** American spelling everywhere (screen,
+code, docs); dates month first ("Thu, Nov 19, 2026"); **times follow the device's 12/24-hour setting** (`lib/clock.ts`),
+including the week review's parts of the day and the search chips and help; **weeks start on Sunday**; search accepts
+12-hour times (`time:9am-12pm`, `after:5:30pm`) next to 24-hour ones. **Left as it was on purpose:** the saved Markdown
+files (`## 09:14`, day-first `#` title). Checked in the pane (en-US) and by 458 tests; **not checked: a 24-hour device,
+the native apps, the phone (check 33)**. Needs the user's OK to push (the build number is already 12).
 
 **Open, not being worked on (the user, 2026-11-19: "we will not deal with it now"):** sometimes the
 **Edit button of an older entry has to be pressed twice** before the edit box opens (the user did not say on which
@@ -202,6 +210,13 @@ should slide away, leaving the title bar with "Done typing", the last entries an
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
 hide the keyboard, brings the header back; e. the search box still works as before.
+**33. US conventions and the clock** (build 12, not pushed yet): after installing: a. entry times and the Lightbox/Photos
+dates look right for your phone's and PC's 12/24-hour setting (switch the phone's setting and reopen the app: the times
+should follow); b. dates read "Thu, Nov 19, 2026", an event's range "Nov 8–10, 2026"; c. Calendar month and Week start on
+Sunday; d. Calendar > Week: the Time of day rows show the hours in your clock's style; e. the search quick chips
+(Mornings, Evenings ...) work, and typing `time:9am-12pm` and `after:22:00` both work; the `?` help shows the row in
+your clock's style; f. the Manual reads right (Settings > Manual).
+
 **32. Editing an old entry** (builds 10 and 11, 2026-11-19; the user said "I'm happy with it" after build 11 was sent; which of a–d they tried one by one is not known): press Edit on
 an older entry: the new-entry box disappears (phone and PC), the edit box is full width and at least about 14 lines
 (less on a short window), grows as you type, and Save or Cancel (Esc) brings the new-entry box back with any draft
@@ -227,7 +242,7 @@ entries); c. in either app try Track, Star, Done, Delete; d. Settings > Export s
 Track button, chips, Star, Done, Track again, Delete, Restore, the photo on a card, the one-photo limit, the sort**; the
 rest was not asked or reported): the Tracking tab's All view and the item page's Edit; Calendar > Events (Rename, Merge,
 chips from the Week review) after the move; `?view=events` and `?view=tracking` bookmarks; the light theme (the amber chip
-colour); the Manual's new Tracking text and the apostrophe note (see 23); Enter in the Track form's name field on the phone.
+color); the Manual's new Tracking text and the apostrophe note (see 23); Enter in the Track form's name field on the phone.
 
 **25. Portable Windows app** (built 2026-11-14; **the user, 2026-11-14: "I think it's good, I tried it earlier"**,
 without saying which of a to d were tried, so Export and Dropbox in the window are not individually confirmed): copy `builds\Interstitial Diary\` somewhere, run the `.exe`: a. write
@@ -256,7 +271,7 @@ the phone with real thumbnails.
 lists one event on 12 May 2026 with both; the chip reads "🎉 Jack's 40th · 12 May 2026"; Rename keeps the date; a wrong
 date such as `(2026-02-30)` stays plain text.
 
-**18. Merge events:** make a misspelt event (`!"Wekend away"` next to `!"Weekend away"`), open its page, Merge into…
+**18. Merge events:** make a misspelled event (`!"Wekend away"` next to `!"Weekend away"`), open its page, Merge into…
 the right one: the entries carry the right title; with Dropbox the change shows on the other device; a merge into an
 event more than 7 days away warns first.
 

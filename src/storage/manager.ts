@@ -477,7 +477,7 @@ export async function connect(backendId: string) {
     const { config, store: s, label } = await backend.setup()
     await adopt(backendId, config, s, label)
   } catch (e) {
-    if (e instanceof DOMException && e.name === 'AbortError') return // picker cancelled
+    if (e instanceof DOMException && e.name === 'AbortError') return // picker canceled
     set({ status: 'error', message: describe(e) })
   }
 }

@@ -21,7 +21,7 @@ it('suggests while typing: sees !" or !“ being typed, offers the last event wr
   expect(lastEventTitle(entries)).toBe("Jack's party") // by when it was written; deleted entries left out
   expect(lastEventTitle([])).toBeUndefined()
   expect(suggestLastEvent('JACK\'S   p', "Jack's party")).toBe(true)
-  expect(suggestLastEvent('party', "Jack's party")).toBe(false) // a new event is not pushed towards the old one
+  expect(suggestLastEvent('party', "Jack's party")).toBe(false) // a new event is not pushed toward the old one
   expect(closingQuote('“')).toBe('”')
 })
 
@@ -178,7 +178,7 @@ describe('after a rename', () => {
     expect(eventAfterRename(two, second, 'Road trip')).toMatchObject({ title: 'Road trip', date: '2026-05-20' })
   })
 
-  it('joins a neighbour that has the new title, unless it is more than 7 days away (what a merge warns about)', () => {
+  it('joins a neighbor that has the new title, unless it is more than 7 days away (what a merge warns about)', () => {
     const close = [entry('n', '2026-05-01', '!"Weekend away"'), entry('t', '2026-05-04', '!"Wekend away"')]
     const typo = computeEvents(close).find((e) => e.key === 'wekend away')!
     expect(eventAfterRename(close, typo, 'Weekend away')).toMatchObject({ entryIds: ['n', 't'], first: '2026-05-01' })

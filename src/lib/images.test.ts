@@ -9,7 +9,7 @@ const bytes = (...parts: (number[] | string)[]) => {
 }
 
 describe('sniffImageType', () => {
-  it('recognises the stored formats from their first bytes', () => {
+  it('recognizes the stored formats from their first bytes', () => {
     expect(sniffImageType(bytes([0xff, 0xd8, 0xff, 0xe1]))?.ext).toBe('jpg')
     expect(sniffImageType(bytes([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))?.ext).toBe('png')
     expect(sniffImageType(bytes('GIF89a'))?.ext).toBe('gif')

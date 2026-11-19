@@ -3,7 +3,7 @@
 **Status: DROPPED by the user on 2026-11-19 (they prefer no LGPL library; HEIC stays "stored, not shown"). Nothing was
 built; kept only so the reasoning is not lost.** Asked for by the user on 2026-11-19 after attaching a HEIC with the Photo button: the
 journal showed a gray "HEIC" square and the viewer said "This HEIC photo can't be shown here. Use Save…" (the designed
-behaviour, see images-plan.md and docs/LIMITS-AND-IDEAS.md). The user chose **"convert to JPEG"** over keeping the HEIC
+behavior, see images-plan.md and docs/LIMITS-AND-IDEAS.md). The user chose **"convert to JPEG"** over keeping the HEIC
 original with a converted thumbnail.
 
 ## Decision
@@ -31,7 +31,7 @@ AVIF stays "stored, not shown" (not asked for; browsers can decode it, a later s
 ## The decoder (to confirm in step 1)
 
 Looked up on npm 2026-11-19 (`npm view`):
-| Package | Version | Licence | Last published | Note |
+| Package | Version | License | Last published | Note |
 |---|---|---|---|---|
 | `heic-to` | 1.6.7 | LGPL-3.0 | 2026-10-27 | Maintained; libheif compiled to WebAssembly; HEIC to JPEG/PNG in the browser |
 | `libheif-js` | 1.23.5 | LGPL-3.0 | 2026-10-04 | The raw libheif build; we would write the conversion ourselves |
@@ -42,7 +42,7 @@ with a "Converting…" note), the size it adds (the WebAssembly is a few MB), th
 attached** (not in the first page load, and decide whether the service worker precaches it: offline conversion vs. a
 bigger install), that it works in the Tauri web views (Windows WebView2, Android WebView), and that **LGPL-3.0** is
 acceptable for a public repo that ships it unmodified as a separate file (the user decides; it only needs the library's
-licence text kept with the build).
+license text kept with the build).
 
 ## Steps (one per turn, ask before the next)
 
@@ -65,4 +65,4 @@ licence text kept with the build).
   (the user removes and re-adds them), or add a later step "Convert the HEIC photos already stored" (it would have to
   replace a stored file in Dropbox, which the rules treat carefully: image files are never deleted automatically). The
   proposal is to leave them and decide later.
-- **Licence:** LGPL-3.0 is fine for this use, but it is the user's call.
+- **License:** LGPL-3.0 is fine for this use, but it is the user's call.

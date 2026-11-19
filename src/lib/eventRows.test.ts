@@ -14,10 +14,10 @@ const events = [
 ]
 
 it('date labels: one day, a range in a month, across months and across years', () => {
-  expect(eventDateLabel('2026-11-13', '2026-11-13')).toBe('13 Nov 2026')
-  expect(eventDateLabel('2026-11-08', '2026-11-10')).toBe('8–10 Nov 2026')
-  expect(eventDateLabel('2026-11-30', '2026-12-02')).toBe('30 Nov – 2 Dec 2026')
-  expect(eventDateLabel('2026-12-30', '2027-01-02')).toBe('30 Dec 2026 – 2 Jan 2027')
+  expect(eventDateLabel('2026-11-13', '2026-11-13')).toBe('Nov 13, 2026')
+  expect(eventDateLabel('2026-11-08', '2026-11-10')).toBe('Nov 8–10, 2026')
+  expect(eventDateLabel('2026-11-30', '2026-12-02')).toBe('Nov 30 – Dec 2, 2026')
+  expect(eventDateLabel('2026-12-30', '2027-01-02')).toBe('Dec 30, 2026 – Jan 2, 2027')
 })
 
 it('merge targets: every other title, nearest in time first, never the event itself or its own title', () => {

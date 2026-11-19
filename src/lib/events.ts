@@ -159,7 +159,7 @@ export function renameEventInText(text: string, key: string, newTitle: string): 
 
 /**
  * The event `event` becomes once its entries carry `newTitle`, found by running computeEvents on the renamed texts (it
- * may join a neighbouring event of the same title, so its id can differ from a guess). Undefined only if the new
+ * may join a neighboring event of the same title, so its id can differ from a guess). Undefined only if the new
  * title is not valid. Used to keep the event page open after a rename, before the database has caught up.
  */
 export function eventAfterRename(entries: readonly EventSource[], event: EventStat, newTitle: string): EventStat | undefined {

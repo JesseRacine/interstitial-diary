@@ -6,12 +6,16 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 - **Edit sometimes needs two presses** (the user, 2026-11-19, device not stated): the first press does nothing, the
   second opens the edit box. Not investigated; see "Open, not being worked on" in PROGRESS.md for the first guesses.
 - While an entry is being edited the new-entry box is hidden (build 10); a draft in it is kept, but a new entry cannot be
-  written until the edit is saved or cancelled (Esc cancels).
+  written until the edit is saved or canceled (Esc cancels).
 - Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
 - Removing an entry from a file by hand doesn't delete it (by design; see DESIGN.md).
-- Weekly review: weeks start on Monday (like the calendar; not a setting), there is no future week, and the week is the
-  entry's day in local time (an entry written at 00:10 counts for the new day). The time-of-day parts are fixed
-  (night 0–6, morning 6–12, afternoon 12–18, evening 18–24). A tag counts once per entry however often it is written.
+- Dates and times follow US conventions (user's choice, 2026-11-19): month-first dates, American spelling, weeks that start
+  on Sunday (not a setting). Times follow the device's 12/24-hour setting, read once per page load. The saved Markdown
+  files keep `## 09:14` and a day-first `#` title on purpose (DESIGN.md "Day file"). If the user ever wants a setting
+  (date order, week start, 12/24-hour override), it would live in Settings; none exists.
+- Weekly review: weeks start on Sunday (like the calendar), there is no future week, and the week is the
+  entry's day in local time (an entry written at 12:10 AM counts for the new day). The time-of-day parts are fixed
+  (night 0–6, morning 6–12, afternoon 12–18, evening 18–24; shown as 12 AM–6 AM and so on on a 12-hour clock). A tag counts once per entry however often it is written.
 - Editing an entry's time: not into the future; the time is to the minute (the entry keeps its seconds). Changing the
   time in a day file by hand (`## 09:14`) is ignored when the heading has the id comment: use the app's "When" field.
   A time edit and a text edit of the same entry on two devices before they sync keep only the newer one.
@@ -35,7 +39,7 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   the plan if it comes up again.
 - People and places: older text that happens to contain `@word` or `~word` (a letter right after the symbol, not glued
   to a word before it) becomes a person or place the first time the new version runs; nothing is changed in the files,
-  but it shows in colour, in the Tags view and in search. Edit the text if that is unwanted.
+  but it shows in color, in the Tags view and in search. Edit the text if that is unwanted.
 - A person or place name has no spaces (`@sarah_jones`); the app shows the underscore as a space. A tag, person and
   place of the same name (`#sarah`, `@sarah`, `~sarah`) are three different things; rename cannot change a tag's kind.
 - Quick capture (PWA): sharing into the app works for text and links only, not photos (needs a POST share target and a
@@ -75,7 +79,7 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
 - People and places, next: on a person's/place's page show who or where they were mentioned together with; suggest a
   place from the device location (asks for permission, privacy-sensitive); turn an old `#sarah` into `@sarah` in one
   go (a "convert to person/place" action); a page for plain tags too (`hasPage` on the `tag` kind); more kinds such as
-  projects or moods (one row in `lib/tagKinds.ts`, plus colours and a search-help row).
+  projects or moods (one row in `lib/tagKinds.ts`, plus colors and a search-help row).
 - Events, next: (`event:` search, `has:event`, "Merge into…" and an event's own date `!"Title" (2026-05-12)` are done,
   2026-11-13); a date picker or a button that adds the `(date)` to a marker; a date range (`(2026-05-12..2026-05-15)`),
   a month-only date, other date formats; an `event:` search that also takes a date; attach photos to an event; make the

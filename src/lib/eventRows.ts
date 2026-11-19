@@ -7,15 +7,15 @@ export type EventSort = 'newest' | 'oldest' | 'name'
 
 const mon = (d: Date) => MONTH_NAMES[d.getMonth()].slice(0, 3)
 
-/** "13 Nov 2026", "8–10 Nov 2026", "30 Nov – 2 Dec 2026" or "30 Dec 2026 – 2 Jan 2027". */
+/** "Nov 13, 2026", "Nov 8–10, 2026", "Nov 30 – Dec 2, 2026" or "Dec 30, 2026 – Jan 2, 2027". */
 export function eventDateLabel(first: string, last: string): string {
   const a = parseDayKey(first)
   const b = parseDayKey(last)
-  const one = `${a.getDate()} ${mon(a)} ${a.getFullYear()}`
+  const one = `${mon(a)} ${a.getDate()}, ${a.getFullYear()}`
   if (first === last) return one
-  if (a.getFullYear() !== b.getFullYear()) return `${one} – ${b.getDate()} ${mon(b)} ${b.getFullYear()}`
-  if (a.getMonth() !== b.getMonth()) return `${a.getDate()} ${mon(a)} – ${b.getDate()} ${mon(b)} ${a.getFullYear()}`
-  return `${a.getDate()}–${b.getDate()} ${mon(a)} ${a.getFullYear()}`
+  if (a.getFullYear() !== b.getFullYear()) return `${one} – ${mon(b)} ${b.getDate()}, ${b.getFullYear()}`
+  if (a.getMonth() !== b.getMonth()) return `${mon(a)} ${a.getDate()} – ${mon(b)} ${b.getDate()}, ${a.getFullYear()}`
+  return `${mon(a)} ${a.getDate()}–${b.getDate()}, ${a.getFullYear()}`
 }
 
 /** The years that have an event (by the day it started), newest first. */
@@ -44,7 +44,7 @@ export function eventGap(a: EventStat, b: EventStat): number {
 
 /**
  * The events `event` could be merged into: every event with a different title (the same title in another year is
- * already the same name, merging would change nothing), nearest in time first, because a misspelt title is usually
+ * already the same name, merging would change nothing), nearest in time first, because a misspelled title is usually
  * written about around the same days as the right one. Ties go by title.
  */
 export function mergeTargets(events: readonly EventStat[], event: EventStat): EventStat[] {

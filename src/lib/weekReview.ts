@@ -4,8 +4,8 @@ import type { EventStat } from './events'
 import { TAG_KINDS, type TagKind, tagKindOf } from './tagKinds'
 
 /*
- * The weekly review: what a Monday-to-Sunday week held. Everything is worked out from the entries (nothing is stored),
- * so it is always up to date and needs no sync. Monday first, like the calendar.
+ * The weekly review: what a Sunday-to-Saturday week held. Everything is worked out from the entries (nothing is stored),
+ * so it is always up to date and needs no sync. Sunday first, like the calendar.
  */
 
 /** Parts of the day, by the hour an entry was written (local time). */
@@ -24,7 +24,9 @@ export interface DayCount {
 export interface BandCount {
   id: (typeof TIME_BANDS)[number]['id']
   label: string
-  hours: string
+  hours: string // 24-hour wording ("6–12"); the screen words it for the device's clock with `hourRange(from, to)`
+  from: number
+  to: number
   count: number
 }
 
@@ -44,9 +46,9 @@ export interface WeekEvent {
 }
 
 export interface WeekReview {
-  start: string // the Monday
-  end: string // the Sunday
-  days: DayCount[] // Monday to Sunday
+  start: string // the Sunday
+  end: string // the Saturday
+  days: DayCount[] // Sunday to Saturday
   total: number
   activeDays: number
   previousTotal: number // entries in the week before, to compare
@@ -65,14 +67,13 @@ export function compareLabel(total: number, previousTotal: number): string {
   return `${diff > 0 ? '+' : '−'}${Math.abs(diff)} vs last week`
 }
 
-/** The Monday of the week that contains `day` (YYYY-MM-DD). */
+/** The Sunday of the week that contains `day` (YYYY-MM-DD). */
 export function weekStart(day: string): string {
-  const back = (parseDayKey(day).getDay() + 6) % 7
-  return addDays(day, -back)
+  return addDays(day, -parseDayKey(day).getDay()) // getDay(): 0 = Sunday
 }
 
 /**
- * Review the week that starts on Monday `start`. `entries` may include deleted ones (ignored). `events` is the list
+ * Review the week that starts on Sunday `start`. `entries` may include deleted ones (ignored). `events` is the list
  * of all events in the journal (`computeEvents`); the ones with an entry this week are listed.
  */
 export function buildWeekReview(entries: readonly Entry[], start: string, events: readonly EventStat[], topN = 5): WeekReview {
@@ -94,7 +95,7 @@ export function buildWeekReview(entries: readonly Entry[], start: string, events
     }
   }
 
-  const bands: BandCount[] = TIME_BANDS.map((b) => ({ id: b.id, label: b.label, hours: b.hours, count: 0 }))
+  const bands: BandCount[] = TIME_BANDS.map((b) => ({ id: b.id, label: b.label, hours: b.hours, from: b.from, to: b.to, count: 0 }))
   let photos = 0
   for (const e of week) {
     const band = TIME_BANDS.findIndex((b) => e.hour >= b.from && e.hour < b.to)

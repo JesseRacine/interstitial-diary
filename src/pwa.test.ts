@@ -70,7 +70,7 @@ describe('index.html', () => {
     expect(html).toContain('href="/favicon.svg"')
     expect(existsSync(publicFile('favicon.svg'))).toBe(true)
   })
-  it('sets a theme colour for light and dark', () => {
+  it('sets a theme color for light and dark', () => {
     expect(html).toMatch(/name="theme-color"[^>]*prefers-color-scheme: light/)
     expect(html).toMatch(/name="theme-color"[^>]*prefers-color-scheme: dark/)
   })

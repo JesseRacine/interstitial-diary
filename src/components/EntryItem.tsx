@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { deleteEntry, updateEntry } from '../lib/db'
-import { type Entry, dayKey, entryImages, formatGap, shortDayLabel, timeLabel } from '../lib/entry'
+import { clockLabel } from '../lib/clock'
+import { type Entry, dayKey, entryImages, formatGap, shortDayLabel } from '../lib/entry'
 import { fromDateTimeInput, isAllowedTime, retimedCreatedAt, toDateTimeInput } from '../lib/retime'
 import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
@@ -78,7 +79,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
               {shortDayLabel(entry.day)}
             </button>
           )}
-          <span className="time">{timeLabel(entry.createdAt)}</span>
+          <span className="time">{clockLabel(entry.createdAt)}</span>
           {!bubble && gapMinutes != null && <span className="gap">{formatGap(gapMinutes)}</span>}
         </>
       )}

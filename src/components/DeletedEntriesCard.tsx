@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { db, restoreEntry } from '../lib/db'
-import { entryImages, shortDayLabel, timeLabel } from '../lib/entry'
+import { clockLabel } from '../lib/clock'
+import { entryImages, shortDayLabel } from '../lib/entry'
 import { useLive } from '../lib/hooks'
 import { restorable } from '../lib/purge'
 import { purgeDeleted, useStorage } from '../storage/manager'
@@ -65,7 +66,7 @@ export function DeletedEntriesCard() {
           {deleted.map((e) => (
             <li key={e.id}>
               <div className="deleted-head">
-                <span className="muted">{shortDayLabel(e.day)} {timeLabel(e.createdAt)}{entryImages(e).length ? ` · ${entryImages(e).length} photo${entryImages(e).length > 1 ? 's' : ''}` : ''}</span>
+                <span className="muted">{shortDayLabel(e.day)} {clockLabel(e.createdAt)}{entryImages(e).length ? ` · ${entryImages(e).length} photo${entryImages(e).length > 1 ? 's' : ''}` : ''}</span>
               </div>
               <div className="deleted-text">{e.text}</div>
               {confirming === e.id ? (

@@ -21,7 +21,7 @@ line in `backends/index.ts`, no changes to `sync.ts` (CLAUDE.md rule 3). It must
 - **Browser use is supported:** RPC calls go to `api.dropboxapi.com` (JSON body); uploads/downloads to
   `content.dropboxapi.com` with the arguments in the `Dropbox-API-Arg` header (or an `arg` URL parameter); a "simple
   request" mode (`text/plain; charset=dropbox-cors-hack`, `arg`/`authorization` as URL parameters,
-  `reject_cors_preflight=true`) avoids the CORS preflight. Verify the real behaviour from the app before relying on either.
+  `reject_cors_preflight=true`) avoids the CORS preflight. Verify the real behavior from the app before relying on either.
 - **Paths are case-insensitive** (and start with `/`, relative to the app folder): fine for day files and hash-named
   photos, but keep in mind in tests. Content downloads support Range and ETag.
 - **Still to check in the docs when building:** the single-upload size limit (recalled as 150 MB; larger needs upload

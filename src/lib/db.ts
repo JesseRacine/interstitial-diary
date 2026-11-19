@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normaliseLimit } from '../storage/originals'
+import { type CachedOriginal, ORIGINALS_CACHE_BYTES, chooseEvictions, limitBytes, normalizeLimit } from '../storage/originals'
 import { type Entry, type ImageRef, dayKey, extractTags, makeEntry, replaceTag, sameImages, withDerived } from './entry'
 import { renameEventInText } from './events'
 import { scrubEntry } from './purge'
@@ -241,11 +241,11 @@ const ORIGINALS_LIMIT_KEY = 'originalsLimit'
 
 /** The saved cache limit in bytes (0 = no limit); the default if nothing valid is saved. */
 export async function getOriginalsLimit(): Promise<number> {
-  return normaliseLimit(await getMeta<unknown>(ORIGINALS_LIMIT_KEY, ORIGINALS_CACHE_BYTES))
+  return normalizeLimit(await getMeta<unknown>(ORIGINALS_LIMIT_KEY, ORIGINALS_CACHE_BYTES))
 }
 
 export async function setOriginalsLimit(bytes: number): Promise<void> {
-  await setMeta(ORIGINALS_LIMIT_KEY, normaliseLimit(bytes))
+  await setMeta(ORIGINALS_LIMIT_KEY, normalizeLimit(bytes))
 }
 
 /** evictOriginals with the saved limit. The same rule applies: the CALLER must only call it when storage is a separate copy. */

@@ -39,7 +39,7 @@ export interface FileStore {
   /**
    * A cheap way to ask "has anything changed?", so a check that finds nothing new costs one request instead of a full
    * listing. Optional: a module without it is simply checked in full every time, and nothing else changes. It may only
-   * ever save work, never decide what the work does: when unsure, both answers lean towards doing the full sync.
+   * ever save work, never decide what the work does: when unsure, both answers lean toward doing the full sync.
    */
   changes?: ChangeCheck
 }

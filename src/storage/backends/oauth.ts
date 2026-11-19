@@ -138,7 +138,7 @@ export async function completeSignIn(
   if (!p) throw new OAuthError('This sign-in was not started here, or it was already finished. Please try again.')
   if (ret.state !== p.state) throw new OAuthError('The sign-in reply did not match the sign-in that was started. Please try again.')
   if (ret.kind === 'error') {
-    throw new OAuthError(ret.error === 'access_denied' ? 'Sign-in was cancelled.' : `Sign-in failed: ${ret.description || ret.error}`)
+    throw new OAuthError(ret.error === 'access_denied' ? 'Sign-in was canceled.' : `Sign-in failed: ${ret.description || ret.error}`)
   }
   if (now - p.startedAt > PENDING_MAX_AGE_MS) throw new OAuthError('The sign-in took too long. Please try again.')
   const tokens = await tokenRequest(provider, {

@@ -48,6 +48,14 @@ it('dates, times and weekdays', () => {
     ['time:09-12', { timeFrom: 540, timeTo: 720 }],
     ['time:22-2', { timeFrom: 1320, timeTo: 120 }],
     ['after:9 before:17', { timeFrom: 540, timeTo: 1020 }],
+    // 12-hour times (am/pm, any capitals) mean the same as the 24-hour ones; "12am" ends a range at the end of the day
+    ['time:9am-12pm', { timeFrom: 540, timeTo: 720 }],
+    ['time:10PM-5am', { timeFrom: 1320, timeTo: 300 }],
+    ['time:6pm-12am', { timeFrom: 1080, timeTo: 1440 }],
+    ['time:9-5pm', { timeFrom: 540, timeTo: 1020 }],
+    ['after:5:30pm', { timeFrom: 1050, timeTo: 1440 }],
+    ['before:7am', { timeFrom: 0, timeTo: 420 }],
+    ['before:12am', { timeFrom: 0, timeTo: 1440 }],
     ['day:weekend', { weekdays: [0, 6] }],
     ['day:monday,fri', { weekdays: [1, 5] }],
     ['#work tired time:13-17 last:30d', { tags: ['work'], terms: ['tired'], timeFrom: 780, timeTo: 1020, from: '2026-10-10', to: '2026-11-08' }],
@@ -70,7 +78,7 @@ it('events and has: filters', () => {
 })
 
 it('reports bad filters; a query of only a filter is not empty', () => {
-  for (const q of ['on:tomorrow', 'time:25-26', 'day:funday', 'has:video', 'event:""']) expect(p(q).errors, q).toHaveLength(1)
+  for (const q of ['on:tomorrow', 'time:25-26', 'time:13pm-2pm', 'after:0am', 'before:9:60pm', 'day:funday', 'has:video', 'event:""']) expect(p(q).errors, q).toHaveLength(1)
   for (const q of ['has:event', '-has:image', 'event:party']) expect(isEmptyQuery(p(q)), q).toBe(false)
   expect(isEmptyQuery(p(''))).toBe(true)
   expect(isEmptyQuery(p('~5|@3pm'))).toBe(true) // a group with no usable tag is ignored

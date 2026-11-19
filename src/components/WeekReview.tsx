@@ -1,14 +1,15 @@
+import { hourRange, uses12HourClock } from '../lib/clock'
 import { shortDayLabel } from '../lib/entry'
 import { EVENT_ICON } from '../lib/events'
 import { eventDateLabel } from '../lib/eventRows'
 import { tagLabel } from '../lib/tagKinds'
 import { type WeekReview as Review, compareLabel } from '../lib/weekReview'
 
-const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
 /**
- * One week at a glance: how much was written, when, and about whom and what. One colour for the bars (the same green ramp
+ * One week at a glance: how much was written, when, and about whom and what. One color for the bars (the same green ramp
  * as the calendar); the busiest day is the darker step and the only one with a number on it, the rest say their count
  * on hover or focus and to a screen reader. Bars are sized from the counts, so nothing moves while it loads.
  */
@@ -24,6 +25,7 @@ export function WeekReview({ review: r, onOpenDay, onTag, onOpenEvent }: {
   const max = Math.max(...r.days.map((d) => d.count))
   const bandMax = Math.max(...r.bands.map((b) => b.count))
   const compare = compareLabel(r.total, r.previousTotal)
+  const twelve = uses12HourClock() // the hours of each part of the day are worded for the device's clock
 
   return (
     <div className="week-review">
@@ -62,8 +64,8 @@ export function WeekReview({ review: r, onOpenDay, onTag, onOpenEvent }: {
         <h3>Time of day</h3>
         <ul className="week-bands">
           {r.bands.map((b) => (
-            <li key={b.id} title={`${b.label} ${b.hours} h: ${plural(b.count, 'entry', 'entries')}`}>
-              <span className="label">{b.label} <span className="muted">{b.hours}</span></span>
+            <li key={b.id} title={`${b.label} ${hourRange(b.from, b.to, twelve)}${twelve ? '' : ' h'}: ${plural(b.count, 'entry', 'entries')}`}>
+              <span className="label">{b.label} <span className="muted">{hourRange(b.from, b.to, twelve)}</span></span>
               <span className="track"><span className="fill" style={{ width: bandMax ? `${(b.count / bandMax) * 100}%` : '0%' }} /></span>
               <span className="count">{b.count}</span>
             </li>

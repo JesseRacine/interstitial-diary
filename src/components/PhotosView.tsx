@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
-import { type Entry, longDayLabel, timeLabel } from '../lib/entry'
+import { clockLabel } from '../lib/clock'
+import { type Entry, longDayLabel } from '../lib/entry'
 import { filterPhotoEntries, photoCount, photoTopTags, photoYears, setYearOfQuery, yearOfQuery } from '../lib/photoFilter'
 import { type PhotoRow, buildPhotoRows, columnsFor } from '../lib/photoRows'
 import { tagLabel, tagToken } from '../lib/tagKinds'
@@ -62,7 +63,7 @@ export function PhotosView({ entries, index, onOpenImage, onOpenDay }: {
       <div className="photo-row" style={{ '--cols': columns } as React.CSSProperties}>
         {row.tiles.map((t) => (
           <button key={t.key} type="button" className="entry-image photo-tile" onClick={() => onOpenImage(t.entry, t.index)}
-            aria-label={`Open photo from ${longDayLabel(t.entry.day)}, ${timeLabel(t.entry.createdAt)}`}>
+            aria-label={`Open photo from ${longDayLabel(t.entry.day)}, ${clockLabel(t.entry.createdAt)}`}>
             <Thumb image={t.image} />
           </button>
         ))}

@@ -70,7 +70,7 @@ describe('beginSignIn', () => {
 })
 
 describe('parseReturn / cleanReturnUrl', () => {
-  it('recognises a code, an error, or nothing', () => {
+  it('recognizes a code, an error, or nothing', () => {
     expect(parseReturn(`${REDIRECT}?code=abc&state=xyz`)).toEqual({ kind: 'code', code: 'abc', state: 'xyz' })
     expect(parseReturn(`${REDIRECT}?error=access_denied&state=xyz`)).toEqual({ kind: 'error', error: 'access_denied', description: '', state: 'xyz' })
     expect(parseReturn(REDIRECT)).toBeNull()
@@ -129,10 +129,10 @@ describe('completeSignIn', () => {
     expect(pending.value).toBeNull()
   })
 
-  it('reports a cancelled sign-in', async () => {
+  it('reports a canceled sign-in', async () => {
     const { pending, state } = await started()
     const { fn } = tokenEndpoint(json(200, {}))
-    await expect(completeSignIn(provider, `${REDIRECT}?error=access_denied&state=${state}`, pending, fn)).rejects.toThrow('Sign-in was cancelled.')
+    await expect(completeSignIn(provider, `${REDIRECT}?error=access_denied&state=${state}`, pending, fn)).rejects.toThrow('Sign-in was canceled.')
     expect(fn).not.toHaveBeenCalled()
   })
 

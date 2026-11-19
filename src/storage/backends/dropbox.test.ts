@@ -141,11 +141,11 @@ describe('resumeFromRedirect (startup)', () => {
     expect(w.tokenCalls.filter((f) => f.get('grant_type') === 'authorization_code')).toHaveLength(1)
   })
 
-  it('reports a cancelled sign-in, and the old storage stays as it was', async () => {
+  it('reports a canceled sign-in, and the old storage stays as it was', async () => {
     const w = world()
     const state = await startAndGetState(w)
     const r = await resumeFromRedirect(`${REDIRECT}?error=access_denied&state=${state}`, w.pending, lookupFor(w.backend))
-    expect(r).toEqual({ ok: false, message: 'Sign-in was cancelled.', cleanUrl: REDIRECT })
+    expect(r).toEqual({ ok: false, message: 'Sign-in was canceled.', cleanUrl: REDIRECT })
   })
 
   it('reports a pending sign-in for a module that no longer exists', async () => {

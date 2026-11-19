@@ -31,7 +31,7 @@ const TYPES = {
 const ascii = (b: Uint8Array, from: number, to: number) => String.fromCharCode(...b.subarray(from, to))
 const startsWith = (b: Uint8Array, sig: number[], at = 0) => sig.every((x, i) => b[at + i] === x)
 
-/** Detect the image type from the first bytes of the file (at least 16 are needed). Null when not recognised. */
+/** Detect the image type from the first bytes of the file (at least 16 are needed). Null when not recognized. */
 export function sniffImageType(bytes: Uint8Array): ImageType | null {
   if (startsWith(bytes, [0xff, 0xd8, 0xff])) return TYPES.jpg
   if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return TYPES.png

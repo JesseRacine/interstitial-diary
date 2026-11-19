@@ -8,7 +8,7 @@ import { countByDay } from '../search/engine'
 import { EventsView } from './EventsView'
 import { WeekReview } from './WeekReview'
 
-const WEEK_HEAD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const WEEK_HEAD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function level(count: number, max: number): number {
   if (!count) return 0
@@ -21,7 +21,7 @@ function Month({ y, m, counts, max, compact, today, onOpenDay }: {
   onOpenDay: (day: string) => void
 }) {
   const first = new Date(y, m, 1)
-  const lead = (first.getDay() + 6) % 7 // Monday-first
+  const lead = first.getDay() // Sunday-first (getDay(): 0 = Sunday)
   const days = new Date(y, m + 1, 0).getDate()
   const cells: (string | null)[] = [...Array(lead).fill(null)]
   for (let d = 1; d <= days; d++) cells.push(`${y}-${pad(m + 1)}-${pad(d)}`)
@@ -71,7 +71,7 @@ export function CalendarView({ entries, events, mode, onMode, eventId, onSelectE
   const [m, setM] = useState(now.getMonth())
   const today = dayKey(now)
   const thisWeek = weekStart(today)
-  const [week, setWeek] = useState(thisWeek) // the Monday of the week shown in Week mode
+  const [week, setWeek] = useState(thisWeek) // the Sunday of the week shown in Week mode
   const review = useMemo(() => (mode === 'week' ? buildWeekReview(entries, week, events) : null), [mode, entries, week, events])
 
   const prefix = mode === 'month' ? `${y}-${pad(m + 1)}` : `${y}`

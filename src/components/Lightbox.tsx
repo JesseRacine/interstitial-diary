@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { setEntryImages } from '../lib/db'
-import { type Entry, type ImageRef, entryImages, longDayLabel, timeLabel } from '../lib/entry'
+import { clockLabel } from '../lib/clock'
+import { type Entry, type ImageRef, entryImages, longDayLabel } from '../lib/entry'
 import { isDisplayable } from '../lib/images'
 import { holdOriginal, loadOriginal } from '../storage/manager'
 import { FIT, type View, clampView, fitSize, panBy, zoomAt } from '../lib/zoom'
@@ -117,14 +118,14 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
     const n = i + d
     if (n >= 0 && n < images.length) onIndex(n)
   }
-  const centre = (x: number, y: number) => {
+  const center = (x: number, y: number) => {
     const r = stage.current!.getBoundingClientRect()
     return { x: x - (r.left + r.width / 2), y: y - (r.top + r.height / 2) }
   }
 
   // The window/wheel listeners are attached once and call the latest handlers through this ref.
-  const latest = useRef({ go, clamp, onClose, centre })
-  useLayoutEffect(() => { latest.current = { go, clamp, onClose, centre } })
+  const latest = useRef({ go, clamp, onClose, center })
+  useLayoutEffect(() => { latest.current = { go, clamp, onClose, center } })
 
   // Keyboard: capture phase on window, so the app's own shortcuts (←/→/t/n//) never see these keys.
   useEffect(() => {
@@ -150,7 +151,7 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
       const h = latest.current
-      const p = h.centre(e.clientX, e.clientY)
+      const p = h.center(e.clientX, e.clientY)
       setView((v) => h.clamp(zoomAt(v, Math.exp(-e.deltaY * 0.0015), p.x, p.y)))
     }
     el.addEventListener('wheel', onWheel, { passive: false })
@@ -179,8 +180,8 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
       const [pa, pb] = [...ps.values()]
       const before = Math.hypot(pa.x - pb.x, pa.y - pb.y)
       const after = Math.hypot(a.x - b.x, a.y - b.y)
-      const mid = centre((a.x + b.x) / 2, (a.y + b.y) / 2)
-      const midBefore = centre((pa.x + pb.x) / 2, (pa.y + pb.y) / 2)
+      const mid = center((a.x + b.x) / 2, (a.y + b.y) / 2)
+      const midBefore = center((pa.x + pb.x) / 2, (pa.y + pb.y) / 2)
       moved.current += 100
       if (before > 0) setView((v) => clamp(panBy(zoomAt(v, after / before, midBefore.x, midBefore.y), mid.x - midBefore.x, mid.y - midBefore.y)))
     }
@@ -193,7 +194,7 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
     if (wasOnly && moved.current < 6 && !onPhoto && e.type === 'pointerup') onClose()
   }
   const onDoubleClick = (e: React.MouseEvent) => {
-    const p = centre(e.clientX, e.clientY)
+    const p = center(e.clientX, e.clientY)
     setView((v) => (v.scale > 1 ? FIT : clamp(zoomAt(v, 2.5, p.x, p.y))))
   }
 
@@ -260,7 +261,7 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
       </div>
 
       <div className="lightbox-caption">
-        <div className="when">{longDayLabel(entry.day)} · {timeLabel(entry.createdAt)}</div>
+        <div className="when">{longDayLabel(entry.day)} · {clockLabel(entry.createdAt)}</div>
         {entry.text && <div className="text">{entry.text}</div>}
         {displayable && thumb && !originalUrl && (
           <div className="muted">

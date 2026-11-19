@@ -107,7 +107,7 @@ events is computed from the text of the live entries (`computeEvents` in `src/li
   (all entries with that title, not only this event's dates).
 - **Rename** (`renameEvent` in `db.ts`, Events page): rewrites the markers with that title only in that event's entries,
   keeping the quote marks typed, bumping `updatedAt` and marking them dirty so it syncs like any edit.
-- **Merge into…** (event page): fixes a misspelt title by picking the right event from a list (every event with a
+- **Merge into…** (event page): fixes a misspelled title by picking the right event from a list (every event with a
   different title, nearest in time first: `mergeTargets` in `lib/eventRows.ts`). It is the same rewrite as Rename with the
   target's title, so nothing new is stored. Because identity is title plus the 7-day rule (or the date), entries more than
   7 days from the target's, or with a different date, stay a **separate event with the same title**; the confirmation says
@@ -152,7 +152,7 @@ you write about an event is the journal; not plain tags: a label, not a thing).
 - **Out of the journal:** `App.tsx` keeps `entries` (all: search index and results, tag statistics, backup reminder,
   Settings/export, the photo viewer) and `journal = journalEntries(entries)` (no notes) for Journal, Calendar (Month, Year,
   Week review, Events), Photos, the person/place page's entry list and Tracking. A note's day is never shown: in search
-  results (and anywhere `EntryItem` draws one) it is labelled "📝 Note" with no date, time or "open this day", its `=` is
+  results (and anywhere `EntryItem` draws one) it is labeled "📝 Note" with no date, time or "open this day", its `=` is
   not drawn, and its editor has no When field. The day file still holds it under the day and time it was written.
 - **Counts:** `TagStat.count`, `first` and `last` count journal entries only (0 when only notes have the tag); `notes` counts
   note entries that carry the tag. A name only notes have is still listed in Tags (Last used "—"), so it can be found and
@@ -205,7 +205,9 @@ Finished email triage. Next: draft report. #work
 A heading without the comment (typed by hand) is accepted too.
 ```
 
-- The `#` title is cosmetic and ignored when parsing.
+- The `#` title is cosmetic and ignored when parsing. It stays in the day-first form (`fileDayHeading` in `lib/entry.ts`)
+  although the screens show US dates (see "Dates and times on screen" below): changing it would rewrite every day file,
+  and devices on different versions would keep undoing each other's headings.
 - An entry is everything from its `## HH:MM` heading to the next one. Body lines starting with `## ` are escaped
   with a leading `\` when written, and unescaped when read.
 - Hand-written headings get a stable id from day + time + text hash. After the next sync the file is rewritten with
@@ -436,7 +438,7 @@ One search bar; filter chips write the same syntax. Parser: `search/query.ts`. E
 | `-#personal` / `-@sarah` / `-~home` / `-meeting` / `-"a phrase"` | exclude |
 | `on:2026-11-08`, `from:2026-11-01 to:2026-11`, `in:2026-11`, `in:2026` | dates (day, month or year precision) |
 | `today`, `yesterday`, `last:7d` / `w` / `m` / `y` | relative dates (`last:7d` = the 7 days ending today) |
-| `time:09-12`, `time:22-05` (wraps midnight), `after:22:00`, `before:7` | time of day (end exclusive) |
+| `time:09-12`, `time:22-05` (wraps midnight), `after:22:00`, `before:7`; or 12-hour: `time:9am-12pm`, `time:10pm-5am`, `after:5:30pm`, `before:7am` | time of day (end exclusive). Both forms always work, any capitals; the 12-hour hour is 1 to 12, and `12am` ends a range at the end of the day (`time:6pm-12am`, `before:12am`). `time:9-5pm` reads as 9:00 to 17:00 |
 | `day:mon`, `day:weekend`, `day:mon,fri` | weekday |
 | `has:image` / `-has:image` | only entries with photos / only entries without (`has:photo`, `has:images`, `has:photos` work too) |
 | `event:"Jack's 40th"` / `event:party` | only entries that name this event, i.e. contain a `!"Jack's 40th"` marker whose **whole** title matches (capitals and spacing ignored; curly quotes are fine; quotes are optional for a one-word title). Several `event:` tokens must all match. It matches every event with that title, so a yearly birthday finds all its years: add `in:2026` to narrow. The title in plain prose, or a longer title that starts the same (`Lisbon trip dinner`), does not match |
@@ -487,12 +489,22 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   clicking a date opens that day with a "Back to results" link.
 - **Calendar:** month or year heatmap; click a day to open it. The switch also has **Events** (below; the chosen mode is kept by
   `App.tsx` while the app is open, so event chips can open Calendar on it) and **Week** (the weekly review), which shows one
-  Monday-to-Sunday week with ‹ › to move between weeks (not past the current one) and "This week" to come back. It is worked
+  Sunday-to-Saturday week with ‹ › to move between weeks (not past the current one) and "This week" to come back. It is worked
   out from the entries each time (`buildWeekReview` in `lib/weekReview.ts`; nothing stored, nothing to sync): entries,
   days written (of 7), photos, the busiest day (the earliest if tied) and the change against the week before; a bar per day
   (click opens that day); entries by time of day (night 0–6, morning 6–12, afternoon 12–18, evening 18–24, by the hour
   written); the most used tags, people and places (click searches it); and the events with an entry that week (click opens
-  the event). One hue (the calendar's green ramp), the busiest day the darker step.
+  the event). One hue (the calendar's green ramp), the busiest day the darker step. The hours of each part of the day
+  are worded for the device's clock (below).
+- **Dates and times on screen (US conventions, the user's choice 2026-11-19):** spelling is American (`canceled`,
+  `misspelled`, `color`, `center`, `normalize`: use it in code, comments and docs too). Dates are written month first:
+  `longDayLabel` "Thursday, November 19, 2026", `shortDayLabel` "Thu, Nov 19, 2026", `eventDateLabel` "Nov 8–10, 2026"
+  (fixed, not read from the device). **Times follow the device's 12/24-hour setting** (`lib/clock.ts`:
+  `uses12HourClock` reads it from the browser's locale once per page load, `clockLabel` "5:31 PM" or "17:31", `hourRange`
+  for the week review, `searchHour` for the quick chips); a change of the system setting shows after reopening. Weeks
+  start on **Sunday** (Calendar month grid, Week review, `weekStart`). Not affected: the saved Markdown files (`## 09:14`
+  and the `#` title, see "Day file"), the Edit box's date field and the backup date (the browser's own formats), and the
+  search words, which accept both clocks. `timeLabel` (24-hour) is for files and the date field only.
 - **Tags:** a Tags / People / Places switch (one tab per kind in `TAG_KINDS`, each with its count); per name the
   entry count and last-used date; rename/merge within the kind (a person's new name may be typed as "Sara Jones",
   stored `@sara_jones`; a name that already exists offers a merge). Clicking a person or place opens **its page** (kinds
@@ -524,7 +536,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   at most 120 characters, the error shows under the field) and the entry written is `trackingEntryText(name, note)`,
   `+"Name" note`, so it is an ordinary entry; the form then closes and the box keeps the focus. In journal text, results,
   tag and event pages the first tracking marker of an entry is a chip (`markerSegments` in `lib/markers.ts`, which also
-  cuts event markers; `EntryText`): "📌 Name", "★ Name" starred, "✓ Name · 10 Nov 2026" done, in the `--track` colour
+  cuts event markers; `EntryText`): "📌 Name", "★ Name" starred, "✓ Name · 10 Nov 2026" done, in the `--track` color
   (muted when done); a click opens the item's page on the Tracking tab (`OpenTrackingContext` in `eventNav.ts`, provided
   by `App.tsx`, which keeps the open item's id like it keeps the open event's). A second marker in one entry stays plain text.
 - **Settings:** storage, **photos on this device**, theme, export, a short "Quick entry from your phone or taskbar" tip, shortcuts. The photos card (`PhotoStorageCard`) lists

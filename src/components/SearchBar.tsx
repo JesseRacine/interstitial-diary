@@ -2,23 +2,28 @@ import { useEffect, useRef, useState } from 'react'
 import { setMeta } from '../lib/db'
 import type { TagStat } from '../search/engine'
 import { hasToken, toggleToken } from '../search/query'
-import { SEARCH_SYNTAX } from '../search/syntax'
+import { searchSyntax } from '../search/syntax'
+import { searchHour, uses12HourClock } from '../lib/clock'
 import { tagLabel, tagToken } from '../lib/tagKinds'
 import { Suggestions, useTagAutocomplete } from './text'
 
-const QUICK: [label: string, token: string][] = [
-  ['Today', 'today'],
-  ['Yesterday', 'yesterday'],
-  ['Last 7 days', 'last:7d'],
-  ['Last 30 days', 'last:30d'],
-  ['Mornings', 'time:05-12'],
-  ['Afternoons', 'time:12-18'],
-  ['Evenings', 'time:18-24'],
-  ['Late night', 'time:22-05'],
-  ['Weekends', 'day:weekend'],
-  ['With photos', 'has:image'],
-  ['With events', 'has:event'],
-]
+/** The quick chips. The time-of-day ones are written for the device's clock: `time:5am-12pm` or `time:05-12`. */
+const quickChips = (twelve: boolean): [label: string, token: string][] => {
+  const range = (a: number, b: number) => `time:${searchHour(a, twelve)}-${searchHour(b, twelve)}`
+  return [
+    ['Today', 'today'],
+    ['Yesterday', 'yesterday'],
+    ['Last 7 days', 'last:7d'],
+    ['Last 30 days', 'last:30d'],
+    ['Mornings', range(5, 12)],
+    ['Afternoons', range(12, 18)],
+    ['Evenings', range(18, 24)],
+    ['Late night', range(22, 5)],
+    ['Weekends', 'day:weekend'],
+    ['With photos', 'has:image'],
+    ['With events', 'has:event'],
+  ]
+}
 
 export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, onCommit }: {
   query: string
@@ -29,6 +34,7 @@ export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, 
   recent: string[]
   onCommit: (q: string) => void
 }) {
+  const twelve = uses12HourClock()
   const [open, setOpen] = useState(false)
   const [help, setHelp] = useState(false)
   const [caret, setCaret] = useState(0)
@@ -96,7 +102,7 @@ export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, 
           {saved.map((s) => (
             <button key={`s-${s}`} type="button" className={`chip saved${query.trim() === s ? ' on' : ''}`} onClick={() => setQuery(s)}>★ {s}</button>
           ))}
-          {QUICK.map(([label, token]) => (
+          {quickChips(twelve).map(([label, token]) => (
             <button key={token} type="button" className={`chip${hasToken(query, token) ? ' on' : ''}`} onClick={() => chip(token)}>{label}</button>
           ))}
           {tagStats.slice(0, 6).map((t) => (
@@ -118,12 +124,12 @@ export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, 
         <div className="help">
           <table>
             <tbody>
-              {SEARCH_SYNTAX.map(([q, d]) => (
+              {searchSyntax(twelve).map(([q, d]) => (
                 <tr key={q}><td><code>{q}</code></td><td>{d}</td></tr>
               ))}
             </tbody>
           </table>
-          <p className="muted">Combine freely, e.g. <code>#work tired time:13-17 last:30d</code>. Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> to search, <kbd>Esc</kbd> to clear.</p>
+          <p className="muted">Combine freely, e.g. <code>#work tired time:{searchHour(13, twelve)}-{searchHour(17, twelve)} last:30d</code>. Press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> to search, <kbd>Esc</kbd> to clear.</p>
         </div>
       )}
     </div>

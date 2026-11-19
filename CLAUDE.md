@@ -109,13 +109,13 @@ git commit -m "..." -m "Co-Authored-By: <model> <noreply@anthropic.com>"
 - A step's commit hash goes into the commit table in docs/HISTORY.md in the *next* commit (you can't know it beforehand).
 - Anything that needs the real Windows folder (the folder picker can't be driven from the pane) goes on PROGRESS.md's
   "Waiting on the user" list instead of being claimed as verified.
-- Docs are part of the work: when behaviour changes, update DESIGN.md (the contract), this file's code map, and PROGRESS.md.
+- Docs are part of the work: when behavior changes, update DESIGN.md (the contract), this file's code map, and PROGRESS.md.
 
 ## Code map
 
 ```
 pwa-manifest.ts       web app manifest (tested by src/pwa.test.ts); vite.config.ts wires vite-plugin-pwa (precache, prompt update)
-base-path.ts          normaliseBase: the BASE_PATH env variable -> Vite `base` (tested by src/basePath.test.ts); unset = "/"
+base-path.ts          normalizeBase: the BASE_PATH env variable -> Vite `base` (tested by src/basePath.test.ts); unset = "/"
 .github/workflows/deploy.yml  GitHub Pages deploy on push to main: npm ci, test, build with BASE_PATH=/interstitial-diary/, deploy
                       (keep BASE_PATH there in step with the repo name; tests must stay before the deploy step)
 scripts/make-icons.mjs  generates public/icons/*.png, apple-touch-icon.png, favicon.svg
@@ -151,7 +151,10 @@ src/
     launch.ts           how the app was opened: parseLaunch (`?new=1`, shared title/text/url -> prefilled entry box),
                         cleanLaunchUrl (words removed once read); pwa-manifest.ts has the shortcut and the share target
     startView.ts        which page the app opens on (`?view=`): View, CalMode, viewFromAddress (`?view=events` = Calendar > Events)
-    weekReview.ts       the weekly review: weekStart (Monday), buildWeekReview (per-day counts, time-of-day bands, top
+    clock.ts            times on screen follow the device's 12/24-hour setting: uses12HourClock, clockLabel ("5:31 PM" or
+                        "17:31"), hourRange (week review), searchHour (quick chips). Dates are US-style in entry.ts
+                        (longDayLabel, shortDayLabel); `timeLabel` (24 h) and `fileDayHeading` are for the saved files only
+    weekReview.ts       the weekly review: weekStart (Sunday), buildWeekReview (per-day counts, time-of-day bands, top
                         tags/people/places, events of the week, vs the week before), compareLabel
     retime.ts           editing an entry's time/date: retimedCreatedAt, isAllowedTime, retimeEntry (sets the local-only
                         `prevDay` that sync uses to rewrite the old day's file), datetime-local helpers
@@ -190,7 +193,7 @@ src/
     attachments.ts      image passes: pushImages (originals + thumbnails to storage), pullImages (thumbnails back),
                         imagesWaiting (the badge's "N photos waiting")
     originals.ts        originals on demand (fetchOriginal, hash-checked), cache eviction choice (chooseEvictions),
-                        cache-limit setting (choices, normaliseLimit) and limitMode
+                        cache-limit setting (choices, normalizeLimit) and limitMode
     cleanup.ts          "remove photos of deleted entries": unusedImages / planCleanup / removeUnusedImages
                         (the ONLY deletion of image files; user-confirmed; see DESIGN.md)
     syncAll.ts          one sync run: pushImages -> syncOnce -> pullImages (image passes in their own try/catch)
@@ -225,7 +228,7 @@ src/
     PhotoStorageCard.tsx  Settings: photo space used, original-cache limit, "Photos of deleted entries" cleanup
     ExportCard.tsx      export: text zip, or "Include photos"
     UpdatePrompt.tsx    registers the service worker; "new version ready: Reload" / "ready offline" banner
-  index.css             all styles; colours are CSS variables. Editing an old entry: `.app:has(.edit) .capture` hides the
+  index.css             all styles; colors are CSS variables. Editing an old entry: `.app:has(.edit) .capture` hides the
                         new-entry box (build 10); `.edit textarea` is big (min-height 14rem or 40dvh), `.bubble:has(.edit)`
                         is full width, and EntryItem.tsx grows the box with useAutoGrow (build 11)
 ```
@@ -260,12 +263,12 @@ src/
 8. **Virtualised lists must not change row height after render** (journal, Photos grid). Size boxes from data (stored
    `w`/`h`, or the grid width) before anything decodes.
 9. TypeScript settings: `verbatimModuleSyntax` + `erasableSyntaxOnly`, so use `import type` for types and no `enum`s.
-10. Keep the UI working at phone width (375px) and in light and dark mode. Colours come from CSS variables in
+10. Keep the UI working at phone width (375px) and in light and dark mode. Colors come from CSS variables in
     `src/index.css`. The header has two rows at phone width: the name with the badge-and-gear group (`.top-end`) on top, the
     five tabs sharing the row below (`max-width: 520px` block, checked 2026-11-15); check it if you add a tab.
 11. **A tag is a stored key, not a bare name:** `work`, `@sarah`, `~home` (`lib/tagKinds.ts`). Never build `#${tag}` or
     strip a `#` by hand: use `tagToken`, `tagName`, `displayName`, `tagLabel`. A new kind of tag = one row in `TAG_KINDS`
-    (symbol, prefix, colour variable in `index.css`, a search-help row, tests).
+    (symbol, prefix, color variable in `index.css`, a search-help row, tests).
 12. **Events are not tags** (`lib/events.ts`, DESIGN.md "Events"): `!"Title"` stays in the entry text, nothing extra is
     stored, and the event list is computed. Never add `!` to `TAG_KINDS`. Any code that reads tags out of text must skip
     event markers and tracking markers (`+"Name"`, `lib/tracking.ts`, the same idea; `extractTags` and `replaceTag` do,
@@ -274,6 +277,13 @@ src/
     verified** until the user confirms it; say so in PROGRESS.md.
 14. **The entry box keeps the focus after Save** (`Capture.tsx`): the Save button must not take the focus (it is
     disabled once the box is empty, and a disabled button drops the focus, which closes the phone keyboard).
+15. **American conventions everywhere** (the user does not want British ones, 2026-11-19): American spelling in screen
+    text, code, comments and docs (`color`, `center`, `canceled`, `misspelled`, `normalize`); dates month first through
+    `longDayLabel` / `shortDayLabel` / `eventDateLabel` (never build "19 Nov" by hand); weeks start on **Sunday**; times on
+    screen go through `clockLabel` / `hourRange` / `searchHour` in `lib/clock.ts`, which follow the device's 12/24-hour
+    setting (`timeLabel` is 24-hour and only for the saved files and the date field). The saved Markdown files keep their
+    format (`## 09:14`, day-first `#` title). Search accepts both clocks. Scan for British spellings before committing:
+    `git grep -n -I -i -E "colour|behaviour|centre|normalis|recognis|neighbour|cancelled|licence|misspelt" -- . ':!package-lock.json' ':!CLAUDE.md'` (should print nothing).
 
 ## Testing
 

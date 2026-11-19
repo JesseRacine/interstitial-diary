@@ -88,7 +88,7 @@ Tracking          [ Active | Done | All ]        Newest ▾
 - Tapping the photo opens the lightbox; the card also has **Edit** (the normal entry editor). Delete asks like the journal's
   delete does.
 - **In the journal:** an active item has a chip such as "📌 Dyson V15", a starred one "★ Dyson V15", a done one
-  "✓ Dyson V15" (chip icons and colour to be chosen while building). Tapping a chip opens the Tracking page.
+  "✓ Dyson V15" (chip icons and color to be chosen while building). Tapping a chip opens the Tracking page.
 - **Track button** in the capture box (next to Photo): a small form with a name, a note and an optional single photo; the
   app writes the marker for the user. Typing the marker by hand also works.
 
@@ -98,7 +98,7 @@ Tracking          [ Active | Done | All ]        Newest ▾
 
 Settings becomes a gear icon; Events moves into Calendar as a fourth switch (`CalendarView.tsx`, `EventsView.tsx`, the
 `VIEWS` list and `eventId` state in `App.tsx`, `eventNav.ts`). Event chips in the journal and in the Week review must still
-open the right event page, now inside Calendar, with the usual Back behaviour. Keep an old `?view=events` address working
+open the right event page, now inside Calendar, with the usual Back behavior. Keep an old `?view=events` address working
 (it should open Calendar > Events). Update the Manual (`ManualCard.tsx`), DESIGN.md ("Events view", "Header", "Six header
 tabs fit...") and the `max-width: 520px` CSS comment. Check it in the browser at 375 px width.
 **Done when:** tests, `npx tsc -b` and lint are clean; the five tabs and the gear fit a 375 px phone; every route to an
@@ -138,7 +138,7 @@ journal bubbles (`text.tsx`, `EntryItem.tsx`, in the way event chips are drawn).
 **Done when:** an item can be created from the form with and without a photo; the text written is the marker plus the note;
 the chip shows in the journal, in search results and in the week review without breaking other chips.
 _Built 2026-11-15: chips are drawn by `EntryText` through the new `lib/markers.ts` (events and the first tracking marker);
-colour `--track` (amber), icons 📌 ★ ✓ as proposed. The form is a name field above the note: Save, or Enter in the name
+color `--track` (amber), icons 📌 ★ ✓ as proposed. The form is a name field above the note: Save, or Enter in the name
 field. One photo is enforced by `useDraftImages(…, 1)`. Checked in the browser: the form, the limit (two photos offered, one
 kept with a message), name validation, Enter in the name field, the text written, the chips and a chip opening the item._
 
@@ -159,6 +159,6 @@ docs/HISTORY.md; add "Waiting on the user" checks. Then offer a new dated backup
 
 ## Open decisions (small, settled while building)
 
-- Exact marker symbols for starred and done (`+*` and `+x` proposed) and the chip icons and colours.
+- Exact marker symbols for starred and done (`+*` and `+x` proposed) and the chip icons and colors.
 - Whether Edit on a card opens an inline editor or jumps to the entry in the journal (decide when reading `EntryItem.tsx`).
 - Where `eventId` and the Calendar mode live after step 1.

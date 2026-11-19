@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { SEARCH_SYNTAX, syntaxExamples } from '../search/syntax'
+import { searchHour, uses12HourClock } from '../lib/clock'
+import { searchSyntax, syntaxExamples } from '../search/syntax'
 
 /** A short user manual: writing, tags, events, search, the tabs, and where your data lives. Static text. */
 export function ManualCard() {
   const [open, setOpen] = useState(false)
+  const twelve = uses12HourClock() // times and the search examples are written for the device's clock
 
   return (
     <div className="card manual">
@@ -15,7 +17,8 @@ export function ManualCard() {
         <div className="manual-body">
           <h4>Writing an entry</h4>
           <ul>
-            <li>Type in the box at the bottom of the Journal. The entry gets the time you save it.</li>
+            <li>Type in the box at the bottom of the Journal. The entry gets the time you save it. Times are shown the way your
+              device&apos;s clock is set, 12-hour (5:31 PM) or 24-hour (17:31); dates are shown month first (Nov 19, 2026).</li>
             <li><kbd>Enter</kbd> saves and <kbd>Shift</kbd>+<kbd>Enter</kbd> adds a line. On a phone or tablet, Enter adds a line and the
               <strong> Save</strong> button saves.</li>
             <li>Entries are plain text: what you type is what is shown. Only the marks below turn into chips.</li>
@@ -77,7 +80,7 @@ export function ManualCard() {
 
           <h4>Notes on people and places</h4>
           <ul>
-            <li>For facts that do not belong to a day: “allergic to shellfish”, “birthday 3 March”, “closed on Mondays”. On the
+            <li>For facts that do not belong to a day: “allergic to shellfish”, “birthday March 3”, “closed on Mondays”. On the
               Journal tab tap <strong>📝 Note</strong> next to Track, pick who or where it is about (type a few letters and choose),
               write the fact and Save.</li>
             <li>A name that is not known yet makes a new person; put <code>~</code> in front for a new place. If the box already
@@ -91,10 +94,10 @@ export function ManualCard() {
 
           <h4>Search</h4>
           <p>Type in the search box at the top (or press <kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>). Everything you type must match;
-            combine freely, e.g. <code>#work tired time:13-17 last:30d</code>.</p>
+            combine freely, e.g. <code>#work tired time:{searchHour(13, twelve)}-{searchHour(17, twelve)} last:30d</code>.</p>
           <table className="syntax">
             <tbody>
-              {SEARCH_SYNTAX.map(([q, d]) => (
+              {searchSyntax(twelve).map(([q, d]) => (
                 <tr key={q}>
                   <td>{syntaxExamples(q).map((ex) => <code key={ex} className="ex">{ex}</code>)}</td>
                   <td>{d}</td>
@@ -116,9 +119,9 @@ export function ManualCard() {
           <ul>
             <li><strong>Journal:</strong> your entries by day (Days or Stream layout). <kbd>←</kbd> <kbd>→</kbd> move between days,
               <kbd>t</kbd> jumps to the latest entry, <kbd>n</kbd> starts a new entry.</li>
-            <li><strong>Calendar:</strong> Month, Year, Week or Events. Week is a weekly review: entries, days written, photos, the
-              busiest day, time of day, the top tags, people and places, events, and a comparison with the week before. Events is
-              the list of events described above.</li>
+            <li><strong>Calendar:</strong> Month, Year, Week or Events. Weeks run Sunday to Saturday. Week is a weekly review:
+              entries, days written, photos, the busiest day, time of day, the top tags, people and places, events, and a
+              comparison with the week before. Events is the list of events described above.</li>
             <li><strong>Photos:</strong> every photo; its filter box takes the same search words, and the chips narrow by tag, person,
               place or year.</li>
             <li><strong>Tags, Tracking:</strong> as described above.</li>

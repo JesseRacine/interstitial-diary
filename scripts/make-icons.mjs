@@ -2,7 +2,7 @@
 // No dependencies: it rasterises the design below itself and writes PNGs with node:zlib.
 // Run with `npm run icons`. To use your own artwork instead, just replace those files (keep the names and sizes).
 //
-// Design: three rounded "journal lines" in the paper colour on the accent-green square.
+// Design: three rounded "journal lines" in the paper color on the accent-green square.
 import { deflateSync, crc32 } from 'node:zlib'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -11,12 +11,12 @@ import { fileURLToPath } from 'node:url'
 const BG = [0x3d, 0x6b, 0x5e] // --accent in index.css
 const FG = [0xf7, 0xf5, 0xf1] // --bg in index.css
 const BAR_H = 0.085
-const BARS = [ // x = left edge, y = centre line, w = width (all 0..1 of the icon)
+const BARS = [ // x = left edge, y = center line, w = width (all 0..1 of the icon)
   { x: 0.26, y: 0.35, w: 0.48 },
   { x: 0.26, y: 0.5, w: 0.3 },
   { x: 0.26, y: 0.65, w: 0.4 },
 ]
-// Everything meaningful stays inside the centre 80% circle, the "safe zone" that maskable icons may be cropped to.
+// Everything meaningful stays inside the center 80% circle, the "safe zone" that maskable icons may be cropped to.
 
 function inRoundBox(px, py, cx, cy, hw, hh, r) {
   const dx = Math.abs(px - cx) - (hw - r)
@@ -24,7 +24,7 @@ function inRoundBox(px, py, cx, cy, hw, hh, r) {
   return Math.hypot(Math.max(dx, 0), Math.max(dy, 0)) + Math.min(Math.max(dx, dy), 0) <= r
 }
 
-/** Colour at a point of the unit square, or null for transparent. `corner` = corner radius (0 = full bleed). */
+/** Color at a point of the unit square, or null for transparent. `corner` = corner radius (0 = full bleed). */
 function sample(px, py, corner) {
   if (corner > 0 && !inRoundBox(px, py, 0.5, 0.5, 0.5, 0.5, corner)) return null
   for (const b of BARS) {

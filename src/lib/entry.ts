@@ -157,14 +157,26 @@ export function timeLabel(ts: number): string {
 export const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
+/** A day as shown on screen, the US way: "Thursday, November 19, 2026". */
 export function longDayLabel(k: string): string {
   const d = parseDayKey(k)
-  return `${WEEKDAY_NAMES[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`
+  return `${WEEKDAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
 }
 
+/** The short form: "Thu, Nov 19, 2026". */
 export function shortDayLabel(k: string): string {
   const d = parseDayKey(k)
-  return `${WEEKDAY_NAMES[d.getDay()].slice(0, 3)} ${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`
+  return `${WEEKDAY_NAMES[d.getDay()].slice(0, 3)}, ${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}`
+}
+
+/**
+ * The heading at the top of a day's Markdown file: "Thursday, 19 November 2026". This is file format, not screen text, so
+ * it stays as it was: changing it would rewrite every day file and make devices on different versions undo each other's
+ * headings. (The heading is only for people reading the file; the app reads the entries under it.)
+ */
+export function fileDayHeading(k: string): string {
+  const d = parseDayKey(k)
+  return `${WEEKDAY_NAMES[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`
 }
 
 /**

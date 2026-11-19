@@ -152,7 +152,7 @@ function EventPage({ event, events, entries, onBack, onSelect, onSearch, onSearc
               Search this event
             </button>
             <button type="button" onClick={() => setMerging(!merging)} aria-expanded={merging} disabled={targets.length === 0}
-              title={targets.length === 0 ? 'There is no other event to merge with' : 'Fix a misspelt title by merging into the right event'}>
+              title={targets.length === 0 ? 'There is no other event to merge with' : 'Fix a misspelled title by merging into the right event'}>
               Merge into…
             </button>
           </div>

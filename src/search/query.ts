@@ -33,13 +33,24 @@ function weekdaysFor(word: string): number[] | null {
   return DAY_ALIASES[w] ?? DAY_ALIASES[w.slice(0, 3)] ?? null
 }
 
-/** "9", "09", "9:30", "21:00", "24" -> minutes since midnight */
-export function parseTime(s: string): number | null {
-  const m = s.match(/^(\d{1,2})(?::(\d{2}))?$/)
+/**
+ * "9", "09", "9:30", "21:00", "24" (24-hour) or "9am", "9:30pm", "12am" (12-hour; the hour is 1 to 12, any capitals)
+ * -> minutes since midnight. `asEnd` is for the end of a range (`time:6pm-12am`, `before:12am`): there "12am" means the
+ * end of the day (1440), not the start (0).
+ */
+export function parseTime(s: string, asEnd = false): number | null {
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?(am|pm)?$/i)
   if (!m) return null
-  const h = Number(m[1])
+  let h = Number(m[1])
   const min = m[2] ? Number(m[2]) : 0
-  if (h > 24 || min > 59 || (h === 24 && min > 0)) return null
+  const half = m[3]?.toLowerCase()
+  if (min > 59) return null
+  if (half) {
+    if (h < 1 || h > 12) return null
+    h = (h % 12) + (half === 'pm' ? 12 : 0)
+    return h === 0 && min === 0 && asEnd ? 1440 : h * 60 + min
+  }
+  if (h > 24 || (h === 24 && min > 0)) return null
   return h * 60 + min
 }
 
@@ -156,13 +167,13 @@ export function parseQuery(input: string, now: Date = new Date()): ParsedQuery {
       } else if (key === 'time') {
         const [a, b] = val.split('-')
         const ta = parseTime(a)
-        const tb = b === undefined ? null : parseTime(b)
+        const tb = b === undefined ? null : parseTime(b, true)
         if (ta !== null && tb !== null) { q.timeFrom = ta; q.timeTo = tb } else ok = false
       } else if (key === 'after') {
         const t = parseTime(val)
         if (t !== null) { q.timeFrom = t; q.timeTo = q.timeTo !== undefined && q.timeTo > t ? q.timeTo : 1440 } else ok = false
       } else if (key === 'before') {
-        const t = parseTime(val)
+        const t = parseTime(val, true)
         if (t !== null) { q.timeTo = t; q.timeFrom = q.timeFrom !== undefined && q.timeFrom < t ? q.timeFrom : 0 } else ok = false
       } else if (key === 'day') {
         const days = new Set<number>()

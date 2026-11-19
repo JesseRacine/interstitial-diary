@@ -38,14 +38,14 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | d1594c0 | Step 4.1: pre-publish cleanup: personal paths/email removed from the docs; whole history rewritten to the GitHub noreply identity (and old doc versions scrubbed); branch renamed `master` to `main` |
 | 8ec4067 | Step 4.1b: deleted the superseded `junior-plan.md` |
 | 88d19ea | Docs: record the new archive (step 4.1 finished): `archive-2026-11-10/` + zip in the Windows session folder |
-| ec9e90a | Step 4.2: base path: Vite `base` from the `BASE_PATH` variable (`base-path.ts`, `normaliseBase`, 5 new tests); checked on a build under `/interstitial-diary/`; `dist-sub` git-ignored |
+| ec9e90a | Step 4.2: base path: Vite `base` from the `BASE_PATH` variable (`base-path.ts`, `normalizeBase`, 5 new tests); checked on a build under `/interstitial-diary/`; `dist-sub` git-ignored |
 | b8df143 | Step 4.3: GitHub Pages deploy workflow `.github/workflows/deploy.yml` (tests, build with `BASE_PATH`, deploy); 5 new tests |
 | 6e90356 | Step 4.4/4.5: repo published, site live at https://jesseracine.github.io/interstitial-diary/ (first deploy green; hosted site checked read-only in the Browser pane); docs |
 | 512ac61 | Docs: hosted install confirmed by the user; second deploy green |
 | 3685037 | Docs: pCloud step 5 started; OAuth facts from pCloud's docs and what the user must register |
 | 61235a6 | Docs: Dropbox storage module chosen (step 5a): OAuth PKCE facts and what the user registers |
 | 006db68 | People and places 1/6 (local, 2026-11-12): `#tag`, `@person`, `~place` read from text; `lib/tagKinds.ts` (one row per kind); stored keys `work` / `@sarah` / `~home`; Dexie v3 recalculates tags without marking entries changed; fixed rename of a tag containing `-` (invalid regex escape) |
-| 8afa9dc | People and places 2/6: shown as "👤 Sarah Jones" / "📍 Blue Door" in their own colours; `@`/`~`/`#` autocomplete offers only its own kind (`tagSegments`, `tagBeingTyped`, `tagLabel`) |
+| 8afa9dc | People and places 2/6: shown as "👤 Sarah Jones" / "📍 Blue Door" in their own colors; `@`/`~`/`#` autocomplete offers only its own kind (`tagSegments`, `tagBeingTyped`, `tagLabel`) |
 | eb800d3 | People and places 3/6: search `@sarah`, `~home`, `-@sarah`, `@a\|@b`, mixed groups; `~5` / `@3pm` stay plain words |
 | e78bbc4 | People and places 4/6: Tags view split into Tags / People / Places; per-kind rename and merge (`parseTagName`) |
 | 5bad3f0 | People and places 5/6: a page per person/place (`TagPage.tsx`: counts, first/last, month bars that filter, entries); `first` in `TagStat`, `hasPage` on `TagKind` |
@@ -191,8 +191,8 @@ Plan, decisions and the full table of API results: [pcloud-plan.md](../pcloud-pl
 - **Event titles had no autocomplete** (by design since the events work: a title is mostly used once). First built
   (`f57356b`) as suggestions of every title used; the user then chose **only the last event** (`9cafc02`): after `!"` or
   `!“` the entry box offers the title of the newest entry that has an event (`lastEventTitle`; its last marker; deleted
-  entries skipped; the date, if any, is not filled in), labelled "last event", only while what is typed still fits its
-  start (`suggestLastEvent`), so a new event is not pushed towards the old one. Picking it (Enter, Tab or a tap) closes
+  entries skipped; the date, if any, is not filled in), labeled "last event", only while what is typed still fits its
+  start (`suggestLastEvent`), so a new event is not pushed toward the old one. Picking it (Enter, Tab or a tap) closes
   the quote with the matching straight or curly quote and adds a space. Detection is `eventBeingTyped` (same start rule
   as a marker); the hook is `useTagAutocomplete(…, lastEvent)` in `components/text.tsx`, and inside a title it does not
   look for tags. Not in the Edit box or the search bar. The Manual's Events section says so.
@@ -222,7 +222,7 @@ full-screen writing sheet, only if this is not enough).
   open, the new-entry box still sits at the bottom; hiding it while editing would give the edit box more room (done below).
 - **Hide the new-entry box while editing (2026-11-19, build 10, user: "yes, and maybe on PC too"):** one CSS rule in
   `index.css`: `.app:has(.edit) .capture { display: none; }`, on every screen size. No React state: the box is only hidden,
-  so a half-written new entry stays in it and comes back when the edit is saved or cancelled. Checked in the pane: Edit
+  so a half-written new entry stays in it and comes back when the edit is saved or canceled. Checked in the pane: Edit
   hid the box (computed `display: none`), Cancel brought it back (`block`). 450 tests, tsc and lint as before. A
   keyboard shortcut that focuses the new-entry box while an edit is open does nothing (the box is hidden).
 - **Bigger edit box (2026-11-19, build 11, user: the edit box "is actually kind of small and difficult to deal with, even
@@ -234,6 +234,35 @@ full-screen writing sheet, only if this is not enough).
   Checked in the pane: desktop width, box 225 px high and as wide as the day card; at 375 px wide a 320-character text
   grew the box to 266 px with no inner scrollbar. 450 tests, tsc, lint as before (CSS and layout: no new test). Not
   tried on the real phone.
+- **US conventions (2026-11-19, build 12, user: "do not want British English conventions"; then "time of day changes
+  depending on the system time being 24 or 12 hour"):** the user asked whether the app used British conventions; the
+  answer was five things, and they said to change all of them, including the Manual and the search. What changed:
+  1. **Spelling.** On screen: the event Merge tooltip and the sign-in message (and the three tests that check it). Code,
+     comments, the docs and two identifiers (`normalizeLimit`, `normalizeBase`) were changed by one
+     `sed` script over every tracked text file, then the diff was read; `git grep` for the old spellings is the check.
+  2. **Dates** month first: `longDayLabel`, `shortDayLabel`, `eventDateLabel` (every date on screen goes through them; the
+     only other date formats are the browser's own). The saved Markdown file's `#` title is **unchanged** (`fileDayHeading`):
+     it is only cosmetic, but changing it would rewrite every day file and devices on different versions would undo each
+     other's headings. The user was told; ask before changing it.
+  3. **Times follow the device's 12/24-hour setting** (the user's second request): new `lib/clock.ts`. `uses12HourClock`
+     reads `Intl.DateTimeFormat().resolvedOptions().hour12` once per page load; `clockLabel`, `hourRange`, `searchHour`
+     word a time for either clock. Used by the entry time, Lightbox, Photos, Deleted entries, the new-entry box, the week
+     review's parts of the day (12 AM–6 AM ...) and the search chips and help. `timeLabel` stays 24-hour for the files
+     and the datetime-local field. Only as good as what the browser reports: on Windows and Android it follows the
+     system setting in Chrome/WebView as far as is known, not verified on the user's devices (the pane is `en-US`, 12 hour).
+  4. **Weeks start on Sunday:** `weekStart`, the month grid and the week review (`DOW`), the week test, comments, the
+     Manual. Sunday to Saturday; Week of "Nov 15–21, 2026".
+  5. **Search accepts 12-hour times** next to 24-hour ones: `parseTime` takes `9am`, `5:30pm`, `12am` (any capitals, hour
+     1–12); `12am` ends a range at the end of the day (`time:6pm-12am`, `before:12am`); `time:9-5pm` reads as 9:00–17:00.
+     The help rows and the Manual's example are worded for the device's clock and mention the other form; `searchSyntax(twelve)`
+     replaces the old `SEARCH_SYNTAX` constant and the syntax test runs both forms.
+  The Manual's wording was updated (times and dates note, "birthday March 3", weeks Sunday to Saturday). Also: the
+  week review's label column was widened (13 rem) so "Afternoon 12 PM–6 PM" does not wrap. Tests: 450 → 458 (a new
+  `clock.test.ts`, 12-hour search rows, bad 12-hour values, the 12/24 syntax rows); the date, week and file-heading tests
+  were changed to the new expectations (the file heading test still expects the day-first title). Checked in the pane
+  (en-US): "Thu, Nov 19, 2026", "6:55 PM", Sun-first month grid, "Week of Nov 15–21, 2026" with Sun 15 ... Sat 21, the
+  time-of-day bands in 12 hour, the help row, and the Evenings chip (`time:6pm-12am`) finding the 6:55 PM entry. **Not
+  checked:** a 24-hour device (covered by unit tests only), the native apps, the phone.
 
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 
@@ -315,7 +344,7 @@ in practice (a custom domain later, about $10/year, would be a new origin and in
    old doc versions (a scan of the full history for personal strings is clean; `Co-Authored-By` trailers kept);
    `master` renamed to `main`; `junior-plan.md` deleted; a new dated archive made in the Windows session folder
    (`archive-2026-11-10/` + zip, snapshot of 8ec4067, restore tested from the bundle).
-2. **Base path:** `vite.config.ts` sets `base` from the `BASE_PATH` environment variable through `normaliseBase`
+2. **Base path:** `vite.config.ts` sets `base` from the `BASE_PATH` environment variable through `normalizeBase`
    (`base-path.ts`, tested in `src/basePath.test.ts`): unset means `/`, so `dev`, `preview` and a plain `npm run build` are
    unchanged; a malformed value fails the build. Checked on a build under `/interstitial-diary/` (launch config
    `interstitial-preview-sub`, port 4174, builds into the git-ignored `dist-sub`): assets, manifest scope, icons, the
@@ -433,7 +462,7 @@ the title needed).
 - **Step 1 done:** `src/lib/events.ts` (`eventSpans`, `eventSegments`, `blankEvents`, `eventKey`, `parseEventTitle`,
   `renameEventInText`, `computeEvents`) + `events.test.ts` (20 tests); `extractTags` and `replaceTag` leave event titles
   alone. 400 tests, `tsc` clean, lint 0 errors (5 old warnings). Nothing visible in the app yet.
-- **Step 2 done:** `EntryText` (`text.tsx`) shows a marker as a blue "🎉 Jack's 40th birthday" chip (`--event` colour, light and
+- **Step 2 done:** `EntryText` (`text.tsx`) shows a marker as a blue "🎉 Jack's 40th birthday" chip (`--event` color, light and
   dark; the marker as written is the tooltip); the entry box hint ends with `!"event"`. The chip is **not clickable yet**
   (step 3 makes it open the event). Checked in the browser pane (dark, light, 375px): `#party` inside a title is not in
   Tags, `he said "stop!" and "go"` stays plain. 400 tests, `tsc` clean, lint 0 errors.
@@ -448,7 +477,7 @@ the title needed).
 - **Step 4 done:** a **Rename event** button on the event page (prompt, then a confirm that says how many entries).
   `renameEvent(entryIds, key, newTitle)` in `db.ts` rewrites the markers only in that event's entries (a same-titled event
   months away is untouched), keeps the quote marks the person typed, bumps `updatedAt` and marks them dirty so it syncs;
-  `eventAfterRename` (`events.ts`) lets the page follow the event to its new id (it may join a neighbour with the same
+  `eventAfterRename` (`events.ts`) lets the page follow the event to its new id (it may join a neighbor with the same
   new title). Tests: 2 in `db.test.ts`, 2 in `events.test.ts`; 411 total, `tsc` clean, lint 0 errors. Checked in the
   browser pane (prompt/confirm stubbed): both entries and the page updated, `#trip` untouched.
 - **Step 5 done:** DESIGN.md "Events" (+ Events view bullet), docs/HISTORY.md rows, docs/LIMITS-AND-IDEAS.md (limits and
