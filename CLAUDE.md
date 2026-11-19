@@ -225,7 +225,9 @@ src/
     PhotoStorageCard.tsx  Settings: photo space used, original-cache limit, "Photos of deleted entries" cleanup
     ExportCard.tsx      export: text zip, or "Include photos"
     UpdatePrompt.tsx    registers the service worker; "new version ready: Reload" / "ready offline" banner
-  index.css             all styles; colours are CSS variables
+  index.css             all styles; colours are CSS variables. Editing an old entry: `.app:has(.edit) .capture` hides the
+                        new-entry box (build 10); `.edit textarea` is big (min-height 14rem or 40dvh), `.bubble:has(.edit)`
+                        is full width, and EntryItem.tsx grows the box with useAutoGrow (build 11)
 ```
 
 ## Rules

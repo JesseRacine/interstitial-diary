@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-18 (build 8: the entry box grows, the last event is suggested; apps rebuilt). Kept short on purpose:
+_Last updated: 2026-11-19 (build 11: typing mode on the phone, the new-entry box hides while editing, a big edit box; apps rebuilt). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -16,7 +16,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   modules (folder, browser files, **Dropbox**: working Windows ↔ Android per the user), installable PWA, data-safety
   features, Settings (the gear) > Start over, Delete permanently, the Manual, Android quick capture stage 1 (shortcut +
   text share), editing an entry's time, Enter = new line on touch screens, focus stays in the entry box after Save, the
-  entry box grows with wrapped lines, `!"` offers the last event's title (build 8).
+  entry box grows with wrapped lines, `!"` offers the last event's title (build 8), **typing mode on the phone** (header,
+  search and date row hide while typing; build 9), **the new-entry box hides while an entry is being edited** (build 10)
+  and **a big edit box for an existing entry** (build 11).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
   every push to `main`. Pushed and live: **11** (2026-11-19, bigger edit box; `09d8952`, deploy run 44631791405; apps rebuilt with it:
@@ -76,7 +78,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 448 tests (2026-11-18, after the test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 450 tests (2026-11-19, build 11; 448 after the 2026-11-18 test trim, +2 for typing mode); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `09d8952` (build 11, deployed; build 10 was `8c765e2`, build 9 `31031c7`). This PROGRESS update is a later local commit. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
@@ -128,6 +130,16 @@ to the Claude session folder, `builds\`.
   natively; no native widget (quick capture stage 2, android-capture-plan.md).
 
 ## What next
+
+**Open, not being worked on (the user, 2026-11-19: "we will not deal with it now"):** sometimes the
+**Edit button of an older entry has to be pressed twice** before the edit box opens (the user did not say on which
+device); they think it may be a glitch. Not investigated, not reproduced. Guesses to test first: (1) on a phone, tapping Edit while the cursor is in the
+entry box ends typing mode, so the header comes back and moves the list between the touch and the click (the tap
+lands on the wrong spot); (2) the virtualised journal re-measuring its rows after the first tap. Also known: whether it
+started with build 9 is not known. Listed in docs/LIMITS-AND-IDEAS.md.
+
+**The user is happy with builds 9, 10 and 11** (2026-11-19: "these changes are much better", "I'm happy with it"). The
+three changes of that day, newest first:
 
 **Typing mode on the phone, step 1 of 2, pushed 2026-11-19 as build 9** (`31031c7`, deploy run 44588046433 green; apps
 rebuilt: run 44588204073 green, the bundled web build has the typing bar and reads "Build 9", APK 10,193,599 bytes and `.exe`
@@ -187,6 +199,11 @@ should slide away, leaving the title bar with "Done typing", the last entries an
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
 hide the keyboard, brings the header back; e. the search box still works as before.
+**32. Editing an old entry** (builds 10 and 11, 2026-11-19; the user used it and said "I'm happy with it"): press Edit on
+an older entry: the new-entry box disappears (phone and PC), the edit box is full width and at least about 14 lines
+(less on a short window), grows as you type, and Save or Cancel (Esc) brings the new-entry box back with any draft
+still in it. Open question: Edit sometimes needs two presses (above).
+
 **The user installed the build 9 APK on 2026-11-19 and said "these changes are much better"** (a general OK; a–e were
 not reported one by one). Step 2 (a full-screen writing sheet) is therefore not needed for now.
 

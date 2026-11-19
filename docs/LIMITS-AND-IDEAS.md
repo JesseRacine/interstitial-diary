@@ -3,6 +3,10 @@
 _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../PROGRESS.md) first._
 
 ## Known limitations
+- **Edit sometimes needs two presses** (the user, 2026-11-19, device not stated): the first press does nothing, the
+  second opens the edit box. Not investigated; see "Open, not being worked on" in PROGRESS.md for the first guesses.
+- While an entry is being edited the new-entry box is hidden (build 10); a draft in it is kept, but a new entry cannot be
+  written until the edit is saved or cancelled (Esc cancels).
 - Unsaved edits to an existing entry are lost if you scroll far enough that its row leaves the screen (the journal is virtualised).
 - Removing an entry from a file by hand doesn't delete it (by design; see DESIGN.md).
 - Weekly review: weeks start on Monday (like the calendar; not a setting), there is no future week, and the week is the
@@ -81,4 +85,6 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   "bought" or "watched" note on Done; a reminder date for something coming out (not wanted so far: no due dates); remember
   the page's tab and sort; a Track action on an existing entry (turn it into an item without retyping); a chip for the
   tracked item in search results' highlight and in the week review.
+- Phone writing, if typing mode and the big edit box are not enough one day: step 2, a full-screen writing sheet for
+  new entries and edits (the user preferred step 1 first and was happy with it, 2026-11-19).
 - Small polish: one ~500 kB JS chunk (Vite warns); code-splitting would shrink the first load.
