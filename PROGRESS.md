@@ -116,11 +116,11 @@ to the Claude session folder, `builds\`.
   appeared under the app id in `AppData\Local` or `AppData\Roaming`. **Not checked:** writing entries, Dropbox sign-in
   in the window, and Settings > Export. The user accepted a database in `journal-data` instead of readable `.md` files
   **only as long as exporting to Markdown works in the app**, so Export is the important one.
-- **Found 2026-11-19 (not Claude's work, left alone):** the app repo's working folder has **uncommitted edits that change the
-  Android/Windows app id** from `io.github.jesseracine.interstitialdiary` to `net.alpacatech.interstitialdiary`
+- **Found 2026-11-19 (the user's own edit, confirmed by them; do not rebuild for it yet):** the app repo's working folder
+  has **uncommitted edits that change the Android/Windows app id** from `io.github.jesseracine.interstitialdiary` to `net.alpacatech.interstitialdiary`
   (`tauri.conf.json`, `MainActivity.kt`, the README, the Windows read-me). Builds use only what is pushed, so build 9
-  kept the old id. Android treats a new id as a different app (a separate install with its own data), so the user should
-  decide before that is ever committed.
+  kept the old id. Android treats a new id as a different app (a separate install with its own data), so ask the user
+  before it is committed or built.
 - **Open points for the apps:** Dropbox needs `https://tauri.localhost/` as a redirect URI and the sign-in inside the
   app window is untried (passkeys may not work there); the "install" hints still show inside the apps (the PWA service
   worker no longer runs there since build 4, see "Native apps: no saved copy" above); the share target and the "New entry" shortcut do not exist
@@ -133,7 +133,8 @@ rebuilt: run 44588204073 green, the bundled web build has the typing bar and rea
 6,341,120 copied to `builds\`; story in docs/HISTORY.md): with the cursor in the entry box or an edit box on a
 phone-sized touch screen, the header, search and date row hide, with a thin "Done typing" bar; checked in Claude's pane
 only, the user's phone is untried (check 31). The same push also published the older local docs and test-trim commits. Step 2 (a full-screen writing sheet) only if the user finds
-it not enough; a small extra (hide the new-entry box while editing) is open. HEIC conversion was **dropped** by the user
+it not enough. **Build 10 (committed locally 2026-11-19, not pushed, apps not rebuilt):** the new-entry box hides while
+an entry is being edited, phone and PC (one CSS rule; HISTORY.md). HEIC conversion was **dropped** by the user
 (2026-11-19, no LGPL library; [heic-plan.md](heic-plan.md), docs/LIMITS-AND-IDEAS.md). **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
 the ones guarding entries and photos untouched; no app change, commits local (no push needed). **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
@@ -183,6 +184,8 @@ should slide away, leaving the title bar with "Done typing", the last entries an
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
 hide the keyboard, brings the header back; e. the search box still works as before.
+**The user installed the build 9 APK on 2026-11-19 and said "these changes are much better"** (a general OK; a–e were
+not reported one by one). Step 2 (a full-screen writing sheet) is therefore not needed for now.
 
 **30. Notes on people and places** (build 6, pushed 2026-11-17; **the user tried it on localhost: "This works, I like
 it"**; not yet on the devices): on the phone and on Windows (installed web app, reloaded to Build 6 in Settings > About):

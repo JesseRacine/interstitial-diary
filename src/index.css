@@ -276,6 +276,9 @@ button.note-toggle.on { color: var(--person); border-color: var(--person); }
 .capture-notice.note-saved button.ghost { padding: 0 0.3rem; }
 .tag-event .event-date { font-weight: 400; opacity: 0.85; }
 .edit { margin-top: 0.4rem; }
+/* While an entry is being edited the new-entry box steps aside (phone and PC): one box to type in, more room for the list.
+   Hidden, not removed, so a half-written new entry stays in it until the edit is saved or cancelled. */
+.app:has(.edit) .capture { display: none; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .edit .when input { padding: 0.25rem 0.5rem; font-size: 0.85rem; }
 .edit .when input[aria-invalid="true"] { border-color: var(--danger); }

@@ -219,7 +219,12 @@ full-screen writing sheet, only if this is not enough).
   button kept it; Done typing restored everything; Edit hid them too. 450 tests, tsc and lint as before.
 - **Not checked:** the real Android keyboard (the pane has none: how much room is left, whether the list keeps its
   bottom when the layout changes, the native app's keyboard handling in `MainActivity.kt`). Seen in the pane: with an edit
-  open, the new-entry box still sits at the bottom; hiding it while editing would give the edit box more room (not done).
+  open, the new-entry box still sits at the bottom; hiding it while editing would give the edit box more room (done below).
+- **Hide the new-entry box while editing (2026-11-19, build 10, user: "yes, and maybe on PC too"):** one CSS rule in
+  `index.css`: `.app:has(.edit) .capture { display: none; }`, on every screen size. No React state: the box is only hidden,
+  so a half-written new entry stays in it and comes back when the edit is saved or cancelled. Checked in the pane: Edit
+  hid the box (computed `display: none`), Cancel brought it back (`block`). 450 tests, tsc and lint as before. A
+  keyboard shortcut that focuses the new-entry box while an edit is open does nothing (the box is hidden).
 
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 
