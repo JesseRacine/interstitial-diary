@@ -502,6 +502,15 @@ button.track-title:hover:not(:disabled) { text-decoration: underline; border-col
 .backends button { flex: none; }
 .soon { font-size: 0.8rem; flex: none; }
 
+/* Typing mode (useTypingMode: a touch screen, the cursor in the entry box or an entry being edited): on a phone the header,
+   the search and the date row give way, so the text and the entries above it get the room the keyboard leaves. A thin bar
+   keeps the title and a way out (it closes the keyboard, which brings everything back). Not for wide windows. */
+.typing-bar { display: none; }
+@media (max-width: 520px), (max-height: 500px) {
+  .app.typing > .top, .app.typing > .search, .app.typing > .backup-reminder, .app.typing .journal-view .day-nav { display: none; }
+  .app.typing .typing-bar { display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0; font-size: 0.9rem; }
+}
+
 @media (max-width: 520px) {
   .top { gap: 0.5rem; }
   .top h1 { font-size: 1.1rem; }

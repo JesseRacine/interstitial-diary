@@ -161,7 +161,10 @@ src/
     hooks.ts            useLive: a Dexie liveQuery as React state; useAutoGrow (a text box as tall as its wrapped text,
                         capped by CSS `max-height`; the entry box uses it)
     dom.ts              isTyping (keyboard shortcuts ignore typing); enterAction (Enter saves or adds a line; touch screens
-                        add a line) + hasCoarsePointer; hooks.ts also has useCoarsePointer
+                        add a line) + hasCoarsePointer; hooks.ts also has useCoarsePointer; typing mode (phone: header,
+                        search and date row hide while the entry box or an edit box has the cursor, `.app.typing` in
+                        index.css, a thin "Done typing" bar in App.tsx): isEntryField, isInEntryBox, typingAfterFocus
+                        here and useTypingMode in hooks.ts
     journalRows.ts      entries -> flat chat rows (day headers + entries) for the virtualised journal
     photoRows.ts        entries -> day headers + rows of square tiles (and columnsFor(width)) for the Photos view
     photoFilter.ts      the Photos tab's filter box: runs the search syntax over entries with photos (filterPhotoEntries),

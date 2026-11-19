@@ -17,7 +17,7 @@ import { UpdatePrompt } from './components/UpdatePrompt'
 import { db, getMeta, setMeta } from './lib/db'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
-import { useLive } from './lib/hooks'
+import { useLive, useTypingMode } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker, lastEventTitle } from './lib/events'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
@@ -172,11 +172,19 @@ export default function App() {
   }, [])
 
   const searching = query.trim() !== ''
+  const typing = useTypingMode()
 
   return (
     <OpenEventContext.Provider value={openEvent}>
     <OpenTrackingContext.Provider value={openTracking}>
-    <div className={`app${(view === 'journal' || view === 'photos') && !searching ? ' fill' : ''}`}>
+    <div className={`app${(view === 'journal' || view === 'photos') && !searching ? ' fill' : ''}${typing ? ' typing' : ''}`}>
+      {/* Phone, keyboard up: the header, search and date row are hidden (index.css) and this thin bar stands in for them. */}
+      {typing && (
+        <div className="typing-bar">
+          <span className="muted">Interstitial</span>
+          <button type="button" className="ghost" onClick={() => (document.activeElement as HTMLElement | null)?.blur()}>Done typing</button>
+        </div>
+      )}
       <header className="top">
         <h1>Interstitial</h1>
         <nav>

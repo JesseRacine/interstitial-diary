@@ -122,7 +122,11 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-Nothing in progress. **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
+**Typing mode on the phone, step 1 of 2, built 2026-11-19, local, not pushed** (story in docs/HISTORY.md): with the cursor
+in the entry box or an edit box on a phone-sized touch screen, the header, search and date row hide, with a thin
+"Done typing" bar; checked in Claude's pane only (check 31). Step 2 (a full-screen writing sheet) only if the user finds
+it not enough; a small extra (hide the new-entry box while editing) is open. HEIC conversion was **dropped** by the user
+(2026-11-19, no LGPL library; [heic-plan.md](heic-plan.md), docs/LIMITS-AND-IDEAS.md). **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
 the ones guarding entries and photos untouched; no app change, commits local (no push needed). **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK
 installed by the user: "seems good" (the Windows `.exe` is in `builds\`, copying it to the real folder is the user's).
@@ -165,6 +169,13 @@ they want:
 Everything below is built and pushed. Until the user reports a check it is **not verified**; general remarks ("it
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
+
+**31. Typing mode** (built 2026-11-19, **not pushed yet**: it needs a push with build 9, then an app rebuild for the
+native apps): on the phone (Android app and the installed web app), tap the entry box: the header, search and date row
+should slide away, leaving the title bar with "Done typing", the last entries and the box above the keyboard; a. is
+there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
+Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
+hide the keyboard, brings the header back; e. the search box still works as before.
 
 **30. Notes on people and places** (build 6, pushed 2026-11-17; **the user tried it on localhost: "This works, I like
 it"**; not yet on the devices): on the phone and on Windows (installed web app, reloaded to Build 6 in Settings > About):

@@ -200,6 +200,27 @@ Plan, decisions and the full table of API results: [pcloud-plan.md](../pcloud-pl
   "Build 8"). The user: "I'm happy with the test". Apps rebuilt (run 44374189547; its `web-dist` has the new code; the
   `.exe` opened from a scratch copy); the APK was sent to the user, who installed it: "seems good". 685 tests.
 
+## Typing mode on the phone (2026-11-19, step 1 of 2): built and checked in the pane, not pushed, not tried on the phone
+
+The user: on the phone the vertical space is so cramped that typing or editing an entry is awkward; the entry box should
+float above or fill the space above the keyboard. Two ideas were offered; **they chose step 1: typing mode** (step 2, a
+full-screen writing sheet, only if this is not enough).
+- **What it does:** on a touch screen, with the cursor in the entry box (new entry, the Track name, the Note person) or in
+  an entry being edited, and the window narrower than 520 px (or lower than 500 px, a phone on its side), the header, the
+  search bar, the backup reminder and the journal's date row are hidden (`.app.typing` in `index.css`). A thin bar
+  ("Interstitial" and **Done typing**) takes their place; Done typing blurs the field, which closes the keyboard and brings
+  everything back (needed because Android's Back key can hide the keyboard without blurring the box).
+- **Code:** `isEntryField`, `isInEntryBox`, `typingAfterFocus` in `lib/dom.ts` (the rules, tested in `dom.test.ts` with
+  stand-in elements), `useTypingMode` in `lib/hooks.ts` (focusin/focusout on the document), the class and the bar in
+  `App.tsx`. Focus on a *button* of the same box (Photo) keeps the mode on so the header does not flash back while the
+  photo picker is open; the search box never starts it (hiding it would end the search); a mouse never starts it.
+- **Checked in Claude's pane** (127.0.0.1:5173, 375 px wide, touch emulation, its own empty database, deleted afterwards):
+  focusing the box hid header, search and date row; the bar showed; Save kept the mode and the focus; Tab to the Photo
+  button kept it; Done typing restored everything; Edit hid them too. 450 tests, tsc and lint as before.
+- **Not checked:** the real Android keyboard (the pane has none: how much room is left, whether the list keeps its
+  bottom when the layout changes, the native app's keyboard handling in `MainActivity.kt`). Seen in the pane: with an edit
+  open, the new-entry box still sits at the bottom; hiding it while editing would give the edit box more room (not done).
+
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 
 The user (2026-11-17): "I don't think we need like 700 unit tests in a small app like this". Reviewed first: 685

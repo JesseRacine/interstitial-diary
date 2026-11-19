@@ -1,6 +1,6 @@
 import { liveQuery } from 'dexie'
 import { useEffect, useLayoutEffect, useState } from 'react'
-import { hasCoarsePointer } from './dom'
+import { hasCoarsePointer, typingAfterFocus } from './dom'
 
 /** Subscribe to a Dexie query; re-renders whenever the underlying tables change. */
 export function useLive<T>(query: () => Promise<T>, deps: unknown[], initial: T): T {
@@ -46,4 +46,25 @@ export function useCoarsePointer(): boolean {
     return () => mq.removeEventListener('change', onChange)
   }, [])
   return coarse
+}
+
+/**
+ * True while a finger-operated device has the cursor in a text field of the entry box or of an entry being edited, i.e.
+ * while the phone keyboard is up. The page then hides its header and search (CSS, `.app.typing`) so the text gets the
+ * room. A computer with a mouse never enters it. Focus moving from one field to another (the Track form's name, then
+ * its note) does not end it: the check waits for the new field to take the focus.
+ */
+export function useTypingMode(): boolean {
+  const [typing, setTyping] = useState(false)
+  useEffect(() => {
+    const update = () => setTyping((was) => typingAfterFocus(document.activeElement, was, hasCoarsePointer()))
+    const onOut = () => { setTimeout(update) }
+    document.addEventListener('focusin', update)
+    document.addEventListener('focusout', onOut)
+    return () => {
+      document.removeEventListener('focusin', update)
+      document.removeEventListener('focusout', onOut)
+    }
+  }, [])
+  return typing
 }
