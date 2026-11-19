@@ -25,7 +25,10 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   "Remove") keeps its file, and the cleanup only knows entries deleted on (or synced to) this device, so such files stay.
 - "Photos of deleted entries" syncs first and refuses to run if that sync fails; with no storage connected it only
   cleans this device.
-- Photos in HEIC/AVIF are stored but can't be shown (placeholder with Save); there is no HEIC conversion.
+- Photos in HEIC/AVIF are stored but can't be shown (placeholder with Save); there is no HEIC conversion. The user hit
+  this on Android (2026-11-19) with a HEIC someone sent them, planned "convert to JPEG when attached" ([heic-plan.md](../heic-plan.md))
+  and then **decided to leave it as it is**: every browser HEIC decoder is LGPL-3.0 and they did not want that. Reopen
+  the plan if it comes up again.
 - People and places: older text that happens to contain `@word` or `~word` (a letter right after the symbol, not glued
   to a word before it) becomes a person or place the first time the new version runs; nothing is changed in the files,
   but it shows in colour, in the Tags view and in search. Edit the text if that is unwanted.
