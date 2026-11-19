@@ -134,7 +134,9 @@ rebuilt: run 44588204073 green, the bundled web build has the typing bar and rea
 phone-sized touch screen, the header, search and date row hide, with a thin "Done typing" bar; checked in Claude's pane
 only, the user's phone is untried (check 31). The same push also published the older local docs and test-trim commits. Step 2 (a full-screen writing sheet) only if the user finds
 it not enough. **Build 10 (pushed 2026-11-19 as `8c765e2`, deploy run 44629736942 green; apps rebuilt, run 44629879656 green, copied to `builds\`):** the new-entry box hides while
-an entry is being edited, phone and PC (one CSS rule; HISTORY.md). HEIC conversion was **dropped** by the user
+an entry is being edited, phone and PC (one CSS rule; HISTORY.md). **Build 11 (local commit 2026-11-19, not pushed, apps
+not rebuilt):** the edit box for an existing entry is big (full width, at least ~14 lines, grows with the text; HISTORY.md).
+HEIC conversion was **dropped** by the user
 (2026-11-19, no LGPL library; [heic-plan.md](heic-plan.md), docs/LIMITS-AND-IDEAS.md). **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
 the ones guarding entries and photos untouched; no app change, commits local (no push needed). **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
 lines, and `!"` offers the last event's title; pushed, the user: "I'm happy with the test"; apps rebuilt, the APK

@@ -279,6 +279,9 @@ button.note-toggle.on { color: var(--person); border-color: var(--person); }
 /* While an entry is being edited the new-entry box steps aside (phone and PC): one box to type in, more room for the list.
    Hidden, not removed, so a half-written new entry stays in it until the edit is saved or cancelled. */
 .app:has(.edit) .capture { display: none; }
+/* Editing an old entry: a big box, as high as about 14 lines or 40% of the window (whichever is smaller, so it still fits
+   above a phone keyboard), growing with the text up to 60% of the window, then scrolling. */
+.edit textarea { min-height: min(14rem, 40dvh); max-height: 60dvh; overflow-y: auto; padding: 0.6rem 0.7rem; font-size: 1.05rem; line-height: 1.45; }
 .edit .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
 .edit .when input { padding: 0.25rem 0.5rem; font-size: 0.85rem; }
 .edit .when input[aria-invalid="true"] { border-color: var(--danger); }
@@ -301,7 +304,7 @@ label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 
 .bubble .entry-text { margin-top: 0; }
 .bubble .entry-meta { margin-top: 0.15rem; font-size: 0.75rem; color: var(--muted); }
 .bubble .entry-meta .time { font-weight: 500; }
-.bubble .edit { min-width: min(30rem, 80vw); }
+.bubble:has(.edit) { width: 100%; max-width: 100%; } /* an entry being edited uses the full width, not the chat-bubble width */
 .gap-divider { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0 0.4rem; color: var(--muted); font-size: 0.75rem; }
 .gap-divider::before, .gap-divider::after { content: ''; flex: 1; border-top: 1px dashed var(--border); }
 .day-head { display: flex; align-items: baseline; gap: 0.6rem; }

@@ -225,6 +225,15 @@ full-screen writing sheet, only if this is not enough).
   so a half-written new entry stays in it and comes back when the edit is saved or cancelled. Checked in the pane: Edit
   hid the box (computed `display: none`), Cancel brought it back (`block`). 450 tests, tsc and lint as before. A
   keyboard shortcut that focuses the new-entry box while an edit is open does nothing (the box is hidden).
+- **Bigger edit box (2026-11-19, build 11, user: the edit box "is actually kind of small and difficult to deal with, even
+  on PC"):** in Days view the edited entry was a chat bubble only about as wide as its text (min 30 rem) with a 2-row
+  box. Now (`index.css`): `.bubble:has(.edit)` takes the full width; `.edit textarea` has `min-height: min(14rem, 40dvh)`
+  (about 14 lines, less on a short window so it still fits above a phone keyboard), `max-height: 60dvh` (then it
+  scrolls), a bit more padding and 1.05 rem text. `EntryItem.tsx` grows it with `useAutoGrow` (the hook the new-entry box
+  uses, so wrapped lines count, not only line breaks; its key includes `editing` so it is measured when it opens).
+  Checked in the pane: desktop width, box 225 px high and as wide as the day card; at 375 px wide a 320-character text
+  grew the box to 266 px with no inner scrollbar. 450 tests, tsc, lint as before (CSS and layout: no new test). Not
+  tried on the real phone.
 
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 

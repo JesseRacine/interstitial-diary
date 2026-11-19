@@ -4,4 +4,4 @@
  *
  * Increase it by one before every push to `main` (each push publishes a new build). Keep it a plain integer on one line.
  */
-export const BUILD_NUMBER = 10
+export const BUILD_NUMBER = 11

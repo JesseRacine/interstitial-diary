@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { deleteEntry, updateEntry } from '../lib/db'
 import { type Entry, dayKey, entryImages, formatGap, shortDayLabel, timeLabel } from '../lib/entry'
 import { fromDateTimeInput, isAllowedTime, retimedCreatedAt, toDateTimeInput } from '../lib/retime'
 import { AttachButton, DraftChips } from './DraftImages'
 import { EntryImages } from './EntryImages'
 import { useOpenEvent, useOpenTracking } from './eventNav'
-import { useCoarsePointer } from '../lib/hooks'
+import { useAutoGrow, useCoarsePointer } from '../lib/hooks'
 import { isNote } from '../lib/notes'
 import { EntryText } from './text'
 import { useDraftImages, useImageInput } from './useDraftImages'
@@ -27,6 +27,10 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
   const coarse = useCoarsePointer()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(entry.text)
+  const editRef = useRef<HTMLTextAreaElement>(null)
+  // The edit box is large (index.css) and grows with the text, wrapped lines included. The key changes when editing
+  // starts, so the box is measured as soon as it appears.
+  useAutoGrow(editRef, `${editing}:${draft}`)
   const photos = useDraftImages(entryImages(entry))
   const input = useImageInput(photos)
   const images = entryImages(entry)
@@ -94,6 +98,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
       {editing ? (
         <div className={`edit${input.dragging ? ' dragging' : ''}`} {...input.dropHandlers}>
           <textarea
+            ref={editRef}
             value={draft}
             autoFocus
             aria-label="Edit entry"
