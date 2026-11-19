@@ -19,8 +19,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   entry box grows with wrapped lines, `!"` offers the last event's title (build 8).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **10** (2026-11-19, new-entry box hidden while editing; `8c765e2`, deploy run 44629736942;
-  apps rebuilt with it: run 44629879656; installing the APK is the user's). Before: **9** (typing mode, `31031c7`, run
+  every push to `main`. Pushed and live: **11** (2026-11-19, bigger edit box; `09d8952`, deploy run 44631791405; apps rebuilt with it:
+  run 44631902836; installing the APK is the user's). Before: **10** (new-entry box hidden while editing; `8c765e2`,
+  run 44629736942, apps run 44629879656). Before: **9** (typing mode, `31031c7`, run
   44588046433, apps run 44588204073; the user installed that APK). Before: **8** (2026-11-18, entry box + last
   event; `f38eefa`, run 44332869492; apps rebuilt with it: run 44374189547, the APK installed by the user). Before that: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
   44216122403 green; Claude's browser pane showed "A new version is ready", Reload, then Settings > About "Build 7" and
@@ -76,7 +77,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 448 tests (2026-11-18, after the test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-19):** `origin/main` is at `8c765e2` (build 10, deployed; build 9 was `31031c7`). This PROGRESS update is a later local commit. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-19):** `origin/main` is at `09d8952` (build 11, deployed; build 10 was `8c765e2`, build 9 `31031c7`). This PROGRESS update is a later local commit. A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-17.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-17 at **build 7** (web `21d65da`, app `02187c7`): **both repos** (commit
   ids and test counts in its `README.md`), restore tested (both bundles cloned with matching heads and files; 680 tests
@@ -134,8 +135,8 @@ rebuilt: run 44588204073 green, the bundled web build has the typing bar and rea
 phone-sized touch screen, the header, search and date row hide, with a thin "Done typing" bar; checked in Claude's pane
 only, the user's phone is untried (check 31). The same push also published the older local docs and test-trim commits. Step 2 (a full-screen writing sheet) only if the user finds
 it not enough. **Build 10 (pushed 2026-11-19 as `8c765e2`, deploy run 44629736942 green; apps rebuilt, run 44629879656 green, copied to `builds\`):** the new-entry box hides while
-an entry is being edited, phone and PC (one CSS rule; HISTORY.md). **Build 11 (local commit 2026-11-19, not pushed, apps
-not rebuilt):** the edit box for an existing entry is big (full width, at least ~14 lines, grows with the text; HISTORY.md).
+an entry is being edited, phone and PC (one CSS rule; HISTORY.md). **Build 11 (pushed 2026-11-19 as `09d8952`, deploy run
+44631791405 green; apps rebuilt, run 44631902836 green, copied to `builds\`):** the edit box for an existing entry is big (full width, at least ~14 lines, grows with the text; HISTORY.md).
 HEIC conversion was **dropped** by the user
 (2026-11-19, no LGPL library; [heic-plan.md](heic-plan.md), docs/LIMITS-AND-IDEAS.md). **The test-suite trim is finished** (2026-11-18, story in docs/HISTORY.md): 685 → 448 tests,
 the ones guarding entries and photos untouched; no app change, commits local (no push needed). **Build 8 is finished** (2026-11-18, story in docs/HISTORY.md): the entry box grows with wrapped
