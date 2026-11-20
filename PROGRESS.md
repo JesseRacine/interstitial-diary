@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-19 (build 12 in the working folder, not pushed: US conventions, times follow the device's 12/24-hour setting; build 11, live, was a big edit box). Kept short on purpose:
+_Last updated: 2026-11-19 (build 12, live: US conventions, times follow the device's 12/24-hour setting; apps rebuilt). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -21,8 +21,9 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   and **a big edit box for an existing entry** (build 11).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **11** (2026-11-19, bigger edit box; `09d8952`, deploy run 44631791405; apps rebuilt with it:
-  run 44631902836; installing the APK is the user's). Before: **10** (new-entry box hidden while editing; `8c765e2`,
+  every push to `main`. Pushed and live: **12** (2026-11-19, US conventions and the device's clock; `0c6991f`, deploy run 44642065580; apps
+  rebuilt with it: run 44642168354; installing the APK is the user's). Before: **11** (bigger edit box; `09d8952`, run
+  44631791405, apps run 44631902836). Before: **10** (new-entry box hidden while editing; `8c765e2`,
   run 44629736942, apps run 44629879656). Before: **9** (typing mode, `31031c7`, run
   44588046433, apps run 44588204073; the user installed that APK). Before: **8** (2026-11-18, entry box + last
   event; `f38eefa`, run 44332869492; apps rebuilt with it: run 44374189547, the APK installed by the user). Before that: **7** (2026-11-17, pCloud removed from Settings; `b14e17d`, deploy run
@@ -79,7 +80,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 458 tests (2026-11-19, build 12; 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-19):** `origin/main` is at `09d8952` (build 11, deployed; build 10 was `8c765e2`, build 9 `31031c7`). The latest commits after it are **local and unpushed** (docs only: PROGRESS, HISTORY, the code map, the limits list; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-19):** `origin/main` is at `0c6991f` (build 12, deployed; build 11 was `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 11** at the user's request: **both repos** (commit ids and
   test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a patch**
@@ -134,13 +135,15 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Build 12, US conventions (2026-11-19, committed locally, NOT pushed, apps not rebuilt; the user asked for it: "update
-everything", including the texts, Manual and search; story in docs/HISTORY.md):** American spelling everywhere (screen,
+**Build 12, US conventions (2026-11-19, pushed as `0c6991f`, deploy run 44642065580 green; apps rebuilt, run
+44642168354 green, copied to `builds\`; the user asked for it: "update everything", including the texts, Manual and
+search; story in docs/HISTORY.md):** American spelling everywhere (screen,
 code, docs); dates month first ("Thu, Nov 19, 2026"); **times follow the device's 12/24-hour setting** (`lib/clock.ts`),
 including the week review's parts of the day and the search chips and help; **weeks start on Sunday**; search accepts
 12-hour times (`time:9am-12pm`, `after:5:30pm`) next to 24-hour ones. **Left as it was on purpose:** the saved Markdown
 files (`## 09:14`, day-first `#` title). Checked in the pane (en-US) and by 458 tests; **not checked: a 24-hour device,
-the native apps, the phone (check 33)**. Needs the user's OK to push (the build number is already 12).
+the native apps, the phone (check 33)**. The user asked (2026-11-19) where the file title is seen: only in the saved
+files (Export zip, Dropbox or folder), not in the app; offered to make it month-first too, no answer yet.
 
 **Open, not being worked on (the user, 2026-11-19: "we will not deal with it now"):** sometimes the
 **Edit button of an older entry has to be pressed twice** before the edit box opens (the user did not say on which
@@ -210,7 +213,7 @@ should slide away, leaving the title bar with "Done typing", the last entries an
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
 hide the keyboard, brings the header back; e. the search box still works as before.
-**33. US conventions and the clock** (build 12, not pushed yet): after installing: a. entry times and the Lightbox/Photos
+**33. US conventions and the clock** (build 12, pushed and rebuilt 2026-11-19): after installing: a. entry times and the Lightbox/Photos
 dates look right for your phone's and PC's 12/24-hour setting (switch the phone's setting and reopen the app: the times
 should follow); b. dates read "Thu, Nov 19, 2026", an event's range "Nov 8–10, 2026"; c. Calendar month and Week start on
 Sunday; d. Calendar > Week: the Time of day rows show the hours in your clock's style; e. the search quick chips
