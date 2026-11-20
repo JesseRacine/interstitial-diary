@@ -118,7 +118,9 @@ export function ManualCard() {
           <h4>The tabs</h4>
           <ul>
             <li><strong>Journal:</strong> your entries by day (Days or Stream layout). <kbd>←</kbd> <kbd>→</kbd> move between days,
-              <kbd>t</kbd> jumps to the latest entry, <kbd>n</kbd> starts a new entry.</li>
+              <kbd>t</kbd> jumps to the latest entry, <kbd>n</kbd> starts a new entry. A line like “+1 h 20 min” between two
+              entries shows how long it was since the one before (only when it is an hour or more); turn it off under
+              Settings &gt; Appearance.</li>
             <li><strong>Calendar:</strong> Month, Year, Week or Events. Weeks run Sunday to Saturday. Week is a weekly review:
               entries, days written, photos, the busiest day, time of day, the top tags, people and places, events, and a
               comparison with the week before. Events is the list of events described above.</li>

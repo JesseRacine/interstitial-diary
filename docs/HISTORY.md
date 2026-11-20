@@ -263,6 +263,18 @@ full-screen writing sheet, only if this is not enough).
   (en-US): "Thu, Nov 19, 2026", "6:55 PM", Sun-first month grid, "Week of Nov 15–21, 2026" with Sun 15 ... Sat 21, the
   time-of-day bands in 12 hour, the help row, and the Evenings chip (`time:6pm-12am`) finding the 6:55 PM entry. **Not
   checked:** a 24-hour device (covered by unit tests only), the native apps, the phone.
+- **Option to hide the time between entries (2026-11-20, build 13, user: "not a big fan of the time indicator that tells
+  how much time elapsed ... the feature can be left in but I want to be able to turn it off"):** the indicator is the
+  dashed "+3 h 30 min" line the journal draws between two entries of a day that are an hour or more apart
+  (`GAP_DIVIDER_MINUTES` in `JournalView.tsx`, `formatGap` in `entry.ts`). It stays on by default. **Settings >
+  Appearance > "Show the time between entries"** turns it off. The choice is a device-only preference in `localStorage`
+  (key `showGaps`, `lib/prefs.ts`, like the theme and the Days/Stream layout; it does not sync, so each device has its own).
+  `App.tsx` holds the state and passes `showGaps` to `JournalView` (no divider row is drawn when off) and to
+  `SettingsView`. `EntryItem` has an old `.gap` label that nothing uses any more (no caller passes `gapMinutes`); it was
+  left alone. The Manual's Journal bullet names the line and the setting. Tests: 458 → 459 (`prefs.test.ts`: on by
+  default, only `"0"` turns it off). Checked in the pane: two entries 3.5 hours apart showed "+3 h 30 min"; with the
+  box unticked the line was gone, `showGaps` was `"0"` in storage and stayed `"0"` after a reload. Not checked: the
+  phone, the native apps.
 
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 

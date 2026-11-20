@@ -10,10 +10,12 @@ import { StorageCard } from './StorageCard'
 
 export type Theme = 'system' | 'light' | 'dark'
 
-export function SettingsView({ entries, theme, setTheme, tagCount }: {
+export function SettingsView({ entries, theme, setTheme, showGaps, setShowGaps, tagCount }: {
   entries: Entry[]
   theme: Theme
   setTheme: (t: Theme) => void
+  showGaps: boolean
+  setShowGaps: (on: boolean) => void
   tagCount: number
 }) {
   return (
@@ -37,6 +39,12 @@ export function SettingsView({ entries, theme, setTheme, tagCount }: {
             </button>
           ))}
         </div>
+        <label className="check">
+          <input type="checkbox" checked={showGaps} onChange={(e) => setShowGaps(e.target.checked)} />
+          Show the time between entries
+        </label>
+        <p className="muted">The line like “+1 h 20 min” between two entries of a day that are an hour or more apart. This
+          setting is kept on this device only.</p>
       </div>
 
       <ExportCard entries={entries} tagCount={tagCount} />

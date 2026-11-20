@@ -20,6 +20,7 @@ import type { Entry } from './lib/entry'
 import { useLive, useTypingMode } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker, lastEventTitle } from './lib/events'
+import { SHOW_GAPS_KEY, showGapsFromStored, showGapsToStored } from './lib/prefs'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
 import { computeNotes, journalEntries } from './lib/notes'
 import { computeTracking } from './lib/tracking'
@@ -71,6 +72,13 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [backQuery, setBackQuery] = useState<string | null>(null)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
+  const [showGaps, setShowGapsState] = useState<boolean>(() => {
+    try { return showGapsFromStored(localStorage.getItem(SHOW_GAPS_KEY)) } catch { return true }
+  })
+  const setShowGaps = (on: boolean) => {
+    setShowGapsState(on)
+    try { localStorage.setItem(SHOW_GAPS_KEY, showGapsToStored(on)) } catch { /* private mode */ }
+  }
   const [photo, setPhoto] = useState<{ entryId: string; index: number } | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const captureRef = useRef<HTMLTextAreaElement>(null)
@@ -219,7 +227,7 @@ export default function App() {
         ) : view === 'journal' ? (
           <>
             <JournalView entries={journal} layout={layout} setLayout={setLayout} jump={jump} bottomTick={bottomTick}
-              onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
+              showGaps={showGaps} onTag={searchTag} backQuery={backQuery} onBack={backToResults} onOpenImage={openPhoto} />
             <Capture tagStats={tagStats} lastEvent={lastEvent} inputRef={captureRef}
               onOpenNotes={(key) => { setTagPage(key); setView('tags'); setQuery(''); setBackQuery(null) }} initialText={prefill} onPrefilled={() => setPrefill('')}
               onSaved={() => setBottomTick((t) => t + 1)} />
@@ -237,7 +245,7 @@ export default function App() {
         ) : view === 'tracking' ? (
           <TrackingView entries={journal} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : (
-          <SettingsView entries={entries} theme={theme} setTheme={setTheme} tagCount={tagStats.length} />
+          <SettingsView entries={entries} theme={theme} setTheme={setTheme} showGaps={showGaps} setShowGaps={setShowGaps} tagCount={tagStats.length} />
         )}
       </main>
       {photo && photoEntry && (

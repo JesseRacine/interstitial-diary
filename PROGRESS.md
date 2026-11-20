@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-19 (build 12, live: US conventions, times follow the device's 12/24-hour setting; apps rebuilt). Kept short on purpose:
+_Last updated: 2026-11-20 (build 13 in the working folder, not pushed: option to hide the time between entries; build 12, live: US conventions, times follow the device's 12/24-hour setting; apps rebuilt). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -79,7 +79,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 458 tests (2026-11-19, build 12; 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `0c6991f` (build 12, deployed; build 11 was `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
@@ -135,6 +135,11 @@ to the Claude session folder, `builds\`.
   natively; no native widget (quick capture stage 2, android-capture-plan.md).
 
 ## What next
+
+**Build 13, hide the time between entries (2026-11-20, committed locally, NOT pushed, apps not rebuilt; the user: "the
+feature can be left in but I want to be able to turn it off"; story in docs/HISTORY.md):** the dashed "+3 h 30 min" line
+between entries an hour or more apart stays on by default; **Settings > Appearance > "Show the time between entries"**
+turns it off, per device (`localStorage` `showGaps`, `lib/prefs.ts`). Checked in the pane only (check 34).
 
 **Build 12, US conventions (2026-11-19, pushed as `0c6991f`, deploy run 44642065580 green; apps rebuilt, run
 44642168354 green, copied to `builds\`; the user asked for it: "update everything", including the texts, Manual and
@@ -214,6 +219,11 @@ should slide away, leaving the title bar with "Done typing", the last entries an
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
 Track and Note still work and the header does not flash back while the photo picker is open; d. Done typing, or Back to
 hide the keyboard, brings the header back; e. the search box still works as before.
+**34. Hide the time between entries** (build 13, not pushed yet): in a day with two entries an hour or more apart the
+journal shows "+1 h 20 min" between them; Settings > Appearance > "Show the time between entries": untick it and the
+line is gone on that device (the Journal, Days and Stream); tick it and it is back; it is still off after closing and
+reopening the app; the other device keeps its own choice.
+
 **33. US conventions and the clock** (build 12, pushed and rebuilt 2026-11-19): after installing: a. entry times and the Lightbox/Photos
 dates look right for your phone's and PC's 12/24-hour setting (switch the phone's setting and reopen the app: the times
 should follow); b. dates read "Thu, Nov 19, 2026", an event's range "Nov 8–10, 2026"; c. Calendar month and Week start on

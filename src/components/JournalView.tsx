@@ -12,10 +12,12 @@ export interface Jump { day: string; id: string | null; n: number }
 /** Gaps shorter than this are not worth a divider. */
 const GAP_DIVIDER_MINUTES = 60
 
-export function JournalView({ entries, layout, setLayout, jump, bottomTick, onTag, backQuery, onBack, onOpenImage }: {
+export function JournalView({ entries, layout, setLayout, showGaps, jump, bottomTick, onTag, backQuery, onBack, onOpenImage }: {
   entries: Entry[]
   layout: JournalLayout
   setLayout: (l: JournalLayout) => void
+  /** Show the "+1 h 20 min" line between entries that are an hour or more apart (Settings > Appearance). */
+  showGaps: boolean
   /** Ask the view to scroll to a day (and flash one entry). `n` changes on every request. */
   jump: Jump | null
   /** Changes whenever the user saves an entry, so the view can snap to the newest one. */
@@ -133,14 +135,14 @@ export function JournalView({ entries, layout, setLayout, jump, bottomTick, onTa
     return (
       <div className={`vrow entry-row${row.last ? ' last' : ''}`} data-day={row.day}>
         <div className="entry-wrap">
-          {row.gapMinutes !== null && row.gapMinutes >= GAP_DIVIDER_MINUTES && (
+          {showGaps && row.gapMinutes !== null && row.gapMinutes >= GAP_DIVIDER_MINUTES && (
             <div className="gap-divider"><span>{formatGap(row.gapMinutes)}</span></div>
           )}
           <EntryItem entry={row.entry} bubble highlighted={row.entry.id === flashId} onTag={onTag} onOpenImage={onOpenImage} />
         </div>
       </div>
     )
-  }, [flashId, onTag, onOpenImage])
+  }, [flashId, showGaps, onTag, onOpenImage])
 
   return (
     <section className={`journal-view ${layout}`}>
