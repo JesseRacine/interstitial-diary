@@ -143,7 +143,7 @@ including the week review's parts of the day and the search chips and help; **we
 12-hour times (`time:9am-12pm`, `after:5:30pm`) next to 24-hour ones. **Left as it was on purpose:** the saved Markdown
 files (`## 09:14`, day-first `#` title). Checked in the pane (en-US) and by 458 tests; **not checked: a 24-hour device,
 the native apps, the phone (check 33)**. The user asked (2026-11-19) where the file title is seen: only in the saved
-files (Export zip, Dropbox or folder), not in the app; offered to make it month-first too, no answer yet.
+files (Export zip, Dropbox or folder), not in the app; offered to make it month-first too: **the user said keep as is** (2026-11-19).
 
 **Open, not being worked on (the user, 2026-11-19: "we will not deal with it now"):** sometimes the
 **Edit button of an older entry has to be pressed twice** before the edit box opens (the user did not say on which
