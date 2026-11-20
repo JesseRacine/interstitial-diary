@@ -81,12 +81,13 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 458 tests (2026-11-19, build 12; 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `0c6991f` (build 12, deployed; build 11 was `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
-- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19.zip` in the Claude session folder (no unzipped
-  folder, as the user prefers), made 2026-11-19 at **build 11** at the user's request: **both repos** (commit ids and
-  test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a patch**
-  (`history/app-uncommitted-edits.patch`); restore tested (both bundles cloned with matching heads and identical files;
-  450 tests and the type check passed on the web clone; the app clone cannot be built locally). The build 7 zip
-  (`...-2026-11-17.zip`) was deleted at the user's request (2026-11-19), so this is the only one. All older
+- **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
+  folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
+  repos** (commit ids and test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a
+  patch** (`history/app-uncommitted-edits.patch`); restore tested (both bundles cloned with matching heads and identical
+  files; 458 tests and the type check passed on the web clone; the app clone cannot be built locally). The earlier
+  `...-2026-11-19.zip` (build 11, before the US conventions) is **still there until the user says it can go** (they keep
+  only the newest). The build 7 zip (`...-2026-11-17.zip`) was deleted at the user's request (2026-11-19). All older
   archives, including the one with the personal Gmail address in its history, were deleted at the user's request. The
   zip is on the same disk as the project: the user was advised to copy it elsewhere (not confirmed). Offer a new one
   after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup);
