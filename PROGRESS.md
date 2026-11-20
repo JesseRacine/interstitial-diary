@@ -86,8 +86,8 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   repos** (commit ids and test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a
   patch** (`history/app-uncommitted-edits.patch`); restore tested (both bundles cloned with matching heads and identical
   files; 458 tests and the type check passed on the web clone; the app clone cannot be built locally). The earlier
-  `...-2026-11-19.zip` (build 11, before the US conventions) is **still there until the user says it can go** (they keep
-  only the newest). The build 7 zip (`...-2026-11-17.zip`) was deleted at the user's request (2026-11-19). All older
+  `...-2026-11-19.zip` (build 11, before the US conventions) was **gone from the folder by the end of the session**
+  (Claude did not delete it; presumably the user did, they keep only the newest), so this is the only one. The build 7 zip (`...-2026-11-17.zip`) was deleted at the user's request (2026-11-19). All older
   archives, including the one with the personal Gmail address in its history, were deleted at the user's request. The
   zip is on the same disk as the project: the user was advised to copy it elsewhere (not confirmed). Offer a new one
   after the next big change. The user was also advised to do one Settings > Export (a Dropbox sync is not a backup);
