@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-20 (build 13, live: option to hide the time between entries; build 12 was the US conventions and the device's 12/24-hour clock; apps rebuilt). Kept short on purpose:
+_Last updated: 2026-11-21 (build 14, live: the native apps stop behaving like a browser window, in-app question boxes, Text size; build 13 hid the time between entries, build 12 was the US conventions; apps rebuilt). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -21,7 +21,10 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   and **a big edit box for an existing entry** (build 11).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **13** (2026-11-20, option to hide the time between entries; `08fb921`, deploy run 44679902355; apps
+  every push to `main`. Pushed and live: **14** (2026-11-21, the native-shell plan, steps 1 to 4; `4d8f6df`, deploy run 44936471645 green; apps
+  rebuilt with it: run 44936547052 green, the bundled web build has the native shell and Text size, APK 10,193,599 bytes and `.exe`
+  6,343,168 copied to `builds\`, the `.exe` started from a scratch copy: window "Interstitial Diary", its own `journal-data`; installing
+  them is the user's). Before: **13** (2026-11-20, option to hide the time between entries; `08fb921`, deploy run 44679902355; apps
   rebuilt with it: run 44679990189). Before: **12** (2026-11-19, US conventions and the device's clock; `0c6991f`, deploy run 44642065580; apps
   rebuilt with it: run 44642168354; installing the APK is the user's). Before: **11** (bigger edit box; `09d8952`, run
   44631791405, apps run 44631902836). Before: **10** (new-entry box hidden while editing; `8c765e2`,
@@ -81,7 +84,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 493 tests (2026-11-21, local, after native-shell step 4); 484 after step 3; 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-19):** `origin/main` is at `08fb921` (build 13, deployed; build 12 was `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-21):** `origin/main` is at `4d8f6df` (build 14, deployed; build 13 was `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
   repos** (commit ids and test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a
@@ -101,7 +104,7 @@ A public repo, https://github.com/JesseRacine/interstitial-diary-app (local: `~/
 holding only a Tauri 2 shell. Its workflow checks out this repo (ref in its `web.ref`, default `main`), runs the tests,
 builds once, then makes the Windows folder and a signed Android APK (about 8 minutes; a `v*` tag makes a Release).
 **Nothing can be built locally** (no Rust or Android tools): every try is a push to that repo and a wait. Its
-`README.md` explains the rest. `origin/main` there is at `b22c6d3`, nothing unpushed. A web-app change reaches the
+`README.md` explains the rest. `origin/main` there is at `bea2367` (2026-11-21: autofill and page zoom off in the Windows window; the Rust compiled, run 44936547052 green), nothing unpushed (the user's own uncommitted app-id edits below are not committed). A web-app change reaches the
 apps only through a new build there (`gh workflow run 'Build apps' --ref main`). **Rebuilt 2026-11-15 on the user's
 request, three times (latest: run 43769444518 green, web `main` at `09c1f03`, app repo unchanged at `b22c6d3`): the APK and
 portable Windows folder have Tracking, the new header, the search-help phone layout fix and **build number 1 in Settings >
@@ -138,26 +141,26 @@ to the Claude session folder, `builds\`.
 ## What next
 
 **Native apps should not behave like a browser window (started 2026-11-21, the user's request after reviewing a checklist from another project; 4 steps, one per turn).**
-Everything is gated by `isNativeApp()` so the website and the installed web app are untouched. **Step 1 done (committed locally,
-not pushed, no build number bump yet: raise it when pushing):** `src/lib/nativeShell.ts` (wired in `main.tsx`) cancels F5 / Ctrl+R /
+**All four steps pushed as build 14 on 2026-11-21 (web repo `4d8f6df`, app repo `bea2367`; the two Rust lines compiled; the apps were
+rebuilt and are in `builds\`; installing them and checks 35 to 37 are the user's).** Everything is gated by `isNativeApp()` so the
+website and the installed web app are untouched. **Step 1 done:** `src/lib/nativeShell.ts` (wired in `main.tsx`) cancels F5 / Ctrl+R /
 Ctrl+Shift+R, Ctrl+F / G / F3 (the browser's find would miss entries the journal does not draw), Ctrl+S, Ctrl+P, Ctrl+U, F7, F12,
 Ctrl+Shift+I / C / J, and the right-click menu outside text fields; `html[data-native]` turns off `overscroll-behavior` (no
 pull-to-refresh or swipe back). Left alone on purpose: Alt+Left (the photo viewer is a history entry), zoom (step 4), the app's own
 Ctrl+K. 471 tests (12 new), type check and lint clean. Checked in the pane by installing it on localhost and sending synthetic
-events (all as expected); **not checked: real key presses in the `.exe`, the phone (check 35)**. **Step 2 done (committed locally in both
-repos, not pushed):** `autoComplete="off"` on every text box (`src/autofill.test.ts` fails if a new one forgets it; 473 tests), and in the app
+events (all as expected); **not checked: real key presses in the `.exe`, the phone (check 35)**. **Step 2 done:** `autoComplete="off"` on every text box (`src/autofill.test.ts` fails if a new one forgets it; 473 tests), and in the app
 repo `lib.rs` `.general_autofill_enabled(false)` on the Windows window (tauri's docs.rs for 2.12.7 list it for Windows; the app repo has no
-`Cargo.lock`, so the build takes the newest tauri 2; **it has never been compiled**, the next app build is the test; it does not cover
-password or card autofill, which the app has no fields for). **Step 3 done (committed locally, not pushed):** the browser's `confirm` (8
+`Cargo.lock`, so the build takes the newest tauri 2; **it compiled in the build 14 apps run**; it does not cover
+password or card autofill, which the app has no fields for). **Step 3 done:** the browser's `confirm` (8
 places), `prompt` (2: rename event, rename tag) and `alert` (2) are replaced by the app's own question box on every build
 (`lib/dialog.ts` + `components/DialogHost.tsx`, a native `<dialog>`; buttons say "Delete", "Rename", "Merge", "Remove", "Stop saving"; a
 destructive one starts on Cancel; Esc cancels; the focus goes back where it was; the page's and the photo viewer's key shortcuts
 step aside while one is open). 484 tests (a test fails if a `confirm(`/`prompt(`/`alert(` call comes back). Checked in the pane: delete
 (Cancel, Esc, confirm), tag rename (prompt, then confirm, then the entry changed), the empty-name message; **not checked: the phone
-(a `<dialog>` on Android WebView), the `.exe`, the photo viewer's "Remove photo" (check 36)**. **Step 4 done (committed locally in both repos, not pushed):** in the native apps
+(a `<dialog>` on Android WebView), the `.exe`, the photo viewer's "Remove photo" (check 36)**. **Step 4 done:** in the native apps
 page zoom is off: Ctrl + `=` `+` `-` `_` `0`, Ctrl+scroll and touchpad pinch (`nativeShell.ts`), touch pinch (`touch-action: pan-x pan-y`
 under `html[data-native]`, at zero specificity so the photo viewer's own `touch-action: none` still wins), and in the app repo `lib.rs`
-`.zoom_hotkeys_enabled(false)` (docs.rs 2.12.7: on Windows it is WebView2's IsZoomControlEnabled; **never compiled**). Replacement for
+`.zoom_hotkeys_enabled(false)` (docs.rs 2.12.7: on Windows it is WebView2's IsZoomControlEnabled; compiled in the build 14 apps run, but whether it really stops a pinch is unchecked). Replacement for
 everyone: **Settings > Appearance > Text size** (Small 90%, Normal, Large 115%, Extra large 135%; per device, `localStorage`
 `textSize`, set on the root font size before the first paint; `body` is now `1rem`, not `16px`, so it scales). 493 tests. Checked in the
 pane at all four sizes: the journal, entry box and settings reflow with no overlap and the choice survives a reload; **not checked: the
@@ -247,16 +250,16 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**35. No browser behavior in the apps** (step 1, **not pushed or built yet**; once it is, in the Windows `.exe` and the Android app): Ctrl+F, F5,
+**35. No browser behavior in the apps** (step 1, build 14, pushed and rebuilt 2026-11-21; in the Windows `.exe` and the Android app): Ctrl+F, F5,
 Ctrl+R, Ctrl+S, Ctrl+P and F12 do nothing; right-click on an entry shows no menu, but in the entry box it still offers Paste;
 a touchpad swipe or a pull at the end of the list does not reload or go back; Ctrl+K and typing work as before; on the
 website and the installed web app nothing changed (Ctrl+F still opens the browser's find).
-**36. The app's own question boxes** (step 3, **not pushed or built yet**; website, phone and `.exe` alike): Delete an entry, a note, a tracked item;
+**36. The app's own question boxes** (step 3, build 14, pushed and rebuilt 2026-11-21; website, phone and `.exe` alike): Delete an entry, a note, a tracked item;
 Rename a tag, a person, an event (a box with the name, then a second question, and the empty name gives a message); Merge an event;
 Settings > the folder "Stop"; in the photo viewer "Remove photo". Each should show a box in the app's look (no "tauri.localhost says"),
 Esc and Cancel leave everything as it was, the arrow keys do not change the day behind it, and the photo viewer stays open
 behind "Remove photo?".
-**37. Text size and no page zoom** (step 4, **not pushed or built yet**): Settings > Appearance > Text size: Small, Normal, Large, Extra large
+**37. Text size and no page zoom** (step 4, build 14, pushed and rebuilt 2026-11-21): Settings > Appearance > Text size: Small, Normal, Large, Extra large
 change all text at once, on a long journal too (scroll up and down: no rows overlapping or gaps), and it is still set after closing and
 reopening; the other device keeps its own. In the Windows `.exe` and the Android app: Ctrl+scroll, a touchpad pinch, Ctrl and + - 0, and a
 two-finger pinch on the page do **not** zoom it (the website still zooms as a browser does); in the photo viewer the +, -, 0 keys, the wheel
