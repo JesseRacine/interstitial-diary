@@ -8,6 +8,10 @@
  * and the browser keeps the zoom level until it is undone. Settings > Appearance > Text size replaces it. The photo
  * viewer's own zoom (its +, -, 0 keys, the wheel and a pinch on the photo) is separate and keeps working.
  *
+ * Dropping photos on the entry box works through the page's own drag-and-drop (useDraftImages.ts). On Windows the app's
+ * window has Tauri's file-drop handler turned off for that (app repo, lib.rs), which also means a file dropped anywhere else
+ * would be opened in place of the app: the drag handlers below stop that.
+ *
  * What is deliberately NOT switched off: Ctrl+A/C/V/X, Ctrl+K and the app's other shortcuts, Alt+Left (the photo viewer
  * is a history entry, so Back closes it), and the right-click menu inside text fields (paste, spelling suggestions).
  * Nothing here touches entries, storage or sync.
@@ -53,12 +57,18 @@ export function keepsContextMenu(target: MenuTarget | null): boolean {
   return tag === 'INPUT' || tag === 'TEXTAREA' || !!target.isContentEditable
 }
 
+/** True when a drag carries files from outside the page (as opposed to dragged text or a link). */
+function hasFiles(e: DragEvent): boolean {
+  return !!e.dataTransfer && [...e.dataTransfer.types].includes('Files')
+}
+
 /** The small part of `window` that is used (so a test needs no browser). */
 export interface ShellWindow {
   addEventListener(type: 'keydown', listener: (e: KeyboardEvent) => void, options?: boolean | AddEventListenerOptions): void
   addEventListener(type: 'contextmenu', listener: (e: MouseEvent) => void, options?: boolean | AddEventListenerOptions): void
   addEventListener(type: 'wheel', listener: (e: WheelEvent) => void, options?: boolean | AddEventListenerOptions): void
-  removeEventListener(type: 'keydown' | 'contextmenu' | 'wheel', listener: never, options?: boolean | EventListenerOptions): void
+  addEventListener(type: 'dragover' | 'drop', listener: (e: DragEvent) => void, options?: boolean | AddEventListenerOptions): void
+  removeEventListener(type: 'keydown' | 'contextmenu' | 'wheel' | 'dragover' | 'drop', listener: never, options?: boolean | EventListenerOptions): void
 }
 
 /** The attribute on `<html>` that the stylesheet keys on (`html[data-native]`: no pull-to-refresh, no swipe back). */
@@ -81,14 +91,28 @@ export function installNativeShell(win: ShellWindow, root: Pick<Element, 'setAtt
   const onWheel = (e: WheelEvent) => {
     if (e.ctrlKey) e.preventDefault()
   }
+  // A file dropped anywhere that is not a drop zone (the entry box, an edit box) must not make the web view open the file in
+  // place of the app. A drop zone has already cancelled the event by the time it reaches the window, so it is left alone.
+  const onDragOver = (e: DragEvent) => {
+    if (!hasFiles(e) || e.defaultPrevented) return
+    e.preventDefault()
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'none' // the pointer shows "not here"
+  }
+  const onDrop = (e: DragEvent) => {
+    if (hasFiles(e)) e.preventDefault()
+  }
   win.addEventListener('keydown', onKey, true)
   win.addEventListener('contextmenu', onMenu)
   win.addEventListener('wheel', onWheel, { passive: false })
+  win.addEventListener('dragover', onDragOver)
+  win.addEventListener('drop', onDrop)
   root.setAttribute(NATIVE_ATTRIBUTE, '')
   return () => {
     win.removeEventListener('keydown', onKey as never, true)
     win.removeEventListener('contextmenu', onMenu as never)
     win.removeEventListener('wheel', onWheel as never)
+    win.removeEventListener('dragover', onDragOver as never)
+    win.removeEventListener('drop', onDrop as never)
     root.removeAttribute(NATIVE_ATTRIBUTE)
   }
 }

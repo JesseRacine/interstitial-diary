@@ -165,11 +165,14 @@ everyone: **Settings > Appearance > Text size** (Small 90%, Normal, Large 115%, 
 `textSize`, set on the root font size before the first paint; `body` is now `1rem`, not `16px`, so it scales). 493 tests. Checked in the
 pane at all four sizes: the journal, entry box and settings reflow with no overlap and the choice survives a reload; **not checked: the
 phone, the `.exe`, a long journal at Extra large, the photo viewer's own pinch in the apps (check 37)**. The four steps are done; what is
-left is the dropped-photos question below, then pushing and rebuilding. **Found while on step 2 (not fixed):** the entry box and the edit box accept photos dropped on them
-(`useDraftImages.ts` `dropHandlers`), but Tauri's drag-drop handler on Windows takes file drops before the page sees them, so
-dropping photos in the `.exe` probably does nothing (untested; pasting and the Photo button are unaffected). Possible fix: keep
-the handler, or turn it off and cancel `dragover`/`drop` outside the drop zones in `nativeShell.ts` so a stray drop cannot replace
-the page. Needs the user's say; a candidate step 5. **Check first, before the rest: Export and the photo Save button inside the Windows window** (item 25, never
+left is the dropped-photos question below, then pushing and rebuilding. **Dropped photos in the Windows `.exe` (found while on step 2; the user tried it on
+build 14 and "nothing happened", 2026-11-21): fix committed locally in both repos, not pushed, build number not raised yet (15 when pushed).**
+The entry box and the edit box accept photos dropped on them (`useDraftImages.ts` `dropHandlers`), but Tauri's file-drop handler on Windows
+takes the files before the page sees them. App repo `lib.rs`: `.disable_drag_drop_handler()` (documented for exactly this; never compiled
+yet). Web `nativeShell.ts`: with Tauri's handler off a file dropped anywhere else would be opened in place of the app, so a file drag over
+a place that is not a drop zone is cancelled with the "not here" pointer, and a zone's own answer is left alone. 497 tests. Checked in the
+pane with real DOM drag events: a photo dropped on the entry box becomes a photo in the draft, a drag over the header is refused, dragged
+text is untouched; **not checked: a real drop in the `.exe` (check 38)**. **Check first, before the rest: Export and the photo Save button inside the Windows window** (item 25, never
 confirmed): they use `showSaveFilePicker` or a browser download, the most browser-like part left.
 
 **Build 13, hide the time between entries (2026-11-20, pushed as `08fb921`, deploy run 44679902355 green; apps rebuilt, run 44679990189 green, copied to `builds\`; the user: "the
@@ -259,6 +262,10 @@ Rename a tag, a person, an event (a box with the name, then a second question, a
 Settings > the folder "Stop"; in the photo viewer "Remove photo". Each should show a box in the app's look (no "tauri.localhost says"),
 Esc and Cancel leave everything as it was, the arrow keys do not change the day behind it, and the photo viewer stays open
 behind "Remove photo?".
+**38. Dropping photos in the Windows `.exe`** (not pushed or built yet): drag a photo from File Explorer onto the entry box: "Drop photos to
+attach them" shows and the photo joins the entry; the same on an entry being edited; dragging a photo over the header or the list shows the
+"not allowed" pointer and dropping it there does nothing (the app is not replaced by the picture). If the app does get replaced, tell
+me: the cancel in `nativeShell.ts` is not enough and the Rust line should come out.
 **37. Text size and no page zoom** (step 4, build 14, pushed and rebuilt 2026-11-21): Settings > Appearance > Text size: Small, Normal, Large, Extra large
 change all text at once, on a long journal too (scroll up and down: no rows overlapping or gaps), and it is still set after closing and
 reopening; the other device keeps its own. In the Windows `.exe` and the Android app: Ctrl+scroll, a touchpad pinch, Ctrl and + - 0, and a

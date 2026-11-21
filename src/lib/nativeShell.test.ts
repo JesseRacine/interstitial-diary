@@ -120,6 +120,38 @@ describe('installNativeShell', () => {
     expect(e.defaultPrevented).toBe(true)
   })
 
+  describe('a file dropped on the window (Tauri\'s own drop handler is off in the Windows app)', () => {
+    const files = () => ({ types: ['Files'], dropEffect: 'copy' })
+    const text = () => ({ types: ['text/plain'], dropEffect: 'copy' })
+
+    it('a file over a place that is not a drop zone is refused, so the app is not replaced by the file', () => {
+      const f = fake()
+      installNativeShell(f.win, f.root)
+      const dt = files()
+      expect(f.fire('dragover', { dataTransfer: dt }).defaultPrevented).toBe(true) // cancelled: no "open the file" on release
+      expect(dt.dropEffect).toBe('none') // and the pointer says "not here"
+      expect(f.fire('drop', { dataTransfer: files() }).defaultPrevented).toBe(true)
+    })
+
+    it("a drop zone's own answer is left as it is: still 'copy' when the entry box already took the drag", () => {
+      const f = fake()
+      installNativeShell(f.win, f.root)
+      const dt = files()
+      f.fire('dragover', { dataTransfer: dt, defaultPrevented: true }) // the zone's handler ran first and cancelled it
+      expect(dt.dropEffect).toBe('copy')
+    })
+
+    it('dragged text and links are not touched', () => {
+      const f = fake()
+      installNativeShell(f.win, f.root)
+      const dt = text()
+      expect(f.fire('dragover', { dataTransfer: dt }).defaultPrevented).toBe(false)
+      expect(dt.dropEffect).toBe('copy')
+      expect(f.fire('drop', { dataTransfer: text() }).defaultPrevented).toBe(false)
+      expect(f.fire('dragover', {}).defaultPrevented).toBe(false) // no data transfer at all
+    })
+  })
+
   it('undoes everything it did', () => {
     const f = fake()
     const off = installNativeShell(f.win, f.root)
@@ -131,6 +163,12 @@ describe('installNativeShell', () => {
 
 describe('the app uses it', () => {
   const read = (p: string) => readFileSync(new URL(p, import.meta.url), 'utf8')
+
+  it('the drop zones cancel the drag themselves, which is how the window-level handler knows to leave them alone', () => {
+    const src = read('../components/useDraftImages.ts')
+    expect(src).toMatch(/onDragOver:[\s\S]*?e\.preventDefault\(\)[\s\S]*?dropEffect = 'copy'/)
+    expect(src).toMatch(/onDrop:[\s\S]*?e\.preventDefault\(\)/)
+  })
 
   it('main.tsx installs it only inside the native apps, before the page is drawn', () => {
     const src = read('../main.tsx')
