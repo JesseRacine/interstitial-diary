@@ -42,7 +42,7 @@ export function EventsView({ events, entries, selectedId, onSelect, onSearch, on
   return (
     <section className="events">
       <div className="day-nav">
-        <input type="search" placeholder="Filter by title" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter events by title" />
+        <input type="search" autoComplete="off" placeholder="Filter by title" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter events by title" />
         {years.length > 1 && (
           <select value={year} onChange={(e) => setYear(e.target.value)} aria-label="Year">
             <option value="">All years</option>

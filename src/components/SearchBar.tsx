@@ -79,6 +79,7 @@ export function SearchBar({ query, setQuery, inputRef, tagStats, saved, recent, 
           value={query}
           placeholder="Search…  try  #work tired last:7d"
           aria-label="Search entries"
+          autoComplete="off"
           onChange={(e) => { setQuery(e.target.value); setCaret(e.target.selectionStart ?? 0) }}
           onSelect={(e) => setCaret(e.currentTarget.selectionStart ?? 0)}
           onKeyDown={(e) => {

@@ -144,11 +144,17 @@ Ctrl+Shift+R, Ctrl+F / G / F3 (the browser's find would miss entries the journal
 Ctrl+Shift+I / C / J, and the right-click menu outside text fields; `html[data-native]` turns off `overscroll-behavior` (no
 pull-to-refresh or swipe back). Left alone on purpose: Alt+Left (the photo viewer is a history entry), zoom (step 4), the app's own
 Ctrl+K. 471 tests (12 new), type check and lint clean. Checked in the pane by installing it on localhost and sending synthetic
-events (all as expected); **not checked: real key presses in the `.exe`, the phone (check 35)**. Steps left: 2) Windows autofill off
-(`general_autofill_enabled(false)` in the app repo's `lib.rs`; compile unverified locally, so confirm the method exists in our Tauri
-version) and `autocomplete="off"` on the search and entry fields; 3) replace the browser's `confirm` (8 places), `prompt` (2: rename
+events (all as expected); **not checked: real key presses in the `.exe`, the phone (check 35)**. **Step 2 done (committed locally in both
+repos, not pushed):** `autoComplete="off"` on every text box (`src/autofill.test.ts` fails if a new one forgets it; 473 tests), and in the app
+repo `lib.rs` `.general_autofill_enabled(false)` on the Windows window (tauri's docs.rs for 2.12.7 list it for Windows; the app repo has no
+`Cargo.lock`, so the build takes the newest tauri 2; **it has never been compiled**, the next app build is the test; it does not cover
+password or card autofill, which the app has no fields for). Steps left: 3) replace the browser's `confirm` (8 places), `prompt` (2: rename
 event, rename tag) and `alert` (2) with an in-app dialog (all builds); 4) zoom: block accidental Ctrl+wheel / pinch and maybe add a
-"Text size" setting. **Check first, before the rest: Export and the photo Save button inside the Windows window** (item 25, never
+"Text size" setting. **Found while on step 2 (not fixed):** the entry box and the edit box accept photos dropped on them
+(`useDraftImages.ts` `dropHandlers`), but Tauri's drag-drop handler on Windows takes file drops before the page sees them, so
+dropping photos in the `.exe` probably does nothing (untested; pasting and the Photo button are unaffected). Possible fix: keep
+the handler, or turn it off and cancel `dragover`/`drop` outside the drop zones in `nativeShell.ts` so a stray drop cannot replace
+the page. Needs the user's say; a candidate step 5. **Check first, before the rest: Export and the photo Save button inside the Windows window** (item 25, never
 confirmed): they use `showSaveFilePicker` or a browser download, the most browser-like part left.
 
 **Build 13, hide the time between entries (2026-11-20, pushed as `08fb921`, deploy run 44679902355 green; apps rebuilt, run 44679990189 green, copied to `builds\`; the user: "the

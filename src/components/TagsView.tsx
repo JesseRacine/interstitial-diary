@@ -68,7 +68,7 @@ export function TagsView({ tagStats, entries, notes, index, selected, onSelect, 
       </div>
       <div className="day-nav">
         <h2>{kind.plural}</h2>
-        <input type="search" placeholder={`Filter ${noun}`} value={filter} onChange={(e) => setFilter(e.target.value)} aria-label={`Filter ${noun}`} />
+        <input type="search" autoComplete="off" placeholder={`Filter ${noun}`} value={filter} onChange={(e) => setFilter(e.target.value)} aria-label={`Filter ${noun}`} />
         <div className="seg">
           {(['count', 'name', 'recent'] as Sort[]).map((s) => (
             <button key={s} type="button" className={sort === s ? 'on' : ''} onClick={() => setSort(s)}>

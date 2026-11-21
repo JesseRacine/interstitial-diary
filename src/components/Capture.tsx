@@ -220,6 +220,7 @@ export function Capture({ tagStats, lastEvent, onSaved, onOpenNotes, inputRef, i
           value={text}
           rows={1}
           autoFocus
+          autoComplete="off"
           placeholder={track ? 'Note (optional): price, where, why…' : noting ? 'The fact, e.g. allergic to shellfish' : "What did you just finish? How do you feel? What's next?"}
           aria-label={track ? 'Note for the tracked item' : noting ? 'Note text' : 'New entry'}
           onChange={(e) => { setText(e.target.value); setCaret(e.target.selectionStart); setSavedNote(null) }}

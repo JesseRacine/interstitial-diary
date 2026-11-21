@@ -103,6 +103,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
             value={draft}
             autoFocus
             aria-label="Edit entry"
+            autoComplete="off"
             rows={Math.max(2, draft.split('\n').length)}
             onChange={(e) => setDraft(e.target.value)}
             onPaste={input.onPaste}

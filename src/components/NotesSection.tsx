@@ -86,7 +86,7 @@ function NoteEditor({ initial, label, saveLabel, onSave, onCancel }: {
   }
   return (
     <div className="note-editor">
-      <textarea value={text} autoFocus aria-label={label} placeholder="For example: allergic to shellfish" rows={Math.max(2, text.split('\n').length)}
+      <textarea value={text} autoFocus autoComplete="off" aria-label={label}placeholder="For example: allergic to shellfish" rows={Math.max(2, text.split('\n').length)}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) void save()

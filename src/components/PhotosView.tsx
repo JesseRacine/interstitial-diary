@@ -84,7 +84,7 @@ export function PhotosView({ entries, index, onOpenImage, onOpenDay }: {
       {total > 0 && (
         <div className="photo-filter">
           <div className="photo-filter-row">
-            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Filter photos"
+            <input type="search" autoComplete="off" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Filter photos"
               placeholder="Filter photos…  try  #trip @sam last:3m" title="The same words as the search bar: #tags, @people, ~places, dates, event:&quot;Title&quot;" />
             {years.length > 1 && (
               <select value={years.includes(year) ? year : ''} onChange={(e) => setQuery(setYearOfQuery(query, e.target.value))} aria-label="Year">
