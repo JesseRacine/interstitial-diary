@@ -165,7 +165,15 @@ everyone: **Settings > Appearance > Text size** (Small 90%, Normal, Large 115%, 
 `textSize`, set on the root font size before the first paint; `body` is now `1rem`, not `16px`, so it scales). 493 tests. Checked in the
 pane at all four sizes: the journal, entry box and settings reflow with no overlap and the choice survives a reload; **not checked: the
 phone, the `.exe`, a long journal at Extra large, the photo viewer's own pinch in the apps (check 37)**. The four steps are done; what is
-left is the dropped-photos question below, then pushing and rebuilding. **Dropped photos in the Windows `.exe` (found while on step 2; the user tried it on
+left is the dropped-photos question below, then pushing and rebuilding. **Android Back button with a question box open (the user on the build 14 APK, 2026-11-21: checks 1 to 5 of the phone list "seem to work";
+"I brought up the delete dialog, and went back, and then went back into the app and it stayed open"): Back left the app and the box was
+still there. Fix committed locally, not pushed (goes out as build 15 with the drop fix):** a question box now has a history entry of its
+own while it is on screen, like the photo viewer, so Back answers it as canceled (`connectDialogHistory` in `lib/dialog.ts`, hooked up in
+`main.tsx`, every build). The entry copies the state under it, so Back from "Remove photo?" lands on the viewer's own entry and
+`App.tsx`'s `popstate` handler keeps the viewer open; a second question asked at once (rename: name, then "Rename in N entries?") waits
+for the first entry to be taken off, then gets its own. 507 tests (9 new, with a fake browser history); checked in the pane with the real
+history: Back, the Cancel button and the two-question rename all end with the page where it was and no extra history entry;
+**not checked: Android itself (check 36 a, b), and "Remove photo?" over the photo viewer in a real browser**. **Dropped photos in the Windows `.exe` (found while on step 2; the user tried it on
 build 14 and "nothing happened", 2026-11-21): fix committed locally in both repos, not pushed, build number not raised yet (15 when pushed).**
 The entry box and the edit box accept photos dropped on them (`useDraftImages.ts` `dropHandlers`), but Tauri's file-drop handler on Windows
 takes the files before the page sees them. App repo `lib.rs`: `.disable_drag_drop_handler()` (documented for exactly this; never compiled
@@ -261,7 +269,8 @@ website and the installed web app nothing changed (Ctrl+F still opens the browse
 Rename a tag, a person, an event (a box with the name, then a second question, and the empty name gives a message); Merge an event;
 Settings > the folder "Stop"; in the photo viewer "Remove photo". Each should show a box in the app's look (no "tauri.localhost says"),
 Esc and Cancel leave everything as it was, the arrow keys do not change the day behind it, and the photo viewer stays open
-behind "Remove photo?".
+behind "Remove photo?". **On Android, with a box open, the Back button cancels the box and stays in the app (fix not in build 14 yet);**
+Back again then behaves as it always did.
 **38. Dropping photos in the Windows `.exe`** (not pushed or built yet): drag a photo from File Explorer onto the entry box: "Drop photos to
 attach them" shows and the photo joins the entry; the same on an entry being edited; dragging a photo over the header or the list shows the
 "not allowed" pointer and dropping it there does nothing (the app is not replaced by the picture). If the app does get replaced, tell

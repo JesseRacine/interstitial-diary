@@ -166,7 +166,8 @@ export default function App() {
     else setPhoto(null)
   }, [])
   useEffect(() => {
-    const onPop = () => setPhoto(null)
+    // Back from a question box that was open over the photo viewer lands on the viewer's own entry: the viewer stays.
+    const onPop = () => setPhoto((p) => (history.state?.photo ? p : null))
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
