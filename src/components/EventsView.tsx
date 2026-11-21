@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { renameEvent } from '../lib/db'
+import { alertDialog, confirmDialog, promptDialog } from '../lib/dialog'
 import type { Entry } from '../lib/entry'
 import { type EventSort, eventDateLabel, eventYears, filterEvents, groupEvents, mergeTargets, sortEvents } from '../lib/eventRows'
 import { EVENT_ICON, type EventStat, SAME_EVENT_DAYS, eventAfterRename, parseEventTitle } from '../lib/events'
@@ -114,7 +115,7 @@ function EventPage({ event, events, entries, onBack, onSelect, onSearch, onSearc
     const what = `Merge "${event.title}" into "${target.title}"? The title is rewritten in ${n} ${n === 1 ? 'entry' : 'entries'}.`
     const why = event.date || target.date ? 'have different dates' : `are more than ${SAME_EVENT_DAYS} days apart`
     const note = joins ? '' : `\n\nThe two ${why}, so they will still be listed as two events with the same title.`
-    if (!confirm(what + note)) return
+    if (!(await confirmDialog(what + note, { confirmLabel: 'Merge' }))) return
     await renameEvent(event.entryIds, event.key, target.title)
     setMerging(false)
     setTargetId('')
@@ -124,13 +125,13 @@ function EventPage({ event, events, entries, onBack, onSelect, onSearch, onSearc
   /** Rewrites the title in this event's entries only; the page then follows the event to its new id. */
   const rename = async () => {
     if (!event) return
-    const input = prompt('Rename this event to:', event.title)
+    const input = await promptDialog('Rename this event to:', event.title, { confirmLabel: 'Continue' })
     if (input === null) return
     const parsed = parseEventTitle(input)
-    if ('error' in parsed) return alert(parsed.error)
+    if ('error' in parsed) return alertDialog(parsed.error)
     if (parsed.title === event.title) return
     const n = event.count
-    if (!confirm(`Rename "${event.title}" to "${parsed.title}" in ${n} ${n === 1 ? 'entry' : 'entries'}?`)) return
+    if (!(await confirmDialog(`Rename "${event.title}" to "${parsed.title}" in ${n} ${n === 1 ? 'entry' : 'entries'}?`, { confirmLabel: 'Rename' }))) return
     const after = eventAfterRename(entries, event, parsed.title)
     await renameEvent(event.entryIds, event.key, parsed.title)
     if (after) onSelect(after.id)

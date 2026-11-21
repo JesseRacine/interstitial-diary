@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { deleteEntry, updateEntry } from '../lib/db'
 import { clockLabel } from '../lib/clock'
+import { confirmDialog } from '../lib/dialog'
 import { type Entry, dayKey, entryImages, formatGap, shortDayLabel } from '../lib/entry'
 import { fromDateTimeInput, isAllowedTime, retimedCreatedAt, toDateTimeInput } from '../lib/retime'
 import { AttachButton, DraftChips } from './DraftImages'
@@ -61,7 +62,7 @@ export function EntryItem({ entry, gapMinutes, showDate, terms, highlighted, bub
     setEditing(false)
   }
   const remove = async () => {
-    if (confirm('Delete this entry?')) await deleteEntry(entry.id)
+    if (await confirmDialog('Delete this entry?', { confirmLabel: 'Delete', danger: true })) await deleteEntry(entry.id)
   }
 
   // A note on a person or place (lib/notes.ts) has no day that matters, and the journal does not show it: no date, time

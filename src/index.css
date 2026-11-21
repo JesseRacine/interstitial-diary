@@ -87,6 +87,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The app's own question box (lib/dialog.ts, components/DialogHost.tsx), in place of the browser's confirm / prompt / alert. */
+dialog.app-dialog { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); padding: 1rem 1.1rem; width: min(26rem, calc(100vw - 2rem)); box-shadow: 0 8px 30px rgb(0 0 0 / 0.25); }
+dialog.app-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+.app-dialog-message { margin: 0 0 0.9rem; white-space: pre-line; overflow-wrap: anywhere; }
+.app-dialog input[type="text"] { width: 100%; margin-bottom: 0.9rem; }
+.app-dialog-buttons { display: flex; justify-content: flex-end; gap: 0.5rem; }
+
 /* The Windows and Android apps only (src/lib/nativeShell.ts sets the attribute): a swipe or pull at the end of a list must
    not reload the page or go back. The property is not inherited, so every element that scrolls needs it. */
 html[data-native], html[data-native] * { overscroll-behavior: none; }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso'
 import { dayKey, formatGap, longDayLabel, shortDayLabel } from '../lib/entry'
 import type { Entry } from '../lib/entry'
+import { isDialogOpen } from '../lib/dialog'
 import { isTyping } from '../lib/dom'
 import { buildRows, dayOnOrAfter, type Row, rowOfEntry } from '../lib/journalRows'
 import { EntryItem } from './EntryItem'
@@ -112,7 +113,7 @@ export function JournalView({ entries, layout, setLayout, showGaps, jump, bottom
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return
+      if (isDialogOpen() || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return
       if (e.key === 'ArrowLeft') stepDay(-1)
       else if (e.key === 'ArrowRight') stepDay(1)
       else if (e.key === 't') toBottom()

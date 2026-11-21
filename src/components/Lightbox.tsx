@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { setEntryImages } from '../lib/db'
 import { clockLabel } from '../lib/clock'
+import { confirmDialog, isDialogOpen } from '../lib/dialog'
 import { type Entry, type ImageRef, entryImages, longDayLabel } from '../lib/entry'
 import { isDisplayable } from '../lib/images'
 import { holdOriginal, loadOriginal } from '../storage/manager'
@@ -131,6 +132,7 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Tab') return // keep normal focus movement between the buttons
+      if (isDialogOpen()) return // a question is on top (Remove this photo?): its keys are its own
       e.stopImmediatePropagation()
       const h = latest.current
       if (e.key === 'Escape') { e.preventDefault(); h.onClose() }
@@ -199,7 +201,7 @@ export function Lightbox({ entry, index, onIndex, onClose }: {
   }
 
   const removeImage = async () => {
-    if (!confirm('Remove this photo from the entry? The photo file itself is kept.')) return
+    if (!(await confirmDialog('Remove this photo from the entry? The photo file itself is kept.', { confirmLabel: 'Remove' }))) return
     const rest = images.filter((_, n) => n !== i)
     await setEntryImages(entry.id, rest)
     if (!rest.length) onClose()

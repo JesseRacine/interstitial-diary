@@ -80,7 +80,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 471 tests (2026-11-21, local, after native-shell step 1); 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 484 tests (2026-11-21, local, after native-shell step 3); 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `08fb921` (build 13, deployed; build 12 was `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
@@ -148,8 +148,13 @@ events (all as expected); **not checked: real key presses in the `.exe`, the pho
 repos, not pushed):** `autoComplete="off"` on every text box (`src/autofill.test.ts` fails if a new one forgets it; 473 tests), and in the app
 repo `lib.rs` `.general_autofill_enabled(false)` on the Windows window (tauri's docs.rs for 2.12.7 list it for Windows; the app repo has no
 `Cargo.lock`, so the build takes the newest tauri 2; **it has never been compiled**, the next app build is the test; it does not cover
-password or card autofill, which the app has no fields for). Steps left: 3) replace the browser's `confirm` (8 places), `prompt` (2: rename
-event, rename tag) and `alert` (2) with an in-app dialog (all builds); 4) zoom: block accidental Ctrl+wheel / pinch and maybe add a
+password or card autofill, which the app has no fields for). **Step 3 done (committed locally, not pushed):** the browser's `confirm` (8
+places), `prompt` (2: rename event, rename tag) and `alert` (2) are replaced by the app's own question box on every build
+(`lib/dialog.ts` + `components/DialogHost.tsx`, a native `<dialog>`; buttons say "Delete", "Rename", "Merge", "Remove", "Stop saving"; a
+destructive one starts on Cancel; Esc cancels; the focus goes back where it was; the page's and the photo viewer's key shortcuts
+step aside while one is open). 484 tests (a test fails if a `confirm(`/`prompt(`/`alert(` call comes back). Checked in the pane: delete
+(Cancel, Esc, confirm), tag rename (prompt, then confirm, then the entry changed), the empty-name message; **not checked: the phone
+(a `<dialog>` on Android WebView), the `.exe`, the photo viewer's "Remove photo" (check 36)**. Steps left: 4) zoom: block accidental Ctrl+wheel / pinch and maybe add a
 "Text size" setting. **Found while on step 2 (not fixed):** the entry box and the edit box accept photos dropped on them
 (`useDraftImages.ts` `dropHandlers`), but Tauri's drag-drop handler on Windows takes file drops before the page sees them, so
 dropping photos in the `.exe` probably does nothing (untested; pasting and the Photo button are unaffected). Possible fix: keep
@@ -239,6 +244,11 @@ they have the newest version.
 Ctrl+R, Ctrl+S, Ctrl+P and F12 do nothing; right-click on an entry shows no menu, but in the entry box it still offers Paste;
 a touchpad swipe or a pull at the end of the list does not reload or go back; Ctrl+K and typing work as before; on the
 website and the installed web app nothing changed (Ctrl+F still opens the browser's find).
+**36. The app's own question boxes** (step 3, **not pushed or built yet**; website, phone and `.exe` alike): Delete an entry, a note, a tracked item;
+Rename a tag, a person, an event (a box with the name, then a second question, and the empty name gives a message); Merge an event;
+Settings > the folder "Stop"; in the photo viewer "Remove photo". Each should show a box in the app's look (no "tauri.localhost says"),
+Esc and Cancel leave everything as it was, the arrow keys do not change the day behind it, and the photo viewer stays open
+behind "Remove photo?".
 **31. Typing mode** (build 9, pushed 2026-11-19; the Android APK and Windows `.exe` are rebuilt with it): on the phone (Android app and the installed web app), tap the entry box: the header, search and date row
 should slide away, leaving the title bar with "Done typing", the last entries and the box above the keyboard; a. is
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,

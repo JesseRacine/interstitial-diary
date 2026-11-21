@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { renameTag } from '../lib/db'
+import { alertDialog, confirmDialog, promptDialog } from '../lib/dialog'
 import { type Entry, dayKey, shortDayLabel } from '../lib/entry'
 import { TAG_KINDS, type TagKind, displayName, parseTagName, tagKey, tagKindOf, tagLabel, tagName } from '../lib/tagKinds'
 import type { Note } from '../lib/notes'
@@ -37,17 +38,17 @@ export function TagsView({ tagStats, entries, notes, index, selected, onSelect, 
   }, [ofKind, kind, filter, sort])
 
   const rename = async (t: TagStat) => {
-    const input = prompt(`Rename ${tagLabel(t.tag)} to:`, tagName(t.tag))
+    const input = await promptDialog(`Rename ${tagLabel(t.tag)} to:`, tagName(t.tag), { confirmLabel: 'Continue' })
     if (input === null) return
     const parsed = parseTagName(kind, input)
-    if ('error' in parsed) return alert(parsed.error)
+    if ('error' in parsed) return alertDialog(parsed.error)
     const to = tagKey(kind, parsed.name)
     if (to === t.tag) return
     const merging = tagStats.some((s) => s.tag === to)
     const msg = merging
       ? `${tagLabel(to)} already exists. Merge ${tagLabel(t.tag)} into it? This changes ${t.count + t.notes} entries.`
       : `Rename ${tagLabel(t.tag)} to ${tagLabel(to)} in ${t.count + t.notes} entries?`
-    if (confirm(msg)) await renameTag(t.tag, to)
+    if (await confirmDialog(msg, { confirmLabel: merging ? 'Merge' : 'Rename' })) await renameTag(t.tag, to)
   }
 
   const noun = kind.plural.toLowerCase()

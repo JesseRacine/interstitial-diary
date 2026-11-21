@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { addEntry, deleteEntry, updateEntryText } from '../lib/db'
+import { confirmDialog } from '../lib/dialog'
 import { useCoarsePointer } from '../lib/hooks'
 import { type Note, noteText } from '../lib/notes'
 import { displayName } from '../lib/tagKinds'
@@ -61,7 +62,7 @@ function NoteItem({ note, onTag, onOpenImage }: { note: Note; onTag: (key: strin
       </div>
       <span className="entry-actions">
         <button type="button" className="ghost" onClick={() => setEditing(true)}>Edit</button>
-        <button type="button" className="ghost danger" onClick={() => { if (confirm('Delete this note?')) void deleteEntry(note.id) }}>Delete</button>
+        <button type="button" className="ghost danger" onClick={async () => { if (await confirmDialog('Delete this note?', { confirmLabel: 'Delete', danger: true })) await deleteEntry(note.id) }}>Delete</button>
       </span>
     </li>
   )

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { deleteEntry, setTracking } from '../lib/db'
+import { confirmDialog } from '../lib/dialog'
 import { type Entry, shortDayLabel } from '../lib/entry'
 import { TRACKING_ICONS, type TrackingItem, type TrackingSort, splitTracking } from '../lib/tracking'
 import { EntryItem } from './EntryItem'
@@ -12,7 +13,8 @@ const SHOWS: [Show, string][] = [['active', 'Active'], ['done', 'Done'], ['all',
 const SORTS: [TrackingSort, string][] = [['newest', 'Newest'], ['oldest', 'Oldest'], ['name', 'A–Z']]
 
 const remove = async (item: TrackingItem) => {
-  if (confirm(`Delete "${item.title}"? It leaves your journal too. You can restore it from Settings > Deleted entries.`)) await deleteEntry(item.id)
+  const sure = await confirmDialog(`Delete "${item.title}"? It leaves your journal too. You can restore it from Settings > Deleted entries.`, { confirmLabel: 'Delete', danger: true })
+  if (sure) await deleteEntry(item.id)
 }
 
 /** The buttons that change an item: Star / Unstar and Done for one being watched, Track again for a done one. */

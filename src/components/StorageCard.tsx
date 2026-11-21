@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { db } from '../lib/db'
+import { confirmDialog } from '../lib/dialog'
 import { browserOnlyWarning, showHeaderWarning } from '../lib/dataSafety'
 import { useLive } from '../lib/hooks'
 import { BACKENDS, PLANNED_BACKENDS, backendById } from '../storage/backends'
@@ -142,7 +143,7 @@ export function StorageCard() {
               <button type="button" onClick={() => void syncNow({ force: true })} disabled={s.status === 'syncing'}>Save now</button>
             )}
             <button type="button" onClick={() => setChoosing(!choosing)}>{choosing ? 'Cancel' : 'Change'}</button>
-            <button type="button" className="ghost danger" onClick={() => { if (confirm('Stop saving to files? Your entries stay in this browser, and existing files are left as they are.')) void disconnect() }}>Stop</button>
+            <button type="button" className="ghost danger" onClick={async () => { if (await confirmDialog('Stop saving to files? Your entries stay in this browser, and existing files are left as they are.', { confirmLabel: 'Stop saving' })) await disconnect() }}>Stop</button>
           </div>
         </div>
       )}

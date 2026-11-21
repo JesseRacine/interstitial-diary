@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BackupReminder } from './components/BackupReminder'
 import { CalendarView } from './components/CalendarView'
 import { Capture } from './components/Capture'
+import { DialogHost } from './components/DialogHost'
 import { OpenEventContext, OpenTrackingContext } from './components/eventNav'
 import { JournalView, type JournalLayout, type Jump } from './components/JournalView'
 import { Lightbox } from './components/Lightbox'
@@ -15,6 +16,7 @@ import { TagsView } from './components/TagsView'
 import { TrackingView } from './components/TrackingView'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { db, getMeta, setMeta } from './lib/db'
+import { isDialogOpen } from './lib/dialog'
 import { isTyping } from './lib/dom'
 import type { Entry } from './lib/entry'
 import { useLive, useTypingMode } from './lib/hooks'
@@ -165,6 +167,7 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (isDialogOpen()) return // a question is on screen: its keys are its own
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         searchRef.current?.focus()
@@ -252,6 +255,7 @@ export default function App() {
         <Lightbox entry={photoEntry} index={photo.index} onIndex={(index) => setPhoto({ ...photo, index })} onClose={closePhoto} />
       )}
       <UpdatePrompt />
+      <DialogHost />
     </div>
     </OpenTrackingContext.Provider>
     </OpenEventContext.Provider>
