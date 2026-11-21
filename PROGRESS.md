@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-21 (build 14, live: the native apps stop behaving like a browser window, in-app question boxes, Text size; build 13 hid the time between entries, build 12 was the US conventions; apps rebuilt). Kept short on purpose:
+_Last updated: 2026-11-21 (build 15, live: photos can be dropped in the Windows app, Back cancels a question box; build 14 was the native apps no longer behaving like a browser window, in-app question boxes, Text size; apps rebuilt). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -21,7 +21,10 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   and **a big edit box for an existing entry** (build 11).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **14** (2026-11-21, the native-shell plan, steps 1 to 4; `4d8f6df`, deploy run 44936471645 green; apps
+  every push to `main`. Pushed and live: **15** (2026-11-21, photo drops in the Windows app and Back cancelling a question box; `549d372`, deploy run
+  44950487049 green; apps rebuilt with it: run 44950568205 green, so the `.disable_drag_drop_handler()` line compiled; the bundled web
+  build has the new code, APK 10,193,599 bytes and `.exe` 6,343,680 copied to `builds\`, the `.exe` started from a scratch copy; installing
+  them and checks 36 and 38 are the user's). Before: **14** (2026-11-21, the native-shell plan, steps 1 to 4; `4d8f6df`, deploy run 44936471645 green; apps
   rebuilt with it: run 44936547052 green, the bundled web build has the native shell and Text size, APK 10,193,599 bytes and `.exe`
   6,343,168 copied to `builds\`, the `.exe` started from a scratch copy: window "Interstitial Diary", its own `journal-data`; installing
   them is the user's). Before: **13** (2026-11-20, option to hide the time between entries; `08fb921`, deploy run 44679902355; apps
@@ -84,7 +87,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 493 tests (2026-11-21, local, after native-shell step 4); 484 after step 3; 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-21):** `origin/main` is at `4d8f6df` (build 14, deployed; build 13 was `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-21):** `origin/main` is at `549d372` (build 15, deployed; build 14 was `4d8f6df`, build 13 `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
   repos** (commit ids and test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a
@@ -104,7 +107,7 @@ A public repo, https://github.com/JesseRacine/interstitial-diary-app (local: `~/
 holding only a Tauri 2 shell. Its workflow checks out this repo (ref in its `web.ref`, default `main`), runs the tests,
 builds once, then makes the Windows folder and a signed Android APK (about 8 minutes; a `v*` tag makes a Release).
 **Nothing can be built locally** (no Rust or Android tools): every try is a push to that repo and a wait. Its
-`README.md` explains the rest. `origin/main` there is at `bea2367` (2026-11-21: autofill and page zoom off in the Windows window; the Rust compiled, run 44936547052 green), nothing unpushed (the user's own uncommitted app-id edits below are not committed). A web-app change reaches the
+`README.md` explains the rest. `origin/main` there is at `9e0eb90` (2026-11-21: autofill, page zoom and Tauri's file-drop handler off in the Windows window; the Rust compiled, runs 44936547052 and 44950568205 green), nothing unpushed (the user's own uncommitted app-id edits below are not committed). A web-app change reaches the
 apps only through a new build there (`gh workflow run 'Build apps' --ref main`). **Rebuilt 2026-11-15 on the user's
 request, three times (latest: run 43769444518 green, web `main` at `09c1f03`, app repo unchanged at `b22c6d3`): the APK and
 portable Windows folder have Tracking, the new header, the search-help phone layout fix and **build number 1 in Settings >
@@ -167,17 +170,16 @@ pane at all four sizes: the journal, entry box and settings reflow with no overl
 phone, the `.exe`, a long journal at Extra large, the photo viewer's own pinch in the apps (check 37)**. The four steps are done; what is
 left is the dropped-photos question below, then pushing and rebuilding. **Android Back button with a question box open (the user on the build 14 APK, 2026-11-21: checks 1 to 5 of the phone list "seem to work";
 "I brought up the delete dialog, and went back, and then went back into the app and it stayed open"): Back left the app and the box was
-still there. Fix committed locally, not pushed (goes out as build 15 with the drop fix):** a question box now has a history entry of its
+still there. Fixed in build 15 (pushed and rebuilt 2026-11-21; Android itself still to be confirmed by the user):** a question box now has a history entry of its
 own while it is on screen, like the photo viewer, so Back answers it as canceled (`connectDialogHistory` in `lib/dialog.ts`, hooked up in
 `main.tsx`, every build). The entry copies the state under it, so Back from "Remove photo?" lands on the viewer's own entry and
 `App.tsx`'s `popstate` handler keeps the viewer open; a second question asked at once (rename: name, then "Rename in N entries?") waits
 for the first entry to be taken off, then gets its own. 507 tests (9 new, with a fake browser history); checked in the pane with the real
 history: Back, the Cancel button and the two-question rename all end with the page where it was and no extra history entry;
 **not checked: Android itself (check 36 a, b), and "Remove photo?" over the photo viewer in a real browser**. **Dropped photos in the Windows `.exe` (found while on step 2; the user tried it on
-build 14 and "nothing happened", 2026-11-21): fix committed locally in both repos, not pushed, build number not raised yet (15 when pushed).**
+build 14 and "nothing happened", 2026-11-21): fixed in build 15 (pushed and rebuilt 2026-11-21; whether a real drop now works in the `.exe` is the user's to confirm, check 38).**
 The entry box and the edit box accept photos dropped on them (`useDraftImages.ts` `dropHandlers`), but Tauri's file-drop handler on Windows
-takes the files before the page sees them. App repo `lib.rs`: `.disable_drag_drop_handler()` (documented for exactly this; never compiled
-yet). Web `nativeShell.ts`: with Tauri's handler off a file dropped anywhere else would be opened in place of the app, so a file drag over
+takes the files before the page sees them. App repo `lib.rs`: `.disable_drag_drop_handler()` (documented for exactly this; compiled in the build 15 apps run). Web `nativeShell.ts`: with Tauri's handler off a file dropped anywhere else would be opened in place of the app, so a file drag over
 a place that is not a drop zone is cancelled with the "not here" pointer, and a zone's own answer is left alone. 497 tests. Checked in the
 pane with real DOM drag events: a photo dropped on the entry box becomes a photo in the draft, a drag over the header is refused, dragged
 text is untouched; **not checked: a real drop in the `.exe` (check 38)**. **Check first, before the rest: Export and the photo Save button inside the Windows window** (item 25, never
@@ -269,9 +271,9 @@ website and the installed web app nothing changed (Ctrl+F still opens the browse
 Rename a tag, a person, an event (a box with the name, then a second question, and the empty name gives a message); Merge an event;
 Settings > the folder "Stop"; in the photo viewer "Remove photo". Each should show a box in the app's look (no "tauri.localhost says"),
 Esc and Cancel leave everything as it was, the arrow keys do not change the day behind it, and the photo viewer stays open
-behind "Remove photo?". **On Android, with a box open, the Back button cancels the box and stays in the app (fix not in build 14 yet);**
+behind "Remove photo?". **On Android, with a box open, the Back button cancels the box and stays in the app (build 15; build 14 left the app);**
 Back again then behaves as it always did.
-**38. Dropping photos in the Windows `.exe`** (not pushed or built yet): drag a photo from File Explorer onto the entry box: "Drop photos to
+**38. Dropping photos in the Windows `.exe`** (build 15, pushed and rebuilt 2026-11-21): drag a photo from File Explorer onto the entry box: "Drop photos to
 attach them" shows and the photo joins the entry; the same on an entry being edited; dragging a photo over the header or the list shows the
 "not allowed" pointer and dropping it there does nothing (the app is not replaced by the picture). If the app does get replaced, tell
 me: the cancel in `nativeShell.ts` is not enough and the Rust line should come out.
