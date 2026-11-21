@@ -87,6 +87,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The Windows and Android apps only (src/lib/nativeShell.ts sets the attribute): a swipe or pull at the end of a list must
+   not reload the page or go back. The property is not inherited, so every element that scrolls needs it. */
+html[data-native], html[data-native] * { overscroll-behavior: none; }
+
 button, input, textarea, select { font: inherit; color: inherit; }
 
 button {

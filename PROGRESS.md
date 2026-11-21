@@ -80,7 +80,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 471 tests (2026-11-21, local, after native-shell step 1); 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `08fb921` (build 13, deployed; build 12 was `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
@@ -136,6 +136,20 @@ to the Claude session folder, `builds\`.
   natively; no native widget (quick capture stage 2, android-capture-plan.md).
 
 ## What next
+
+**Native apps should not behave like a browser window (started 2026-11-21, the user's request after reviewing a checklist from another project; 4 steps, one per turn).**
+Everything is gated by `isNativeApp()` so the website and the installed web app are untouched. **Step 1 done (committed locally,
+not pushed, no build number bump yet: raise it when pushing):** `src/lib/nativeShell.ts` (wired in `main.tsx`) cancels F5 / Ctrl+R /
+Ctrl+Shift+R, Ctrl+F / G / F3 (the browser's find would miss entries the journal does not draw), Ctrl+S, Ctrl+P, Ctrl+U, F7, F12,
+Ctrl+Shift+I / C / J, and the right-click menu outside text fields; `html[data-native]` turns off `overscroll-behavior` (no
+pull-to-refresh or swipe back). Left alone on purpose: Alt+Left (the photo viewer is a history entry), zoom (step 4), the app's own
+Ctrl+K. 471 tests (12 new), type check and lint clean. Checked in the pane by installing it on localhost and sending synthetic
+events (all as expected); **not checked: real key presses in the `.exe`, the phone (check 35)**. Steps left: 2) Windows autofill off
+(`general_autofill_enabled(false)` in the app repo's `lib.rs`; compile unverified locally, so confirm the method exists in our Tauri
+version) and `autocomplete="off"` on the search and entry fields; 3) replace the browser's `confirm` (8 places), `prompt` (2: rename
+event, rename tag) and `alert` (2) with an in-app dialog (all builds); 4) zoom: block accidental Ctrl+wheel / pinch and maybe add a
+"Text size" setting. **Check first, before the rest: Export and the photo Save button inside the Windows window** (item 25, never
+confirmed): they use `showSaveFilePicker` or a browser download, the most browser-like part left.
 
 **Build 13, hide the time between entries (2026-11-20, pushed as `08fb921`, deploy run 44679902355 green; apps rebuilt, run 44679990189 green, copied to `builds\`; the user: "the
 feature can be left in but I want to be able to turn it off"; story in docs/HISTORY.md):** the dashed "+3 h 30 min" line
@@ -215,6 +229,10 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
+**35. No browser behavior in the apps** (step 1, **not pushed or built yet**; once it is, in the Windows `.exe` and the Android app): Ctrl+F, F5,
+Ctrl+R, Ctrl+S, Ctrl+P and F12 do nothing; right-click on an entry shows no menu, but in the entry box it still offers Paste;
+a touchpad swipe or a pull at the end of the list does not reload or go back; Ctrl+K and typing work as before; on the
+website and the installed web app nothing changed (Ctrl+F still opens the browser's find).
 **31. Typing mode** (build 9, pushed 2026-11-19; the Android APK and Windows `.exe` are rebuilt with it): on the phone (Android app and the installed web app), tap the entry box: the header, search and date row
 should slide away, leaving the title bar with "Done typing", the last entries and the box above the keyboard; a. is
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,
