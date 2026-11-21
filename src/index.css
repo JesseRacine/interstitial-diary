@@ -83,7 +83,7 @@ html, body { margin: 0; }
 body {
   background: var(--bg);
   color: var(--text);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 1rem/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -97,6 +97,9 @@ dialog.app-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
 /* The Windows and Android apps only (src/lib/nativeShell.ts sets the attribute): a swipe or pull at the end of a list must
    not reload the page or go back. The property is not inherited, so every element that scrolls needs it. */
 html[data-native], html[data-native] * { overscroll-behavior: none; }
+/* Same apps: no pinch zoom of the page by touch (the text size setting replaces it). :where() keeps this at the lowest
+   specificity, so the photo viewer's own `touch-action: none` (pinch and drag on a photo) still wins. */
+:where(html[data-native], html[data-native] *) { touch-action: pan-x pan-y; }
 
 button, input, textarea, select { font: inherit; color: inherit; }
 
@@ -304,6 +307,8 @@ button.note-toggle.on { color: var(--person); border-color: var(--person); }
 .error { color: var(--danger); font-size: 0.9rem; margin: 0 0 0.5rem; }
 label.check { display: flex; gap: 0.45rem; align-items: center; margin: 0.25rem 0 0.75rem; cursor: pointer; }
 .seg + label.check { margin-top: 0.85rem; }
+h4.pref-heading { margin: 1rem 0 0.4rem; font-size: 0.95rem; }
+.seg + p.muted + label.check { margin-top: 0.85rem; }
 .card .row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 .more { align-self: center; margin-top: 0.5rem; }
 

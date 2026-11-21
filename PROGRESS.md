@@ -80,7 +80,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 484 tests (2026-11-21, local, after native-shell step 3); 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Numbers:** 493 tests (2026-11-21, local, after native-shell step 4); 484 after step 3; 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
 - **Git state (2026-11-19):** `origin/main` is at `08fb921` (build 13, deployed; build 12 was `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
@@ -154,8 +154,15 @@ places), `prompt` (2: rename event, rename tag) and `alert` (2) are replaced by 
 destructive one starts on Cancel; Esc cancels; the focus goes back where it was; the page's and the photo viewer's key shortcuts
 step aside while one is open). 484 tests (a test fails if a `confirm(`/`prompt(`/`alert(` call comes back). Checked in the pane: delete
 (Cancel, Esc, confirm), tag rename (prompt, then confirm, then the entry changed), the empty-name message; **not checked: the phone
-(a `<dialog>` on Android WebView), the `.exe`, the photo viewer's "Remove photo" (check 36)**. Steps left: 4) zoom: block accidental Ctrl+wheel / pinch and maybe add a
-"Text size" setting. **Found while on step 2 (not fixed):** the entry box and the edit box accept photos dropped on them
+(a `<dialog>` on Android WebView), the `.exe`, the photo viewer's "Remove photo" (check 36)**. **Step 4 done (committed locally in both repos, not pushed):** in the native apps
+page zoom is off: Ctrl + `=` `+` `-` `_` `0`, Ctrl+scroll and touchpad pinch (`nativeShell.ts`), touch pinch (`touch-action: pan-x pan-y`
+under `html[data-native]`, at zero specificity so the photo viewer's own `touch-action: none` still wins), and in the app repo `lib.rs`
+`.zoom_hotkeys_enabled(false)` (docs.rs 2.12.7: on Windows it is WebView2's IsZoomControlEnabled; **never compiled**). Replacement for
+everyone: **Settings > Appearance > Text size** (Small 90%, Normal, Large 115%, Extra large 135%; per device, `localStorage`
+`textSize`, set on the root font size before the first paint; `body` is now `1rem`, not `16px`, so it scales). 493 tests. Checked in the
+pane at all four sizes: the journal, entry box and settings reflow with no overlap and the choice survives a reload; **not checked: the
+phone, the `.exe`, a long journal at Extra large, the photo viewer's own pinch in the apps (check 37)**. The four steps are done; what is
+left is the dropped-photos question below, then pushing and rebuilding. **Found while on step 2 (not fixed):** the entry box and the edit box accept photos dropped on them
 (`useDraftImages.ts` `dropHandlers`), but Tauri's drag-drop handler on Windows takes file drops before the page sees them, so
 dropping photos in the `.exe` probably does nothing (untested; pasting and the Photo button are unaffected). Possible fix: keep
 the handler, or turn it off and cancel `dragover`/`drop` outside the drop zones in `nativeShell.ts` so a stray drop cannot replace
@@ -249,6 +256,11 @@ Rename a tag, a person, an event (a box with the name, then a second question, a
 Settings > the folder "Stop"; in the photo viewer "Remove photo". Each should show a box in the app's look (no "tauri.localhost says"),
 Esc and Cancel leave everything as it was, the arrow keys do not change the day behind it, and the photo viewer stays open
 behind "Remove photo?".
+**37. Text size and no page zoom** (step 4, **not pushed or built yet**): Settings > Appearance > Text size: Small, Normal, Large, Extra large
+change all text at once, on a long journal too (scroll up and down: no rows overlapping or gaps), and it is still set after closing and
+reopening; the other device keeps its own. In the Windows `.exe` and the Android app: Ctrl+scroll, a touchpad pinch, Ctrl and + - 0, and a
+two-finger pinch on the page do **not** zoom it (the website still zooms as a browser does); in the photo viewer the +, -, 0 keys, the wheel
+and a pinch on the photo still zoom the photo.
 **31. Typing mode** (build 9, pushed 2026-11-19; the Android APK and Windows `.exe` are rebuilt with it): on the phone (Android app and the installed web app), tap the entry box: the header, search and date row
 should slide away, leaving the title bar with "Done typing", the last entries and the box above the keyboard; a. is
 there enough room now, and does the list keep showing the newest entry; b. tap Edit on an entry: the same; c. Photo,

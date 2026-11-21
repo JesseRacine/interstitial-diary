@@ -32,8 +32,17 @@ describe('isBrowserShortcut', () => {
     expect(isBrowserShortcut(key('F5', { altKey: true }))).toBe(false) // Alt+F-keys belong to the system, not to us
   })
 
-  it('leaves zoom keys alone (a later step decides about zoom)', () => {
-    for (const k of ['=', '+', '-', '0']) expect(isBrowserShortcut(ctrl(k)), k).toBe(false)
+  it('blocks page zoom: Ctrl with =, +, -, _ and 0, with or without Shift (the plus sign needs it)', () => {
+    for (const k of ['=', '+', '-', '_', '0']) {
+      expect(isBrowserShortcut(ctrl(k)), `Ctrl+${k}`).toBe(true)
+      expect(isBrowserShortcut(ctrl(k, true)), `Ctrl+Shift+${k}`).toBe(true)
+    }
+    expect(isBrowserShortcut(key('+', { metaKey: true }))).toBe(true)
+  })
+
+  it('leaves the same characters alone without Ctrl, so typing a minus or a plus works', () => {
+    for (const k of ['=', '+', '-', '_', '0']) expect(isBrowserShortcut(key(k)), k).toBe(false)
+    expect(isBrowserShortcut(key('-', { shiftKey: true }))).toBe(false)
   })
 })
 
@@ -51,11 +60,11 @@ describe('keepsContextMenu', () => {
 
 /** A window that records its listeners, and a root that records its attributes. */
 function fake() {
-  const listeners: { type: string; fn: (e: never) => void; capture: boolean }[] = []
+  const listeners: { type: string; fn: (e: never) => void; capture: boolean; passive?: boolean }[] = []
   const attrs = new Set<string>()
   const win = {
     addEventListener: (type: string, fn: (e: never) => void, opt?: boolean | AddEventListenerOptions) =>
-      listeners.push({ type, fn, capture: opt === true }),
+      listeners.push({ type, fn, capture: opt === true, passive: typeof opt === 'object' ? opt.passive : undefined }),
     removeEventListener: (type: string, fn: (e: never) => void) => {
       const i = listeners.findIndex((l) => l.type === type && l.fn === fn)
       if (i >= 0) listeners.splice(i, 1)
@@ -95,6 +104,22 @@ describe('installNativeShell', () => {
     expect(f.listeners.find((l) => l.type === 'keydown')?.capture).toBe(true)
   })
 
+  it('cancels Ctrl+scroll and a touchpad pinch (a wheel event with Ctrl), but not plain scrolling', () => {
+    const f = fake()
+    installNativeShell(f.win, f.root)
+    expect(f.fire('wheel', { ctrlKey: true, deltaY: -100 }).defaultPrevented).toBe(true)
+    expect(f.fire('wheel', { ctrlKey: false, deltaY: 100 }).defaultPrevented).toBe(false)
+  })
+
+  it('registers the wheel listener as non-passive (a passive one cannot cancel anything) and never stops it spreading', () => {
+    const f = fake()
+    installNativeShell(f.win, f.root)
+    expect(f.listeners.find((l) => l.type === 'wheel')?.passive).toBe(false)
+    // the photo viewer must still see the same event and zoom the photo
+    const e = f.fire('wheel', { ctrlKey: true, stopPropagation: () => { throw new Error('must not stop it') } })
+    expect(e.defaultPrevented).toBe(true)
+  })
+
   it('undoes everything it did', () => {
     const f = fake()
     const off = installNativeShell(f.win, f.root)
@@ -118,5 +143,12 @@ describe('the app uses it', () => {
     const css = read('../index.css')
     expect(css).toContain(`html[${NATIVE_ATTRIBUTE}], html[${NATIVE_ATTRIBUTE}] * { overscroll-behavior: none; }`)
     expect(css.match(/overscroll-behavior:\s*none/g)).toHaveLength(1) // no other rule turns it off for every browser
+  })
+
+  it('page pinch is off by touch only in the native apps, at the lowest specificity so the photo viewer keeps its own', () => {
+    const css = read('../index.css')
+    expect(css).toContain(`:where(html[${NATIVE_ATTRIBUTE}], html[${NATIVE_ATTRIBUTE}] *) { touch-action: pan-x pan-y; }`)
+    expect(css).toContain('.lightbox-stage { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; touch-action: none;')
+    expect(css.match(/touch-action:\s*pan-x pan-y/g)).toHaveLength(1)
   })
 })

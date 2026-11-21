@@ -22,7 +22,7 @@ import type { Entry } from './lib/entry'
 import { useLive, useTypingMode } from './lib/hooks'
 import { cleanLaunchUrl, parseLaunch } from './lib/launch'
 import { computeEvents, eventOfMarker, lastEventTitle } from './lib/events'
-import { SHOW_GAPS_KEY, showGapsFromStored, showGapsToStored } from './lib/prefs'
+import { SHOW_GAPS_KEY, TEXT_SIZE_KEY, type TextSize, applyTextSize, showGapsFromStored, showGapsToStored, textSizeFromStored } from './lib/prefs'
 import { type CalMode, type View, viewFromAddress } from './lib/startView'
 import { computeNotes, journalEntries } from './lib/notes'
 import { computeTracking } from './lib/tracking'
@@ -80,6 +80,14 @@ export default function App() {
   const setShowGaps = (on: boolean) => {
     setShowGapsState(on)
     try { localStorage.setItem(SHOW_GAPS_KEY, showGapsToStored(on)) } catch { /* private mode */ }
+  }
+  const [textSize, setTextSizeState] = useState<TextSize>(() => {
+    try { return textSizeFromStored(localStorage.getItem(TEXT_SIZE_KEY)) } catch { return 'normal' }
+  })
+  const setTextSize = (s: TextSize) => {
+    setTextSizeState(s)
+    applyTextSize(document.documentElement, s)
+    try { localStorage.setItem(TEXT_SIZE_KEY, s) } catch { /* private mode */ }
   }
   const [photo, setPhoto] = useState<{ entryId: string; index: number } | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -248,7 +256,7 @@ export default function App() {
         ) : view === 'tracking' ? (
           <TrackingView entries={journal} items={tracking} openId={trackId} onOpenId={setTrackId} onTag={searchTag} onOpenDay={(e) => openDay(e.day, e.id)} onOpenImage={openPhoto} />
         ) : (
-          <SettingsView entries={entries} theme={theme} setTheme={setTheme} showGaps={showGaps} setShowGaps={setShowGaps} tagCount={tagStats.length} />
+          <SettingsView entries={entries} theme={theme} setTheme={setTheme} showGaps={showGaps} setShowGaps={setShowGaps} textSize={textSize} setTextSize={setTextSize} tagCount={tagStats.length} />
         )}
       </main>
       {photo && photoEntry && (

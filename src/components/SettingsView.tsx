@@ -3,6 +3,7 @@ import type { Entry } from '../lib/entry'
 import { DataSafetyCard } from './DataSafetyCard'
 import { DeletedEntriesCard } from './DeletedEntriesCard'
 import { ExportCard } from './ExportCard'
+import { TEXT_SIZES, type TextSize } from '../lib/prefs'
 import { ManualCard } from './ManualCard'
 import { PhotoStorageCard } from './PhotoStorageCard'
 import { StartOverCard } from './StartOverCard'
@@ -10,12 +11,14 @@ import { StorageCard } from './StorageCard'
 
 export type Theme = 'system' | 'light' | 'dark'
 
-export function SettingsView({ entries, theme, setTheme, showGaps, setShowGaps, tagCount }: {
+export function SettingsView({ entries, theme, setTheme, showGaps, setShowGaps, textSize, setTextSize, tagCount }: {
   entries: Entry[]
   theme: Theme
   setTheme: (t: Theme) => void
   showGaps: boolean
   setShowGaps: (on: boolean) => void
+  textSize: TextSize
+  setTextSize: (s: TextSize) => void
   tagCount: number
 }) {
   return (
@@ -39,6 +42,16 @@ export function SettingsView({ entries, theme, setTheme, showGaps, setShowGaps, 
             </button>
           ))}
         </div>
+        <h4 className="pref-heading">Text size</h4>
+        <div className="seg" role="group" aria-label="Text size">
+          {TEXT_SIZES.map((t) => (
+            <button key={t.id} type="button" className={textSize === t.id ? 'on' : ''} aria-pressed={textSize === t.id} onClick={() => setTextSize(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <p className="muted">Makes everything larger or smaller. In the Windows and Android apps pinching and Ctrl + scroll do
+          not zoom the page, so use this instead. Kept on this device only.</p>
         <label className="check">
           <input type="checkbox" checked={showGaps} onChange={(e) => setShowGaps(e.target.checked)} />
           Show the time between entries
