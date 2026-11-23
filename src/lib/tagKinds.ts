@@ -24,6 +24,7 @@ export const TAG_KINDS: readonly TagKind[] = [
   { id: 'tag', sigil: '#', prefix: '', label: 'Tag', plural: 'Tags', icon: '#', className: 'tag', letterFirst: false, pretty: false, hasPage: false },
   { id: 'person', sigil: '@', prefix: '@', label: 'Person', plural: 'People', icon: '👤', className: 'tag tag-person', letterFirst: true, pretty: true, hasPage: true },
   { id: 'place', sigil: '~', prefix: '~', label: 'Place', plural: 'Places', icon: '📍', className: 'tag tag-place', letterFirst: true, pretty: true, hasPage: true },
+  { id: 'restaurant', sigil: '$', prefix: '$', label: 'Restaurant', plural: 'Restaurants', icon: '🍽️', className: 'tag tag-restaurant', letterFirst: true, pretty: true, hasPage: true },
 ]
 
 const PLAIN = TAG_KINDS[0]

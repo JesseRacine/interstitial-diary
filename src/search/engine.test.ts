@@ -92,6 +92,23 @@ describe('runSearch', () => {
     ])
   })
 
+  it('restaurants are their own kind, apart from a place of the same name', () => {
+    const es = [
+      makeEntry('Dinner at $Blue_Door, then a walk', at(2026, 11, 2, 19, 0), 'r1'),
+      makeEntry('Parked near ~blue_door', at(2026, 11, 3, 10, 0), 'r2'),
+      makeEntry('Lunch at $green_leaf with @tom, paid $20', at(2026, 11, 4, 12, 0), 'r3'),
+    ]
+    check([...es, ...filler], [
+      ['$blue_door', ['r1']],
+      ['~blue_door', ['r2']],
+      ['$blue_door|~blue_door', ['r1', 'r2']],
+      ['$green_leaf @tom', ['r3']],
+      ['-$blue_door $green_leaf|~blue_door', ['r2', 'r3']],
+    ])
+    const stats = computeTagStats([...es])
+    expect(stats.map((s) => s.tag).sort()).toEqual(['$blue_door', '$green_leaf', '@tom', '~blue_door'])
+  })
+
   it('events: the whole title, any case and spacing, all named events, with other filters; has:event', () => {
     const evs: Entry[] = [
       makeEntry('Day one !"Lisbon trip" landed #travel', at(2026, 11, 1, 9), 'v1'),

@@ -153,7 +153,7 @@ export function Capture({ tagStats, lastEvent, onSaved, onOpenNotes, inputRef, i
         <span className="time">{clockLabel(now)}</span>
         <span className="muted">
           {coarse ? 'Enter for a new line · Save button saves' : 'Enter to save · Shift+Enter for a new line'}
-          {' '}· # tags · @ people · ~ places · !"event" · +"item"
+          {' '}· # tags · @ people · ~ places · $ restaurants · !"event" · +"item"
         </span>
       </div>
       {track && (

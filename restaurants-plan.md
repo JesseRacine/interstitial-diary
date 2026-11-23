@@ -1,6 +1,14 @@
 # Restaurants: a kind of tag of their own (started 2026-11-23)
 
-_Status: planned, nothing built yet. Four steps, one per turn._
+_Status: step 1 done (2026-11-23, committed locally, not pushed); steps 2 to 4 not started. Four steps, one per turn._
+
+**Step 1 done:** the `restaurant` row in `TAG_KINDS` (🍽️, olive green `--restaurant` in light and dark), CSS for the chip and
+the page heading, the hint line under the entry box, the search-help rows (`$blue_door`, mixing with `|`). Everything
+else (parsing, search, counts, autocomplete, Tags tab button and page, rename check) followed from the list. 509 tests
+(2 new: the kind itself, and search/counts apart from a place of the same name); `tsc` and lint clean. Checked in the pane
+(empty `127.0.0.1` journal, cleaned up after): the chip shows in the restaurant color, `$20` stays plain text, typing
+`$bl` offers Blue Door, the Tags tab has "Restaurants 1" and the restaurant's page opens with its entry. **Not checked:**
+the phone, the apps, light theme by eye, the Manual (step 4).
 
 ## What the user asked for
 
