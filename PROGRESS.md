@@ -143,7 +143,7 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Restaurants as their own kind of tag (started 2026-11-23, the user's request; plan: [restaurants-plan.md](restaurants-plan.md); 4 steps, one per turn).** Decided: the symbol is `$` (`$blue_door`), and old `~places` are moved one at a time by a button, never automatically. **Steps 1 (the kind itself), 2 (notes on restaurants) and 3 (the "Make this a restaurant" button on a place's page) are done and committed locally, not pushed** (515 tests; checked in the pane only); step 4 (week review, Manual, DESIGN.md, build 16, then ask before pushing) is next.
+**Restaurants as their own kind of tag (started 2026-11-23, the user's request; plan: [restaurants-plan.md](restaurants-plan.md); 4 steps, one per turn).** Decided: the symbol is `$` (`$blue_door`), and old `~places` are moved one at a time by a button, never automatically. **All four steps are done and committed locally as build 16, not pushed (waiting for the user's yes)** (515 tests; checked in the pane only): the `$` kind, notes on restaurants, the "Make this a restaurant" button on a place's page, the week review, the Manual and DESIGN.md. After the push: the apps need a rebuild (`gh workflow run 'Build apps' --ref main` in the app repo) and the user's check 39 below.
 
 **Native apps should not behave like a browser window (started 2026-11-21, the user's request after reviewing a checklist from another project; 4 steps, one per turn).**
 **All four steps pushed as build 14 on 2026-11-21 (web repo `4d8f6df`, app repo `bea2367`; the two Rust lines compiled; the apps were
@@ -265,6 +265,12 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
+**39. Restaurants** (build 16, local, not pushed yet; after the push reload the web app until Settings > About says Build 16): a. write
+`Dinner at $blue_door, paid $20`: a 🍽️ chip, and `$20` stays plain text; typing `$bl` suggests known restaurants; b. Tags > Restaurants
+lists it and its page opens; c. Note on a restaurant (📝 Note, type `$` first) shows on its page; d. a place you wrote with `~` that is
+really a restaurant: its page > Make this a restaurant: it asks, then every entry and note says `$` and the new page opens; the
+place is gone from Places; e. with Dropbox the change shows on the other device after its next sync, and the day file reads `$blue_door`;
+f. Calendar > Week lists a Restaurants group; g. the Manual (Settings) reads right; h. in the Android app and the Windows `.exe` after the rebuild.
 **35. No browser behavior in the apps** (step 1, build 14, pushed and rebuilt 2026-11-21; in the Windows `.exe` and the Android app): Ctrl+F, F5,
 Ctrl+R, Ctrl+S, Ctrl+P and F12 do nothing; right-click on an entry shows no menu, but in the entry box it still offers Paste;
 a touchpad swipe or a pull at the end of the list does not reload or go back; Ctrl+K and typing work as before; on the

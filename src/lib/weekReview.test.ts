@@ -29,12 +29,12 @@ it('counts entries per day, the busiest day and the week before; other weeks and
   expect(buildWeekReview([], SUN, []).busiest).toBeNull()
 })
 
-it('lists top tags, people and places, photos, and the events with this week’s entries only', () => {
+it('lists top tags, people, places and restaurants, photos, and the events with this week’s entries only', () => {
   const img = { hash: 'aaaaaaaaaaaaaaaa', ext: 'jpg', w: 1, h: 1 }
   const entries = [
     e('standup #work with @sam !"Lisbon trip"', 8, 9, { images: [img, img] }),
-    e('more #work at ~office', 9, 9),
-    e('#work with @sam and @ana', 10, 9),
+    e('more #work at ~office, lunch at $nobu paid $20', 9, 9),
+    e('#work with @sam and @ana, dinner at $nobu and $blue_door', 10, 9),
     e('old #work @sam !"Lisbon trip"', 5, 9), // the week before
   ]
   const r = buildWeekReview(entries, SUN, computeEvents(entries))
@@ -42,6 +42,7 @@ it('lists top tags, people and places, photos, and the events with this week’s
     ['tag', [{ tag: 'work', count: 3 }]],
     ['person', [{ tag: '@sam', count: 2 }, { tag: '@ana', count: 1 }]],
     ['place', [{ tag: '~office', count: 1 }]],
+    ['restaurant', [{ tag: '$nobu', count: 2 }, { tag: '$blue_door', count: 1 }]],
   ])
   expect(r.photos).toBe(2)
   expect(r.events).toEqual([{ id: expect.any(String), title: 'Lisbon trip', first: '2026-11-05', last: '2026-11-08', count: 1 }])

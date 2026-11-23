@@ -64,13 +64,17 @@ tag renames and parsing would drop it. Dexie v2 adds `thumbs` (rebuildable thumb
 `onRemote` once the storage module has the file); see [images-plan.md](images-plan.md).
 
 **Tags** come in kinds (list in `src/lib/tagKinds.ts`; a new kind is one row there). Each has its own symbol typed in the
-text: `#work` (tag), `@sarah_jones` (person, shown as "Sarah Jones"), `~home` (place). A symbol starts a tag when it is
-not glued to a preceding word, `&` or another symbol (`C#`, `a#b`, `bob@example.com`, `@@x`, `~~strike~~` are not tags),
-then letters/digits/`_`, then letters/digits/`_-/`. For `@` and `~` the first character must be a **letter** (`~5 min`
-and `@3pm` are not tags). Stored lowercase; trailing `-`/`/` stripped.
+text: `#work` (tag), `@sarah_jones` (person, shown as "Sarah Jones"), `~home` (place), `$blue_door` (restaurant, 🍽️, added in build 16 as its own kind apart from places; plan and decisions in
+[restaurants-plan.md](restaurants-plan.md)). A symbol starts a tag when it is
+not glued to a preceding word, `&` or another symbol (`C#`, `a#b`, `bob@example.com`, `@@x`, `~~strike~~`, `US$5` are not tags),
+then letters/digits/`_`, then letters/digits/`_-/`. For `@`, `~` and `$` the first character must be a **letter** (`~5 min`,
+`@3pm` and a price like `$20` are not tags). Stored lowercase; trailing `-`/`/` stripped.
 **Stored key** (`Entry.tags`): a plain tag is its bare name (`work`, as before kinds existed), the others keep their
-symbol (`@sarah_jones`, `~home`), so `#sarah`, `@sarah` and `~sarah` are three different tags. Nothing changes in the
-Markdown files: the kind is just the symbol in the text. Dexie v3 recalculates `tags` for the entries already on a
+symbol (`@sarah_jones`, `~home`, `$blue_door`), so `#sarah`, `@sarah`, `~sarah` and `$sarah` are four different tags. Nothing changes in the
+Markdown files: the kind is just the symbol in the text (an older app version shows `$blue_door` as plain text; nothing is lost).
+**Place to restaurant:** a place's page has "Make this a restaurant", which asks first and then calls `renameTag('~x', '$x')`
+(the ordinary rename, which writes the new kind's symbol; notes move with it, event/tracking titles and deleted entries are
+left alone, entries are marked dirty). Only that direction exists; nothing is converted automatically. Dexie v3 recalculates `tags` for the entries already on a
 device without touching `dirty` or `updatedAt`, so the upgrade syncs nothing.
 
 **Events** are the name of something that happened (a party, a trip), written in an entry as `!"Jack's 40th birthday"`.
@@ -138,12 +142,12 @@ spaces and is used once.
   and no search additions on purpose: entries have no position field, and ordinary search finds the words of a name.
 - **Not tags:** `extractTags` and `replaceTag` skip tracking markers like event markers, so a `#word` in a name is part of it.
 
-**Notes on people and places** (facts with no day: "allergic to shellfish", "closed on Mondays"; plan and decisions in
+**Notes on people, places and restaurants** (facts with no day: "allergic to shellfish", "closed on Mondays"; plan and decisions in
 [person-notes-plan.md](person-notes-plan.md); the logic is in `src/lib/notes.ts` and `src/lib/noteTarget.ts`, the page
 section in `NotesSection.tsx`, the Note form in `Capture.tsx`) also works with a marker and stores nothing new: a note is an
-ordinary entry, so sync, export, delete and Restore are the entry's own. Only people and places have notes (not events: what
-you write about an event is the journal; not plain tags: a label, not a thing).
-- **Syntax:** `=@sam_jones fact` or `=~blue_door fact`: `=` and a person or place tag at the **start of the text** (spaces
+ordinary entry, so sync, export, delete and Restore are the entry's own. Only people, places and restaurants have notes
+(`NOTE_KINDS`; not events: what you write about an event is the journal; not plain tags: a label, not a thing).
+- **Syntax:** `=@sam_jones fact`, `=~blue_door fact` or `=$blue_door fact`: `=` and a person, place or restaurant tag at the **start of the text** (spaces
   and line breaks before it are fine). Anywhere else `=@sam` is plain text. The note's text is the rest, without the spaces
   and one `:` right after the marker. `=@sam` alone is an empty note. One note is about one person or place; another
   `@name` in its text is an ordinary mention (search finds it) and does not put the note on that page.
@@ -161,10 +165,10 @@ you write about an event is the journal; not plain tags: a label, not a thing).
 - **Page:** `NotesSection` at the top of a person's or place's page: newest first, no dates, the fact only (the marker is
   never shown or typed there), **+ Add note**, Edit (the fact; saved as `noteText(key, fact)`) and Delete (soft delete).
 - **Note form** (📝 Note next to Track; off while photos are attached, the Photo button hides): "Note about" suggests people
-  and places (`noteTargetSuggestions`: by the start of the name or of a shown word, most used first; `@`/`~` typed keeps to
-  that kind), and the box becomes the fact. `resolveNoteTarget`: a known name by name, shown name or token; a new name
-  without a symbol is a **new person**, `~` in front a new place; a name that is both a person and a place asks for the
-  symbol. If the box names exactly one person or place when Note is tapped, the field starts filled. Saving shows "Saved as a
+  places and restaurants (`noteTargetSuggestions`: by the start of the name or of a shown word, most used first; `@`/`~`/`$`
+  typed keeps to that kind), and the box becomes the fact. `resolveNoteTarget`: a known name by name, shown name or token; a new name
+  without a symbol is a **new person**, `~` in front a new place, `$` a new restaurant; a name shared by more than one kind asks for the
+  symbol and names the kinds. (The note pattern in `notes.ts` escapes each symbol: a bare `$` means "end of text" in a regex.) If the box names exactly one person or place when Note is tapped, the field starts filled. Saving shows "Saved as a
   note for … · Open" (Open sets App's `tagPage` and goes to Tags).
 - **Older app versions** show a note as an ordinary entry whose text starts with `=@…`: nothing is lost.
 
@@ -434,7 +438,7 @@ One search bar; filter chips write the same syntax. Parser: `search/query.ts`. E
 | `report draft` | all words must match; prefix match, fuzzy for words over 4 letters |
 | `"email triage"` | exact phrase |
 | `#work #tired` / `#work\|#personal` | all tags / any tag |
-| `@sarah_jones` / `~home` / `@sarah\|@tom` / `#work\|~home` | a person / a place; groups may mix `#`, `@` and `~`. They are matched on stored keys, so `#sarah` and `@sarah` are different. A symbol with no usable name (`~5`, `@3pm`) is searched as a plain word |
+| `@sarah_jones` / `~home` / `@sarah\|@tom` / `#work\|~home` | a person / a place (`$blue_door`: a restaurant); groups may mix `#`, `@`, `~` and `$`. They are matched on stored keys, so `#sarah` and `@sarah` are different. A symbol with no usable name (`~5`, `@3pm`) is searched as a plain word |
 | `-#personal` / `-@sarah` / `-~home` / `-meeting` / `-"a phrase"` | exclude |
 | `on:2026-11-08`, `from:2026-11-01 to:2026-11`, `in:2026-11`, `in:2026` | dates (day, month or year precision) |
 | `today`, `yesterday`, `last:7d` / `w` / `m` / `y` | relative dates (`last:7d` = the 7 days ending today) |
@@ -505,7 +509,7 @@ search bar. Results are sorted by relevance when there are keywords, otherwise n
   start on **Sunday** (Calendar month grid, Week review, `weekStart`). Not affected: the saved Markdown files (`## 09:14`
   and the `#` title, see "Day file"), the Edit box's date field and the backup date (the browser's own formats), and the
   search words, which accept both clocks. `timeLabel` (24-hour) is for files and the date field only.
-- **Tags:** a Tags / People / Places switch (one tab per kind in `TAG_KINDS`, each with its count); per name the
+- **Tags:** a Tags / People / Places / Restaurants switch (one tab per kind in `TAG_KINDS`, each with its count); per name the
   entry count and last-used date; rename/merge within the kind (a person's new name may be typed as "Sara Jones",
   stored `@sara_jones`; a name that already exists offers a merge). Clicking a person or place opens **its page** (kinds
   with `hasPage`; plain tags still search straight away): entry count, first and last mention, a bar per month (click a

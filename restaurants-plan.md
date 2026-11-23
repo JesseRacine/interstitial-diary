@@ -1,6 +1,13 @@
 # Restaurants: a kind of tag of their own (started 2026-11-23)
 
-_Status: steps 1 to 3 done (2026-11-23, committed locally, not pushed); step 4 not started. Four steps, one per turn._
+_Status: all four steps done (2026-11-23), committed locally as build 16, **not pushed yet** (waiting for the user's yes). Four steps, one per turn._
+
+**Step 4 done:** the week review needed no code (it lists every kind in `TAG_KINDS`); a test now pins "Restaurants" in it
+(`weekReview.test.ts`). The Manual (`ManualCard.tsx`: the symbols table, the four-different-tags line, the "Make this a
+restaurant" paragraph, notes, week review wording), DESIGN.md (Tags, Notes, search table, Tags tab), CLAUDE.md (intro,
+code map, the regex-escaping warning) and `BUILD_NUMBER` = 16 are updated. 515 tests, `tsc` and lint clean. **Not checked:**
+the Manual and the week review by eye in the pane, the phone, the apps, Dropbox with a move. The British-spelling scan
+in CLAUDE.md prints five old "cancelled" lines (PROGRESS.md, `nativeShell.ts` and its test); not from this work.
 
 **Step 3 done:** a place's page has **Make this a restaurant** (next to "Search these entries"; restaurants and other kinds
 do not show it). It asks first with the app's question box ("Make 📍 Blue Door a restaurant? This rewrites ~blue_door as

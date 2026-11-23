@@ -1,6 +1,6 @@
 # CLAUDE.md: Interstitial Diary
 
-An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, `@people` and `~places`,
+An interstitial journal: short, timestamped, freeform notes written between tasks, with `#tags`, `@people`, `~places` and `$restaurants`,
 strong search, photos, and Markdown files as the durable copy. Targets **Windows and Android**: an installable PWA
 (this repo), and native apps that wrap the same build with Tauri (a second repo, see "Native apps" below).
 
@@ -125,7 +125,8 @@ src/
   lib/                pure logic and the database
     entry.ts            Entry/ImageRef types, tag parsing (extractTags, replaceTag, tagSegments, tagBeingTyped), date
                         helpers (all local time), withDerived
-    tagKinds.ts         the kinds of tag (`#`, `@` person, `~` place; one row each) + stored-key helpers (tagKindOf,
+    tagKinds.ts         the kinds of tag (`#`, `@` person, `~` place, `$` restaurant; one row each; a symbol put into a
+                        regex must be escaped, `$` especially: see `escapeRe` in entry.ts and notes.ts) + stored-key helpers (tagKindOf,
                         tagToken, displayName, tagLabel, parseTagName)
     events.ts           events (`!"Title"` in entry text, NOT a tag kind): eventSpans/eventSegments/blankEvents, eventKey,
                         computeEvents (same title within 7 days = one event; a marker may carry its own date

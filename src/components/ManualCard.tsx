@@ -29,25 +29,30 @@ export function ManualCard() {
               permanently.</li>
           </ul>
 
-          <h4>Tags, people and places</h4>
+          <h4>Tags, people, places and restaurants</h4>
           <table>
             <tbody>
               <tr><td><code>#work</code></td><td>a tag</td></tr>
               <tr><td><code>@sarah_jones</code></td><td>a person, shown as “Sarah Jones” (use <code>_</code> for a space)</td></tr>
               <tr><td><code>~blue_door</code></td><td>a place, shown as “Blue Door”</td></tr>
+              <tr><td><code>$blue_door</code></td><td>a restaurant, shown as “Blue Door” with a 🍽️</td></tr>
             </tbody>
           </table>
           <ul>
-            <li>Names can use letters, digits, <code>_</code>, <code>-</code> and <code>/</code>, and are not case-sensitive. A person or place
-              must start with a letter (<code>~5 min</code> and <code>@3pm</code> are just text).</li>
+            <li>Names can use letters, digits, <code>_</code>, <code>-</code> and <code>/</code>, and are not case-sensitive. A person, place or restaurant
+              must start with a letter (<code>~5 min</code>, <code>@3pm</code> and a price like <code>$20</code> are just text).</li>
             <li>The symbol must not touch a word before it: <code>C#</code> and <code>bob@example.com</code> are not tags.</li>
-            <li><code>#sarah</code>, <code>@sarah</code> and <code>~sarah</code> are three different tags.</li>
+            <li><code>#sarah</code>, <code>@sarah</code>, <code>~sarah</code> and <code>$sarah</code> are four different tags. A place and a
+              restaurant with the same name stay apart (<code>~blue_door</code> is the parking lot, <code>$blue_door</code> the dinner).</li>
             <li>An apostrophe ends the name, so <code>@sarah_jones&apos;s car</code> is the person “Sarah Jones” followed by the plain text
               <code>&apos;s</code> (a curly apostrophe works the same).</li>
             <li>While you type a symbol, up to six matching known names are suggested: <kbd>↑</kbd> <kbd>↓</kbd> to choose,
               <kbd>Tab</kbd> or <kbd>Enter</kbd> to accept, <kbd>Esc</kbd> to dismiss.</li>
-            <li>Click a chip to search for it. The <strong>Tags</strong> tab lists them (Tags, People, Places) and can rename or merge
-              one, which fixes every entry at once. A person or place has its own page, with its notes at the top (see below).</li>
+            <li>Click a chip to search for it. The <strong>Tags</strong> tab lists them (Tags, People, Places, Restaurants) and can rename or merge
+              one, which fixes every entry at once. A person, place or restaurant has its own page, with its notes at the top (see below).</li>
+            <li>A place you wrote with <code>~</code> that is really a restaurant: open its page and tap <strong>Make this a restaurant</strong>.
+              It asks first, then rewrites <code>~name</code> as <code>$name</code> in every entry and note that mentions it. Nothing changes
+              until you tap it.</li>
           </ul>
 
           <h4>Events</h4>
@@ -78,18 +83,18 @@ export function ManualCard() {
               Tap a name to see the whole entry and edit it.</li>
           </ul>
 
-          <h4>Notes on people and places</h4>
+          <h4>Notes on people, places and restaurants</h4>
           <ul>
             <li>For facts that do not belong to a day: “allergic to shellfish”, “birthday March 3”, “closed on Mondays”. On the
               Journal tab tap <strong>📝 Note</strong> next to Track, pick who or where it is about (type a few letters and choose),
               write the fact and Save.</li>
-            <li>A name that is not known yet makes a new person; put <code>~</code> in front for a new place. If the box already
-              names one person or place when you tap Note, it is filled in for you. Notes are text only.</li>
+            <li>A name that is not known yet makes a new person; put <code>~</code> in front for a new place or <code>$</code> for a new restaurant. If the box already
+              names one person, place or restaurant when you tap Note, it is filled in for you. Notes are text only.</li>
             <li>A note does not show in the journal, the calendar, the week review or Photos. It shows at the top of the person’s or
               place’s page (Tags tab), newest first, where <strong>+ Add note</strong>, <strong>Edit</strong> and
               <strong> Delete</strong> are too. Search finds notes as well; they are marked 📝 Note.</li>
-            <li>In the file a note is an ordinary entry that starts with <code>=@sam_jones</code> or <code>=~blue_door</code>; typing
-              that at the start of an entry makes a note too. Renaming the person or place updates its notes.</li>
+            <li>In the file a note is an ordinary entry that starts with <code>=@sam_jones</code>, <code>=~blue_door</code> or <code>=$blue_door</code>; typing
+              that at the start of an entry makes a note too. Renaming the person, place or restaurant updates its notes.</li>
           </ul>
 
           <h4>Search</h4>
@@ -122,7 +127,7 @@ export function ManualCard() {
               entries shows how long it was since the one before (only when it is an hour or more); turn it off under
               Settings &gt; Appearance.</li>
             <li><strong>Calendar:</strong> Month, Year, Week or Events. Weeks run Sunday to Saturday. Week is a weekly review:
-              entries, days written, photos, the busiest day, time of day, the top tags, people and places, events, and a
+              entries, days written, photos, the busiest day, time of day, the top tags, people, places and restaurants, events, and a
               comparison with the week before. Events is the list of events described above.</li>
             <li><strong>Photos:</strong> every photo; its filter box takes the same search words, and the chips narrow by tag, person,
               place or year.</li>
