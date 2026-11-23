@@ -17,7 +17,7 @@ const monthLabel = (m: string) => (m.length === 4 ? m : `${MONTH_NAMES[Number(m.
  * Everything about one person or place: how often and when they appear, and their entries, newest first.
  * Clicking a bar of the chart shows only that month; clicking it again shows all.
  */
-export function TagPage({ tag, stat, entries, notes, index, backLabel, onBack, onSearch, onOpenDay, onOpenImage }: {
+export function TagPage({ tag, stat, entries, notes, index, backLabel, onBack, onSearch, onOpenDay, onOpenImage, onMakeRestaurant }: {
   tag: string // stored key, e.g. `@sarah_jones`
   stat: TagStat | undefined // undefined once no entry has it any more (renamed, merged or deleted while open)
   entries: Entry[] // journal entries only: notes are shown apart, at the top
@@ -28,6 +28,7 @@ export function TagPage({ tag, stat, entries, notes, index, backLabel, onBack, o
   onSearch: (tag: string) => void
   onOpenDay: (e: Entry) => void
   onOpenImage: (e: Pick<Entry, 'id'>, index: number) => void
+  onMakeRestaurant?: () => void // a place's page only: rewrite this place as a restaurant (TagsView asks first)
 }) {
   const kind = tagKindOf(tag)
   const [month, setMonth] = useState<string | null>(null)
@@ -50,6 +51,7 @@ export function TagPage({ tag, stat, entries, notes, index, backLabel, onBack, o
           {canHaveNotes(tag) && <NotesSection tag={tag} notes={notes} onTag={onSearch} onOpenImage={(id, i) => onOpenImage({ id }, i)} />}
           <div className="tag-page-actions">
             <button type="button" onClick={() => onSearch(tag)}>Search these entries</button>
+            {kind.id === 'place' && onMakeRestaurant && <button type="button" onClick={onMakeRestaurant}>Make this a restaurant</button>}
           </div>
           <Histogram hits={hits} onPick={(t) => { setMonth((m) => (m === t.slice(3) ? null : t.slice(3))); setLimit(PAGE) }} />
           {month && (

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { renameTag } from '../lib/db'
 import { alertDialog, confirmDialog, promptDialog } from '../lib/dialog'
 import { type Entry, dayKey, shortDayLabel } from '../lib/entry'
-import { TAG_KINDS, type TagKind, displayName, parseTagName, tagKey, tagKindOf, tagLabel, tagName } from '../lib/tagKinds'
+import { TAG_KINDS, type TagKind, displayName, parseTagName, tagKey, tagKindOf, tagLabel, tagName, tagToken } from '../lib/tagKinds'
 import type { Note } from '../lib/notes'
 import type { SearchIndex, TagStat } from '../search/engine'
 import { TagPage } from './TagPage'
@@ -51,10 +51,27 @@ export function TagsView({ tagStats, entries, notes, index, selected, onSelect, 
     if (await confirmDialog(msg, { confirmLabel: merging ? 'Merge' : 'Rename' })) await renameTag(t.tag, to)
   }
 
+  /** A place becomes a restaurant: every `~name` (and its notes) is rewritten as `$name`, after asking. Then its new page opens. */
+  const makeRestaurant = async (t: TagStat) => {
+    const restaurant = TAG_KINDS.find((k) => k.id === 'restaurant')!
+    const to = tagKey(restaurant, tagName(t.tag))
+    const merging = tagStats.some((s) => s.tag === to)
+    const n = t.count + t.notes
+    const msg = merging
+      ? `${tagLabel(to)} already exists. Move ${tagLabel(t.tag)} into it? This changes ${n} ${n === 1 ? 'entry' : 'entries'} and the place goes away.`
+      : `Make ${tagLabel(t.tag)} a restaurant? This rewrites ${tagToken(t.tag)} as ${tagToken(to)} in ${n} ${n === 1 ? 'entry' : 'entries'}, notes included.`
+    if (!(await confirmDialog(msg, { confirmLabel: merging ? 'Move' : 'Make restaurant' }))) return
+    await renameTag(t.tag, to)
+    setKind(restaurant)
+    setSelected(to)
+  }
+
   const noun = kind.plural.toLowerCase()
   if (selected !== null) {
+    const stat = tagStats.find((s) => s.tag === selected)
     return (
-      <TagPage key={selected} tag={selected} stat={tagStats.find((s) => s.tag === selected)} entries={entries} notes={notes.get(selected) ?? []} index={index}
+      <TagPage key={selected} tag={selected} stat={stat} entries={entries} notes={notes.get(selected) ?? []} index={index}
+        onMakeRestaurant={stat ? () => makeRestaurant(stat) : undefined}
         backLabel={tagKindOf(selected).plural} onBack={() => { setKind(tagKindOf(selected)); setSelected(null) }} onSearch={onSearch} onOpenDay={onOpenDay} onOpenImage={onOpenImage} />
     )
   }

@@ -77,6 +77,44 @@ describe('db with images', () => {
     expect((await m.db.entries.get('r1'))?.text).toContain('~flat')
   })
 
+  it('moves a place to a restaurant: only that place, its notes too, events untouched, marked for sync, images kept', async () => {
+    const at = (h: number) => Date.UTC(2026, 0, 5, h)
+    const rows = [
+      makeEntry('Dinner at ~blue_door with @sam #food', at(9), 'm1', [IMG_A]),
+      makeEntry('=~blue_door Free parking behind', at(10), 'm2'), // a note on the place
+      makeEntry('Party !"Night at ~blue_door" then ~blue_door again', at(11), 'm3'), // the event title is not a tag
+      makeEntry('Near ~blue_door_two and ~blue_doors, not the same place', at(12), 'm4'),
+      makeEntry('Already $blue_door and ~blue_door', at(13), 'm5'), // both in one entry
+      { ...makeEntry('Old visit ~blue_door', at(14), 'm6'), deleted: 1 as const },
+    ].map((e) => ({ ...e, dirty: 0 as const }))
+    await m.db.entries.bulkPut(rows)
+    const before = new Map((await m.db.entries.toArray()).map((e) => [e.id, e.updatedAt]))
+
+    expect(await m.renameTag('~blue_door', '$blue_door')).toBe(4) // m1, m2, m3, m5; the deleted m6 is left alone
+    const get = async (id: string) => (await m.db.entries.get(id))!
+
+    expect((await get('m1')).text).toBe('Dinner at $blue_door with @sam #food')
+    expect((await get('m1')).tags).toEqual(['$blue_door', '@sam', 'food'])
+    expect((await get('m1')).images).toEqual([IMG_A])
+    expect((await get('m2')).text).toBe('=$blue_door Free parking behind')
+    expect((await get('m3')).text).toBe('Party !"Night at ~blue_door" then $blue_door again')
+    expect((await get('m4')).text).toBe('Near ~blue_door_two and ~blue_doors, not the same place')
+    expect((await get('m5')).text).toBe('Already $blue_door and $blue_door')
+    expect((await get('m5')).tags).toEqual(['$blue_door'])
+    expect((await get('m6')).text).toBe('Old visit ~blue_door')
+
+    for (const id of ['m1', 'm2', 'm3', 'm5']) {
+      const e = await get(id)
+      expect(e.dirty, id).toBe(1)
+      expect(e.updatedAt, id).toBeGreaterThan(before.get(id)!)
+    }
+    for (const id of ['m4', 'm6']) {
+      const e = await get(id)
+      expect(e.dirty, id).toBe(0)
+      expect(e.updatedAt, id).toBe(before.get(id))
+    }
+  })
+
   it('renames one event: only the listed entries change, they are marked for sync, other text and images stay', async () => {
     const a = makeEntry('Packing for !"Beach wekend" #trip', Date.UTC(2031, 5, 1, 9), 'ev-a', [IMG_A])
     const b = makeEntry('At the !"beach WEKEND" now', Date.UTC(2031, 5, 3, 9), 'ev-b')

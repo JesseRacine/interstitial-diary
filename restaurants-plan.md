@@ -1,6 +1,18 @@
 # Restaurants: a kind of tag of their own (started 2026-11-23)
 
-_Status: steps 1 and 2 done (2026-11-23, committed locally, not pushed); steps 3 and 4 not started. Four steps, one per turn._
+_Status: steps 1 to 3 done (2026-11-23, committed locally, not pushed); step 4 not started. Four steps, one per turn._
+
+**Step 3 done:** a place's page has **Make this a restaurant** (next to "Search these entries"; restaurants and other kinds
+do not show it). It asks first with the app's question box ("Make 📍 Blue Door a restaurant? This rewrites ~blue_door as
+$blue_door in 2 entries, notes included."; Cancel changes nothing), then rewrites with the existing `renameTag`, which
+already swaps symbols across kinds, so no new data code: it leaves `!"event"` and `+"item"` titles alone, skips deleted
+entries and longer names (`~blue_door_two`), bumps `updatedAt` and `dirty` so sync carries it, keeps photos, and moves the
+place's notes (`=~name` becomes `=$name`). If the restaurant name already exists the box says so and "Move" merges
+(no entry is dropped). Afterwards the new restaurant's page opens. 515 tests (1 new in `db.test.ts`, mutation-checked:
+without the sync marks or the deleted-entry filter it fails). Checked in the pane (empty `127.0.0.1` journal, cleaned up):
+the button, Cancel, confirm, the page, the note, the raw saved text with the event title untouched. **Not checked:** the
+merge case in the UI (the data path is the same `renameTag` as a tag merge), Dropbox, the phone and the apps. There is no
+reverse button ("Make this a place") yet; say if you want one.
 
 **Step 2 done:** restaurants are in `NOTE_KINDS` (`lib/notes.ts`): `=$blue_door Try the lamb` is a note, kept out of the
 journal like the others; the Note form accepts `$name` (suggestions keep to restaurants after a `$`, a bare known name
