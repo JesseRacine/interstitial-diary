@@ -28,6 +28,25 @@ describe('resolveNoteTarget', () => {
   })
 })
 
+describe('restaurants as a note target', () => {
+  const stats = [...STATS, stat('$salt_bar', 4), stat('$nobu', 2)]
+  const known = [...KNOWN, '$salt_bar', '$nobu']
+  it('$ in front makes or finds a restaurant; a bare known name finds it', () => {
+    expect(resolveNoteTarget('$corner cafe', known)).toEqual({ key: '$corner_cafe', isNew: true })
+    expect(resolveNoteTarget('$Salt Bar', known)).toEqual({ key: '$salt_bar', isNew: false })
+    expect(resolveNoteTarget('Nobu', known)).toEqual({ key: '$nobu', isNew: false })
+    expect(resolveNoteTarget('$20', known)).toHaveProperty('error')
+  })
+  it('asks for the symbol when a place and a restaurant share the name, and names both', () => {
+    expect(resolveNoteTarget('Salt Bar', known)).toEqual({ error: 'A place and a restaurant are both called Salt Bar: type ~ or $ in front.' })
+  })
+  it('suggests restaurants, and a typed $ keeps to them', () => {
+    expect(noteTargetSuggestions('nob', stats)).toEqual(['$nobu'])
+    expect(noteTargetSuggestions('$s', stats)).toEqual(['$salt_bar'])
+    expect(noteTargetSuggestions('~s', stats)).toEqual(['~salt_bar'])
+  })
+})
+
 describe('noteTargetSuggestions', () => {
   it('suggests people and places by the start of the name or of a shown word, most used first', () => {
     expect(noteTargetSuggestions('sa', STATS)).toEqual(['@sam_jones', '~salt_bar', '@sarah'])

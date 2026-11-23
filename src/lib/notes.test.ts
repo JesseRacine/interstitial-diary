@@ -11,6 +11,32 @@ const entry = (id: string, hour: number, text: string, deleted: 0 | 1 = 0, image
 
 const keyOf = (text: string) => noteOf(text)?.key ?? null
 
+describe('notes on restaurants', () => {
+  it('=$name is a note about that restaurant, apart from a place of the same name', () => {
+    expect(noteOf('=$blue_door Try the lamb')).toEqual({ key: '$blue_door', end: 11, note: 'Try the lamb' })
+    expect(keyOf('  =$Nobu/ closed Mondays')).toBe('$nobu')
+    for (const text of ['=$20 lunch', '=$', '=$ nobu', 'Dinner =$nobu fact', '=@$nobu fact']) expect(keyOf(text), text).toBeNull()
+    expect(canHaveNotes('$blue_door')).toBe(true)
+    expect(noteText('$blue_door', ' Try the lamb ')).toBe('=$blue_door Try the lamb')
+    expect(() => noteText('work', 'x')).toThrow()
+  })
+
+  it('shows on the restaurant, renaming follows, and the note is not a journal entry', () => {
+    const es = [
+      entry('a', 9, '=$blue_door Try the lamb'),
+      entry('b', 10, '=~blue_door Free parking'),
+      entry('c', 11, 'Dinner at $blue_door'),
+    ]
+    const notes = computeNotes(es)
+    expect(notes.get('$blue_door')?.map((n) => n.note)).toEqual(['Try the lamb'])
+    expect(notes.get('~blue_door')?.map((n) => n.note)).toEqual(['Free parking'])
+    expect(journalEntries(es).map((e) => e.id)).toEqual(['c'])
+    expect(replaceTag(es[0].text, '$blue_door', '$blue_door_sf')).toBe('=$blue_door_sf Try the lamb')
+    expect(extractTags(es[0].text)).toEqual(['$blue_door'])
+    expect(parseDay(serializeDay('2026-11-16', [es[0]]), '2026-11-16').map((e) => e.text)).toEqual(['=$blue_door Try the lamb'])
+  })
+})
+
 describe('reading the marker', () => {
   it('=@name or =~name at the very start (after spaces) makes a note about that person or place', () => {
     expect(noteOf('=@sam_jones Allergic to shellfish')).toEqual({ key: '@sam_jones', end: 11, note: 'Allergic to shellfish' })

@@ -2,11 +2,12 @@ import type { Entry, ImageRef } from './entry'
 import { NAME_REST, TAG_KINDS, type TagKind, nameStart, tagKey, tagKindOf, tagToken } from './tagKinds'
 
 /**
- * Notes on people and places: facts that do not belong to a day ("allergic to shellfish", "closed on Mondays"). Written
- * as an entry whose text starts with `=` and a person or place tag:
+ * Notes on people, places and restaurants: facts that do not belong to a day ("allergic to shellfish", "closed on
+ * Mondays"). Written as an entry whose text starts with `=` and a person, place or restaurant tag:
  *
  *   =@sam_jones Allergic to shellfish
  *   =~blue_door Closed on Mondays
+ *   =$blue_door Try the lamb
  *
  * Like events and tracking, nothing new is stored: a note is an ordinary entry and the marker stays in its text as typed.
  * The `@sam_jones` or `~blue_door` after the `=` is an ordinary tag of the entry (it is not blanked like an event title),
@@ -21,14 +22,15 @@ import { NAME_REST, TAG_KINDS, type TagKind, nameStart, tagKey, tagKindOf, tagTo
  * This file only imports types from `entry.ts`, so `entry.ts` may import it later without a cycle.
  */
 
-/** The kinds that can have notes: people and places (the kinds with their own page, except plain tags). */
-export const NOTE_KINDS: readonly TagKind[] = TAG_KINDS.filter((k) => k.id === 'person' || k.id === 'place')
+/** The kinds that can have notes: people, places and restaurants (the kinds with their own page, except plain tags). */
+export const NOTE_KINDS: readonly TagKind[] = TAG_KINDS.filter((k) => k.id === 'person' || k.id === 'place' || k.id === 'restaurant')
 
 /** Whether a stored key (`@sam`, `~home`, `work`) can have notes. */
 export const canHaveNotes = (key: string): boolean => NOTE_KINDS.includes(tagKindOf(key))
 
 /** `=`, a person or place symbol and a name (the same characters as that kind of tag). One capture group per kind. */
-const NOTE_RE = new RegExp(`^\\s*=(?:${NOTE_KINDS.map((k) => `${k.sigil}([${nameStart(k)}]${NAME_REST})`).join('|')})`, 'u')
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&') // a bare `$` in a pattern means "end of text"
+const NOTE_RE = new RegExp(`^\\s*=(?:${NOTE_KINDS.map((k) => `${escapeRe(k.sigil)}([${nameStart(k)}]${NAME_REST})`).join('|')})`, 'u')
 
 /** The marker of a note and where it ends. `key` is the stored key of the person or place, e.g. `@sam_jones`, `~blue_door`. */
 export interface NoteMarker {
@@ -59,7 +61,7 @@ export const journalEntries = <T extends Pick<Entry, 'text'>>(entries: readonly 
  * place's stored key; the note is trimmed.
  */
 export function noteText(key: string, note: string): string {
-  if (!canHaveNotes(key)) throw new Error(`Only people and places have notes: ${key}`)
+  if (!canHaveNotes(key)) throw new Error(`Only people, places and restaurants have notes: ${key}`)
   const n = note.trim()
   return `=${tagToken(key)}${n ? ` ${n}` : ''}`
 }

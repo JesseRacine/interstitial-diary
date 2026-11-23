@@ -187,7 +187,7 @@ export function Capture({ tagStats, lastEvent, onSaved, onOpenNotes, inputRef, i
               ref={whoRef}
               type="text"
               value={who}
-              placeholder="A person or a place"
+              placeholder="A person, place or restaurant"
               maxLength={200}
               autoComplete="off"
               aria-invalid={!!target && 'error' in target}
@@ -209,7 +209,7 @@ export function Capture({ tagStats, lastEvent, onSaved, onOpenNotes, inputRef, i
           {noteKey && target && 'isNew' in target && target.isNew && (
             <span className="muted small hint">
               New {tagKindOf(noteKey).label.toLowerCase()}: {displayName(noteKey)}
-              {tagKindOf(noteKey).id === 'person' ? ' · type ~ in front for a place' : ''}
+              {tagKindOf(noteKey).id === 'person' ? ' · type ~ in front for a place, $ for a restaurant' : ''}
             </span>
           )}
         </div>
@@ -249,7 +249,7 @@ export function Capture({ tagStats, lastEvent, onSaved, onOpenNotes, inputRef, i
           <span aria-hidden="true">📌</span> <span>Track</span>
         </button>
         <button type="button" className={`ghost note-toggle${noting ? ' on' : ''}`} aria-pressed={noting} disabled={!noting && draft.images.length > 0}
-          title={!noting && draft.images.length > 0 ? 'A note is text only: remove the photos first' : 'A fact about a person or place, not tied to a day'}
+          title={!noting && draft.images.length > 0 ? 'A note is text only: remove the photos first' : 'A fact about a person, place or restaurant, not tied to a day'}
           onClick={() => (noting ? leaveMode() : startNote())}>
           <span aria-hidden="true">📝</span> <span>Note</span>
         </button>

@@ -5,9 +5,10 @@ import { displayName, parseTagName, tagKey, tagKindOf, tagName } from './tagKind
 /**
  * The "Note about" field of the Note form (Capture.tsx): who or where a new note is about. The user types part of a
  * name and picks a suggestion, or types a name:
- * - `Sam Jones`, `sam_jones` or `@sam_jones` all mean the person `@sam_jones`; `~blue_door` means the place.
- * - A name without a symbol that is a known person or place is that one. If both a person and a place have that name,
- *   the symbol is needed. A new name without a symbol makes a new **person**; `~` first makes a new place.
+ * - `Sam Jones`, `sam_jones` or `@sam_jones` all mean the person `@sam_jones`; `~blue_door` means the place and
+ *   `$blue_door` the restaurant.
+ * - A name without a symbol that is a known person, place or restaurant is that one. If more than one has that name,
+ *   the symbol is needed. A new name without a symbol makes a new **person**; `~` or `$` first makes a new place or restaurant.
  */
 export type NoteTarget =
   | { key: string; isNew: boolean } // ready: the stored key, and whether no entry names it yet
@@ -31,7 +32,11 @@ export function resolveNoteTarget(input: string, known: readonly string[]): Note
   const existing = keys.filter((k) => known.includes(k))
   if (existing.length === 1) return { key: existing[0], isNew: false }
   if (existing.length > 1) {
-    return { error: `A person and a place are both called ${displayName(existing[0])}: type @ or ~ in front.` }
+    const kinds = existing.map((k) => tagKindOf(k))
+    const names = kinds.map((k) => `a ${k.label.toLowerCase()}`).join(', ').replace(/, ([^,]*)$/, ' and $1')
+    const both = kinds.length === 2 ? 'both' : 'all'
+    const symbols = kinds.map((k) => k.sigil).join(' or ')
+    return { error: `${names[0].toUpperCase()}${names.slice(1)} are ${both} called ${displayName(existing[0])}: type ${symbols} in front.` }
   }
   const person = NOTE_KINDS[0]
   const parsed = parseTagName(person, s)
@@ -40,8 +45,8 @@ export function resolveNoteTarget(input: string, known: readonly string[]): Note
 }
 
 /**
- * People and places to suggest for what is typed so far, most used first (the order of `stats`): a name that starts with
- * it, or whose shown name has a word starting with it ("jo" finds Sam Jones). A typed `@` or `~` keeps to that kind.
+ * People, places and restaurants to suggest for what is typed so far, most used first (the order of `stats`): a name that
+ * starts with it, or whose shown name has a word starting with it ("jo" finds Sam Jones). A typed `@`, `~` or `$` keeps to that kind.
  */
 export function noteTargetSuggestions(input: string, stats: readonly TagStat[], n = 6): string[] {
   const s = input.trim().toLowerCase()

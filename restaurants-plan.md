@@ -1,6 +1,16 @@
 # Restaurants: a kind of tag of their own (started 2026-11-23)
 
-_Status: step 1 done (2026-11-23, committed locally, not pushed); steps 2 to 4 not started. Four steps, one per turn._
+_Status: steps 1 and 2 done (2026-11-23, committed locally, not pushed); steps 3 and 4 not started. Four steps, one per turn._
+
+**Step 2 done:** restaurants are in `NOTE_KINDS` (`lib/notes.ts`): `=$blue_door Try the lamb` is a note, kept out of the
+journal like the others; the Note form accepts `$name` (suggestions keep to restaurants after a `$`, a bare known name
+finds it, a new bare name is still a new person); when two kinds share a name the message names them ("A place and a
+restaurant are both called Salt Bar: type ~ or $ in front"). **A trap found on the way:** `notes.ts` put each symbol
+into its pattern unescaped, and a bare `$` means "end of text" there, so `=$name` would never have matched; the symbol is
+now escaped (mutation-checked: without it 2 new tests fail). 514 tests; `tsc` and lint clean. Checked in the pane (empty
+`127.0.0.1` journal, cleaned up): Note about `$blue` offers only the restaurant, the note saved ("Saved as a note for 🍽️
+Blue Door · Open"), the restaurant's page shows it under Notes, apart from the place of the same name. **Not checked:** the
+phone and the apps; the Manual's wording (step 4).
 
 **Step 1 done:** the `restaurant` row in `TAG_KINDS` (🍽️, olive green `--restaurant` in light and dark), CSS for the chip and
 the page heading, the hint line under the entry box, the search-help rows (`$blue_door`, mixing with `|`). Everything
