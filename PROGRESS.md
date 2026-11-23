@@ -87,7 +87,7 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
 - **Numbers:** 493 tests (2026-11-21, local, after native-shell step 4); 484 after step 3; 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-21):** `origin/main` is at `549d372` (build 15, deployed; build 14 was `4d8f6df`, build 13 `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Git state (2026-11-23):** `origin/main` is at `b31c04d` (build 16, restaurants, deployed; later commits are local docs only). Before: `549d372` (build 15, deployed; build 14 was `4d8f6df`, build 13 `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
   repos** (commit ids and test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a
@@ -143,7 +143,7 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Restaurants as their own kind of tag (started 2026-11-23, the user's request; plan: [restaurants-plan.md](restaurants-plan.md); 4 steps, one per turn).** Decided: the symbol is `$` (`$blue_door`), and old `~places` are moved one at a time by a button, never automatically. **All four steps are done and committed locally as build 16, not pushed (waiting for the user's yes)** (515 tests; checked in the pane only): the `$` kind, notes on restaurants, the "Make this a restaurant" button on a place's page, the week review, the Manual and DESIGN.md. After the push: the apps need a rebuild (`gh workflow run 'Build apps' --ref main` in the app repo) and the user's check 39 below.
+**Restaurants as their own kind of tag (started 2026-11-23, the user's request; plan: [restaurants-plan.md](restaurants-plan.md); 4 steps, one per turn).** Decided: the symbol is `$` (`$blue_door`), and old `~places` are moved one at a time by a button, never automatically. **All four steps are done and pushed as build 16 on 2026-11-23** (`b31c04d`, deploy run 45288158327 green; the live bundle holds the restaurant kind and "Make this a restaurant", read from the published files; Settings > About "Build 16" not seen on a device; 515 tests; checked in the pane only; the apps are not rebuilt yet): the `$` kind, notes on restaurants, the "Make this a restaurant" button on a place's page, the week review, the Manual and DESIGN.md. After the push: the apps need a rebuild (`gh workflow run 'Build apps' --ref main` in the app repo) and the user's check 39 below.
 
 **Native apps should not behave like a browser window (started 2026-11-21, the user's request after reviewing a checklist from another project; 4 steps, one per turn).**
 **All four steps pushed as build 14 on 2026-11-21 (web repo `4d8f6df`, app repo `bea2367`; the two Rust lines compiled; the apps were
@@ -265,7 +265,7 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**39. Restaurants** (build 16, local, not pushed yet; after the push reload the web app until Settings > About says Build 16): a. write
+**39. Restaurants** (build 16, pushed 2026-11-23; reload the web app until Settings > About says Build 16): a. write
 `Dinner at $blue_door, paid $20`: a 🍽️ chip, and `$20` stays plain text; typing `$bl` suggests known restaurants; b. Tags > Restaurants
 lists it and its page opens; c. Note on a restaurant (📝 Note, type `$` first) shows on its page; d. a place you wrote with `~` that is
 really a restaurant: its page > Make this a restaurant: it asks, then every entry and note says `$` and the new page opens; the

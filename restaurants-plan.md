@@ -1,6 +1,6 @@
 # Restaurants: a kind of tag of their own (started 2026-11-23)
 
-_Status: all four steps done (2026-11-23), committed locally as build 16, **not pushed yet** (waiting for the user's yes). Four steps, one per turn._
+_Status: all four steps done (2026-11-23), pushed as build 16 (`b31c04d`, deploy run 45288158327 green); the native apps are not rebuilt yet. Four steps, one per turn._
 
 **Step 4 done:** the week review needed no code (it lists every kind in `TAG_KINDS`); a test now pins "Restaurants" in it
 (`weekReview.test.ts`). The Manual (`ManualCard.tsx`: the symbols table, the four-different-tags line, the "Make this a
