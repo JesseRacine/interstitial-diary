@@ -143,6 +143,8 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
+**Restaurants as their own kind of tag (started 2026-11-23, the user's request; plan: [restaurants-plan.md](restaurants-plan.md); 4 steps, one per turn).** Decided: the symbol is `$` (`$blue_door`), and old `~places` are moved one at a time by a button, never automatically. Step 1 (the kind itself) is next; nothing is built yet.
+
 **Native apps should not behave like a browser window (started 2026-11-21, the user's request after reviewing a checklist from another project; 4 steps, one per turn).**
 **All four steps pushed as build 14 on 2026-11-21 (web repo `4d8f6df`, app repo `bea2367`; the two Rust lines compiled; the apps were
 rebuilt and are in `builds\`; installing them and checks 35 to 37 are the user's).** Everything is gated by `isNativeApp()` so the
@@ -418,6 +420,7 @@ written on one device appear on the other, including edits made offline on both.
 | [images-plan.md](images-plan.md) | The photo feature's plan and build log |
 | [tracking-plan.md](tracking-plan.md) | The Tracking feature: decisions, the marker, the five steps |
 | [person-notes-plan.md](person-notes-plan.md) | Notes on people and places (2026-11-16/17): decisions, the `=@name` / `=~name` marker, the Note button, the five steps |
+| [restaurants-plan.md](restaurants-plan.md) | Restaurants as their own tag kind (`$name`, 2026-11-23): decisions, the four steps |
 | [pcloud-plan.md](pcloud-plan.md) | The pCloud module (stopped 2026-11-17): the plan, what was built, why it stopped (the table of API results), the own-login idea for later |
 | [android-capture-plan.md](android-capture-plan.md) | Quick capture on Android: stage 1 built, stage 2 (native widget) not started |
 | The app repo's `README.md` | The native apps: how the build works, releasing, the signing key, the Windows folder |
