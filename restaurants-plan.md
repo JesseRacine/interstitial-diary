@@ -1,6 +1,6 @@
 # Restaurants: a kind of tag of their own (started 2026-11-23)
 
-_Status: all four steps done (2026-11-23), pushed as build 16 (`b31c04d`, deploy run 45288158327 green); the native apps are rebuilt with it (run 45288633402, in `builds\`). Four steps, one per turn._
+_Status: **finished** (2026-11-23; the user tried it: "it seems to work"; the story is in docs/HISTORY.md). All four steps done, pushed as build 16 (`b31c04d`, deploy run 45288158327 green); the native apps are rebuilt with it (run 45288633402, in `builds\`). Four steps, one per turn._
 
 **Step 4 done:** the week review needed no code (it lists every kind in `TAG_KINDS`); a test now pins "Restaurants" in it
 (`weekReview.test.ts`). The Manual (`ManualCard.tsx`: the symbols table, the four-different-tags line, the "Make this a
@@ -76,6 +76,11 @@ the wanted behavior (`US$5` and `a$b` are not tags).
 4. **Wrap-up.** Week review shows top restaurants (it loops over kinds already; check the layout at phone width), Manual
    and DESIGN.md updated, CLAUDE.md rule/code map lines mention `$`, build number 16, then ask before pushing.
 
-## Not decided yet (ask when we get there)
+## Decided while building
 
-- Whether restaurants should be reachable from the Tags tab's place list too (default: no, a separate button).
+- Restaurants have their own Tags button and list, not mixed into Places.
+
+## Ideas left open (not asked for)
+
+- A reverse "Make this a place" button.
+- Nothing converts old `~places` automatically, on purpose.

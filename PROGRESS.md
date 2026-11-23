@@ -1,6 +1,6 @@
 # Progress and next steps
 
-_Last updated: 2026-11-21 (build 15, live: photos can be dropped in the Windows app, Back cancels a question box; build 14 was the native apps no longer behaving like a browser window, in-app question boxes, Text size; apps rebuilt). Kept short on purpose:
+_Last updated: 2026-11-23 (build 16, live: restaurants as their own kind of tag, `$name`; build 15 was photo drops in the Windows app and Back cancelling a question box; apps rebuilt with 16). Kept short on purpose:
 read this file first, and open the other files only when you need them (index at the bottom). When a piece of work is
 finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one line here._
 
@@ -9,7 +9,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
 - **Web app, live and public:** https://jesseracine.github.io/interstitial-diary/ (GitHub Pages). Repo
   https://github.com/JesseRacine/interstitial-diary (public, branch `main`); every push to `main` runs the tests and
   redeploys. The user has it installed on Windows and Android.
-- **Built and live:** journal, search, calendar (Month | Year | Week review | Events), tags + people + places, events
+- **Built and live:** journal, search, calendar (Month | Year | Week review | Events), tags + people + places + **restaurants** (`$name`, build 16), events
   (`!"Title"`, own date, search, rename, merge), **Tracking** (`+"Name"`: the Tracking tab, Track button, Star, Done,
   Delete, journal chips; [tracking-plan.md](tracking-plan.md)), **notes on people and places** (📝 Note button, Notes
   on each person's/place's page; [person-notes-plan.md](person-notes-plan.md)), photos (phases 1 to 3, filters), export, three storage
@@ -21,7 +21,7 @@ finished, move its story to [docs/HISTORY.md](docs/HISTORY.md) and keep only one
   and **a big edit box for an existing entry** (build 11).
   How each was built and checked: docs/HISTORY.md.
 - **Build number (from 2026-11-15):** `BUILD_NUMBER` in `src/build.ts`, shown in Settings > About; raise it by 1 before
-  every push to `main`. Pushed and live: **15** (2026-11-21, photo drops in the Windows app and Back cancelling a question box; `549d372`, deploy run
+  every push to `main`. Pushed and live: **16** (2026-11-23, restaurants; `b31c04d`, deploy run 45288158327 green; apps rebuilt: run 45288633402 green, APK 10,193,599 bytes and `.exe` 6,343,680 copied to `builds\`, the `.exe` started from a scratch copy; the user installed and tried it: "it seems to work"). Before: **15** (2026-11-21, photo drops in the Windows app and Back cancelling a question box; `549d372`, deploy run
   44950487049 green; apps rebuilt with it: run 44950568205 green, so the `.disable_drag_drop_handler()` line compiled; the bundled web
   build has the new code, APK 10,193,599 bytes and `.exe` 6,343,680 copied to `builds\`, the `.exe` started from a scratch copy; installing
   them and checks 36 and 38 are the user's). Before: **14** (2026-11-21, the native-shell plan, steps 1 to 4; `4d8f6df`, deploy run 44936471645 green; apps
@@ -86,8 +86,8 @@ scratch copy (window "Interstitial Diary", its own `journal-data`); installing a
   still works there). Checked in headless Edge against `tauri.localhost`: a saved copy from build 3, then build 5 served,
   opened with **no clicks**: ends on Build 5, no worker, no cache, no banner; on a plain address the same upgrade still
   waits for the banner. Unit tests in `src/swNative.test.ts`. Real exe and Android untested.
-- **Numbers:** 493 tests (2026-11-21, local, after native-shell step 4); 484 after step 3; 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
-- **Git state (2026-11-23):** `origin/main` is at `b31c04d` (build 16, restaurants, deployed; later commits are local docs only). Before: `549d372` (build 15, deployed; build 14 was `4d8f6df`, build 13 `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
+- **Numbers:** 515 tests (2026-11-23, build 16; 507 at build 15); 493 tests (2026-11-21, local, after native-shell step 4); 484 after step 3; 471 after step 1; 459 tests (2026-11-20, build 13; 458 at build 12, 450 at build 11, 448 after the 2026-11-18 test trim); `npx tsc -b` clean; lint 0 errors (5 old warnings).
+- **Git state (2026-11-23):** `origin/main` is at `b31c04d` (build 16, restaurants, deployed; later commits are local docs only, unpushed: ask the user before pushing them). Before: `549d372` (build 15, deployed; build 14 was `4d8f6df`, build 13 `08fb921`, build 12 `0c6991f`, build 11 `09d8952`, build 10 `8c765e2`, build 9 `31031c7`). Any commits after it are **local and unpushed** (docs only; `git status -sb` shows how many). A push publishes and redeploys: **ask the user before every push**. Check with `git status -sb`.
 - **Backup:** the newest is `Interstitial-Diary-archive-2026-11-19b.zip` in the Claude session folder (no unzipped
   folder, as the user prefers), made 2026-11-19 at **build 12** at the user's request, after the US conventions: **both
   repos** (commit ids and test counts in its `README.md`) **plus the user's uncommitted app-id edits in the app repo as a
@@ -143,7 +143,7 @@ to the Claude session folder, `builds\`.
 
 ## What next
 
-**Restaurants as their own kind of tag (started 2026-11-23, the user's request; plan: [restaurants-plan.md](restaurants-plan.md); 4 steps, one per turn).** Decided: the symbol is `$` (`$blue_door`), and old `~places` are moved one at a time by a button, never automatically. **All four steps are done and pushed as build 16 on 2026-11-23** (`b31c04d`, deploy run 45288158327 green; the live bundle holds the restaurant kind and "Make this a restaurant", read from the published files; Settings > About "Build 16" not seen on a device; 515 tests; checked in the pane only; **apps rebuilt the same day**: run 45288633402 green from app repo `9e0eb90` (unchanged), the bundled web build holds `tag-restaurant` and "Make this a restaurant", APK 10,193,599 bytes and `.exe` 6,343,680 copied to `builds\`, the `.exe` started from a scratch copy (window "Interstitial Diary", its own `journal-data`); installing them is the user's, and the user's uncommitted app-id edits are not in it): the `$` kind, notes on restaurants, the "Make this a restaurant" button on a place's page, the week review, the Manual and DESIGN.md. What is left is the user's check 39 below.
+**Restaurants are finished (2026-11-23, build 16; the user: "it seems to work"; story in docs/HISTORY.md, plan in [restaurants-plan.md](restaurants-plan.md)).** `$blue_door` is a kind of tag of its own, apart from `~places`: chip, Tags > Restaurants and its page, search, autocomplete, notes (`=$name`), the week review, the Manual; a place's page has **Make this a restaurant** (asks first, rewrites `~name` to `$name` everywhere; never automatic; no reverse button). Pushed (`b31c04d`, deploy run 45288158327 green) and the apps rebuilt (run 45288633402, in `builds\`; the user's uncommitted app-id edits are not in them). Left: nothing to build; check 39 below is recorded as a general OK only.
 
 **Native apps should not behave like a browser window (started 2026-11-21, the user's request after reviewing a checklist from another project; 4 steps, one per turn).**
 **All four steps pushed as build 14 on 2026-11-21 (web repo `4d8f6df`, app repo `bea2367`; the two Rust lines compiled; the apps were
@@ -265,7 +265,7 @@ Everything below is built and pushed. Until the user reports a check it is **not
 works") are recorded as said, not as each point confirmed. Before testing a web-app change, reload both devices until
 they have the newest version.
 
-**39. Restaurants** (build 16, pushed 2026-11-23; reload the web app until Settings > About says Build 16): a. write
+**39. Restaurants** (build 16, pushed and rebuilt 2026-11-23; **the user: "it seems to work"**, a general OK, not a to h one by one; reload the web app until Settings > About says Build 16): a. write
 `Dinner at $blue_door, paid $20`: a 🍽️ chip, and `$20` stays plain text; typing `$bl` suggests known restaurants; b. Tags > Restaurants
 lists it and its page opens; c. Note on a restaurant (📝 Note, type `$` first) shows on its page; d. a place you wrote with `~` that is
 really a restaurant: its page > Make this a restaurant: it asks, then every entry and note says `$` and the new page opens; the

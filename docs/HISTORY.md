@@ -89,6 +89,11 @@ file when you need the commit for a feature, the reasoning behind a finished ste
 | f57356b | Event titles suggested after `!"` (all titles; replaced next) + the 1 px scrollbar fix for the entry box |
 | 9cafc02 | Only the last event's title is suggested, while what is typed still fits (the user's choice) |
 | f38eefa | Build 8: both changes. **Pushed 2026-11-18 on the user's request** (deploy run 44332869492 green); apps rebuilt (run 44374189547) |
+| (builds 9 to 15) | Typing mode, edit box, US conventions, hiding the gap line, the native-shell plan, photo drops: their commits are in PROGRESS.md's build list and the sections below, not in this table |
+| 7fdb0a8 | Restaurants 1: the `$name` kind of tag (`TAG_KINDS` row, color, hints, search help, tests) |
+| 8e69894 | Restaurants 2: notes on restaurants (`=$name`), the `$` escaped in the note pattern |
+| b9c2cdd | Restaurants 3: "Make this a restaurant" on a place's page |
+| b31c04d | Restaurants 4 = build 16: week review test, Manual, DESIGN.md. **Pushed 2026-11-23 on the user's request** (deploy run 45288158327 green); apps rebuilt (run 45288633402) |
 
 **All hashes above before `f3c682f` are from before the 2026-11-10 history rewrite** (author change plus a scrub of old
 doc text); the same commits now have different hashes. Match them by subject (`git log --oneline`). The pre-rewrite
@@ -275,6 +280,33 @@ full-screen writing sheet, only if this is not enough).
   default, only `"0"` turns it off). Checked in the pane: two entries 3.5 hours apart showed "+3 h 30 min"; with the
   box unticked the line was gone, `showGaps` was `"0"` in storage and stayed `"0"` after a reload. Not checked: the
   phone, the native apps.
+
+## Restaurants (2026-11-23): a kind of tag of their own, four steps, pushed as build 16, the user: "it seems to work"
+
+The user (2026-11-23): "We have an indicator or special tag type for places, and now I want to break out restaurants
+separate from places." Plan, decisions and the per-step notes: [../restaurants-plan.md](../restaurants-plan.md). Decided
+with the user: the symbol is **`$`** (`Lunch at $blue_door`; a name must start with a letter, so `$20` stays text), and
+old `~places` are **never converted automatically**, only one at a time by a button.
+- **Step 1, the kind (`7fdb0a8`):** one row in `TAG_KINDS` (🍽️, `--restaurant` olive green in light and dark), CSS for the
+  chip and page heading, the hint line, the search-help rows. Parsing, search, counts, autocomplete, the Tags tab button
+  and page all followed from the list, as `tagKinds.ts` was built to do. 2 new tests (the kind; search and counts apart
+  from a place of the same name). Checked in the pane: the chip color, `$20` plain, `$bl` offers Blue Door, "Restaurants 1".
+- **Step 2, notes (`8e69894`):** restaurants added to `NOTE_KINDS`; the Note form and `resolveNoteTarget` take `$`; the
+  "shared name" error names the kinds ("A place and a restaurant are both called Salt Bar: type ~ or $ in front").
+  **Trap found:** `notes.ts` built its pattern from the symbols unescaped, and a bare `$` means "end of text", so
+  `=$name` would never have matched. Escaped; mutation-checked (2 tests fail without it). Lesson in CLAUDE.md's code map.
+- **Step 3, "Make this a restaurant" (`b9c2cdd`):** a button on a place's page; the app's question box asks first; then the
+  existing `renameTag('~x', '$x')`, which already writes the target kind's symbol, leaves event and tracking titles alone,
+  skips deleted entries and longer names, bumps `updatedAt` and `dirty`, and moves the place's notes. No new data code, so
+  the work was the button and one thorough `db.test.ts` test (mutation-checked: without the sync marks or the deleted
+  filter it fails). Merging into an existing restaurant uses the same path as a tag merge. No reverse button.
+- **Step 4, wrap-up (`b31c04d`, build 16):** the week review lists the kind with no code change (a test pins it); the
+  Manual, DESIGN.md and CLAUDE.md updated. 515 tests in all (507 before this work, 8 added: 2 in step 1, 5 in step 2, 1 in step 3).
+- **Pushed** 2026-11-23 on the user's yes; deploy run 45288158327 green; the live bundle (read from the published files,
+  not through a service worker) holds the kind and the button. **Apps rebuilt** the same day (run 45288633402 from app
+  repo `9e0eb90`; APK and `.exe` copied to `builds\`; the `.exe` started from a scratch copy: window title and its own
+  `journal-data`). The user then tried it and said "it seems to work" (a general OK; which of check 39's a to h were tried
+  one by one is not known, and Dropbox with a place-to-restaurant move and the Android app are not individually confirmed).
 
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 
