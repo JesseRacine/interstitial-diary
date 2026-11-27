@@ -115,6 +115,33 @@ describe('db with images', () => {
     }
   })
 
+  it('moves a restaurant back to a place the same way, and a name in both kinds merges', async () => {
+    const at = (h: number) => Date.UTC(2026, 0, 6, h)
+    const rows = [
+      makeEntry('Dinner at $nobu with @sam', at(9), 'b1', [IMG_A]),
+      makeEntry('=$nobu Book ahead', at(10), 'b2'),
+      makeEntry('Party !"Night at $nobu" then $nobu again', at(11), 'b3'),
+      makeEntry('Also $nobu_two, not the same', at(12), 'b4'),
+      makeEntry('Parked near ~nobu', at(13), 'b5'), // a place of the same name already exists
+    ].map((e) => ({ ...e, dirty: 0 as const }))
+    await m.db.entries.bulkPut(rows)
+
+    expect(await m.renameTag('$nobu', '~nobu')).toBe(3) // b1, b2, b3
+    const get = async (id: string) => (await m.db.entries.get(id))!
+    expect((await get('b1')).text).toBe('Dinner at ~nobu with @sam')
+    expect((await get('b1')).tags).toEqual(['~nobu', '@sam']) // in the order they appear in the text
+    expect((await get('b1')).images).toEqual([IMG_A])
+    expect((await get('b2')).text).toBe('=~nobu Book ahead')
+    expect((await get('b3')).text).toBe('Party !"Night at $nobu" then ~nobu again')
+    expect((await get('b4')).text).toBe('Also $nobu_two, not the same')
+    expect((await get('b4')).dirty).toBe(0)
+    expect((await get('b5')).text).toBe('Parked near ~nobu') // untouched: it already was the place
+    expect((await get('b5')).dirty).toBe(0)
+    for (const id of ['b1', 'b2', 'b3']) expect((await get(id)).dirty, id).toBe(1)
+    expect((await m.db.entries.where('tags').equals('~nobu').toArray()).map((e) => e.id).sort()).toEqual(['b1', 'b2', 'b3', 'b5'])
+    expect(await m.db.entries.where('tags').equals('$nobu').count()).toBe(0)
+  })
+
   it('renames one event: only the listed entries change, they are marked for sync, other text and images stay', async () => {
     const a = makeEntry('Packing for !"Beach wekend" #trip', Date.UTC(2031, 5, 1, 9), 'ev-a', [IMG_A])
     const b = makeEntry('At the !"beach WEKEND" now', Date.UTC(2031, 5, 3, 9), 'ev-b')

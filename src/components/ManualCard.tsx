@@ -52,7 +52,8 @@ export function ManualCard() {
               one, which fixes every entry at once. A person, place or restaurant has its own page, with its notes at the top (see below).</li>
             <li>A place you wrote with <code>~</code> that is really a restaurant: open its page and tap <strong>Make this a restaurant</strong>.
               It asks first, then rewrites <code>~name</code> as <code>$name</code> in every entry and note that mentions it. Nothing changes
-              until you tap it.</li>
+              until you tap it. A restaurant&apos;s page has <strong>Make this a place</strong> for the other way round. If the other kind already has
+              that name, the two are merged (the question says so first).</li>
           </ul>
 
           <h4>Events</h4>

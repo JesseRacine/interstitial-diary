@@ -67,9 +67,8 @@ _Reference only: not needed at the start of a session. Read [../PROGRESS.md](../
   The native apps only have Tracking after a new build in the app repo.
 
 ## Ideas backlog
-- Restaurants (done, build 16): a reverse "Make this a place" button on a restaurant's page (only place to restaurant exists;
-  it would be the same `renameTag` the other way); moving several places to restaurants at once. An older app version shows
-  `$name` as plain text.
+- Restaurants (done, build 16; the reverse "Make this a place" button, build 17): moving several places to restaurants at
+  once. An older app version shows `$name` as plain text.
 - Restyle search results to match the chat look (they still use cards).
 - Idle nudge ("you haven't logged in 90 minutes").
 - Weekly review, next: a month review; an "entries per hour" detail for a day; compare two weeks side by side; a weekly

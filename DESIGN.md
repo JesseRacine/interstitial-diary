@@ -72,9 +72,11 @@ then letters/digits/`_`, then letters/digits/`_-/`. For `@`, `~` and `$` the fir
 **Stored key** (`Entry.tags`): a plain tag is its bare name (`work`, as before kinds existed), the others keep their
 symbol (`@sarah_jones`, `~home`, `$blue_door`), so `#sarah`, `@sarah`, `~sarah` and `$sarah` are four different tags. Nothing changes in the
 Markdown files: the kind is just the symbol in the text (an older app version shows `$blue_door` as plain text; nothing is lost).
-**Place to restaurant:** a place's page has "Make this a restaurant", which asks first and then calls `renameTag('~x', '$x')`
-(the ordinary rename, which writes the new kind's symbol; notes move with it, event/tracking titles and deleted entries are
-left alone, entries are marked dirty). Only that direction exists; nothing is converted automatically. Dexie v3 recalculates `tags` for the entries already on a
+**Place to restaurant and back:** a place's page has "Make this a restaurant" and a restaurant's page has "Make this a place"
+(build 17); either asks first and then calls `renameTag('~x', '$x')` or the reverse (the ordinary rename, which writes the
+new kind's symbol; notes move with it, event/tracking titles and deleted entries are left alone, entries are marked dirty;
+if the name already exists in the other kind the question says so and the two merge). Only these two kinds, and only one
+name at a time; nothing is converted automatically. Dexie v3 recalculates `tags` for the entries already on a
 device without touching `dirty` or `updatedAt`, so the upgrade syncs nothing.
 
 **Events** are the name of something that happened (a party, a trip), written in an entry as `!"Jack's 40th birthday"`.

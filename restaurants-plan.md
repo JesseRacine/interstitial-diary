@@ -19,7 +19,7 @@ place's notes (`=~name` becomes `=$name`). If the restaurant name already exists
 without the sync marks or the deleted-entry filter it fails). Checked in the pane (empty `127.0.0.1` journal, cleaned up):
 the button, Cancel, confirm, the page, the note, the raw saved text with the event title untouched. **Not checked:** the
 merge case in the UI (the data path is the same `renameTag` as a tag merge), Dropbox, the phone and the apps. There is no
-reverse button ("Make this a place") yet; say if you want one.
+reverse button ("Make this a place") at this step; it was added later (see "Added afterwards").
 
 **Step 2 done:** restaurants are in `NOTE_KINDS` (`lib/notes.ts`): `=$blue_door Try the lamb` is a note, kept out of the
 journal like the others; the Note form accepts `$name` (suggestions keep to restaurants after a `$`, a bare known name
@@ -80,7 +80,16 @@ the wanted behavior (`US$5` and `a$b` are not tags).
 
 - Restaurants have their own Tags button and list, not mixed into Places.
 
+## Added afterwards (2026-11-27, build 17, the user: "reverse make this a place maybe, lets add")
+
+A restaurant's page has **Make this a place**. `TagsView.tsx` `moveKind(stat, 'place' | 'restaurant')` replaced
+`makeRestaurant` and `TagPage` takes one `onMoveKind` prop; the data code is the same `renameTag` the other way (test in
+`db.test.ts`: `$nobu` to `~nobu`, notes, an event title and `$nobu_two` untouched, a place of the same name already there).
+516 tests. Checked in the pane: the button, Cancel, confirm ("Make 🍽️ Nobu a place? This rewrites $nobu as ~nobu in 2
+entries, notes included."), the note moved, the round trip button, and the merge message and result when a place of the
+same name exists (both entries on the place, none lost). Not checked: phone, apps, Dropbox.
+
 ## Ideas left open (not asked for)
 
-- A reverse "Make this a place" button.
+- Moving several places to restaurants at once.
 - Nothing converts old `~places` automatically, on purpose.
