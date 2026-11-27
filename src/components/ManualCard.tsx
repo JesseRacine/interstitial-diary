@@ -21,7 +21,12 @@ export function ManualCard() {
               device&apos;s clock is set, 12-hour (5:31 PM) or 24-hour (17:31); dates are shown month first (Nov 19, 2026).</li>
             <li><kbd>Enter</kbd> saves and <kbd>Shift</kbd>+<kbd>Enter</kbd> adds a line. On a phone or tablet, Enter adds a line and the
               <strong> Save</strong> button saves.</li>
-            <li>Entries are plain text: what you type is what is shown. Only the marks below turn into chips.</li>
+            <li>The box grows as your text wraps. Entries are plain text: what you type is what is shown. Only the marks below turn into chips.</li>
+            <li><strong>On a phone</strong>, while the cursor is in the entry box (or you edit an entry), the header, search and date row
+              hide to leave room. Tap <strong>Done typing</strong> in the thin bar at the top to bring them back.</li>
+            <li><strong>Quick entry:</strong> on Android, long-press the app icon and drag <strong>New entry</strong> to the home screen, or
+              use Share &gt; <strong>Interstitial</strong> from another app (text and links land in a new entry; photos cannot be shared in yet).
+              On Windows, right-click the taskbar icon and choose <strong>New entry</strong>. Settings has the details.</li>
             <li><strong>Photos:</strong> paste, drop, or use the Photo button (up to 10 per entry). An entry needs some text.</li>
             <li><strong>Edit</strong> an entry to change its text, its photos or its <strong>When</strong> (date and time, never in the
               future; changing the day moves the entry there). <kbd>Ctrl</kbd>+<kbd>Enter</kbd> saves the edit, <kbd>Esc</kbd> cancels.</li>
@@ -134,7 +139,24 @@ export function ManualCard() {
               place or year.</li>
             <li><strong>Tags, Tracking:</strong> as described above.</li>
             <li><strong>The gear (⚙):</strong> Settings, at the right of the header: where entries are saved, backup, export,
-              appearance, deleted entries and start over.</li>
+              appearance, quick entry, deleted entries and start over.</li>
+          </ul>
+
+          <h4>Appearance</h4>
+          <ul>
+            <li>Under Settings &gt; Appearance: Light, Dark or System, <strong>Text size</strong> (makes everything larger or smaller), and
+              whether to show the time between entries. These are kept on this device only.</li>
+            <li>In the Windows and Android apps pinching and <kbd>Ctrl</kbd>+scroll do not zoom the page, so use Text size instead.</li>
+          </ul>
+
+          <h4>The Windows and Android apps</h4>
+          <ul>
+            <li>They are the same journal in their own window, and they update themselves: a new version shows when you open the app, with no reload.</li>
+            <li>The Windows app keeps its journal in a <code>journal-data</code> folder beside the program. A copy of the program in another
+              folder starts with its own empty journal. You can drop photos onto its window.</li>
+            <li>The app, the website and the installed web app each keep their own copy in the device. To share one journal between devices,
+              use Dropbox under Where entries are saved.</li>
+            <li>Settings &gt; About shows the build number.</li>
           </ul>
 
           <h4>Your data</h4>
@@ -144,6 +166,9 @@ export function ManualCard() {
             <li>The files are Markdown, one per day (<code>2026/2026-11-08.md</code>), each entry under a
               <code>## 14:30</code> heading. You can edit them by hand. Deleting an entry from a file by hand does not delete it;
               delete in the app.</li>
+            <li>With Dropbox, Settings shows what is happening (“Checking…”, “Saving…”, “Sending photo file 1 of 2”). Photos are sent one by one
+              before the entry&apos;s text, so a slow photo upload holds the text back; after a problem it retries by itself. A change made on
+              another device shows when you switch back to the app.</li>
             <li><strong>Export</strong> downloads everything as a .zip: a backup you can keep. Saving to Dropbox is not a backup on its own.</li>
             <li><strong>Start over</strong> erases the whole journal, here and in the storage; your other devices clear themselves
               the next time they sync.</li>
