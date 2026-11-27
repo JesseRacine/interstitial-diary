@@ -308,6 +308,23 @@ old `~places` are **never converted automatically**, only one at a time by a but
   `journal-data`). The user then tried it and said "it seems to work" (a general OK; which of check 39's a to h were tried
   one by one is not known, and Dropbox with a place-to-restaurant move and the Android app are not individually confirmed).
 
+## The Manual brought up to date (2026-11-27): builds 18 and 19, apps rebuilt, the user: "looks good"
+
+- **Why:** the user asked to review the built-in Manual. Reading `ManualCard.tsx` against `PROGRESS.md` found what was missing since build 9
+  (typing mode, quick entry, Text size, the native apps, Dropbox status). Added in `c3ed270` (build 18, `0828bd2`): bullets in
+  "Writing an entry" and "Your data", and two new sections, "Appearance" and "The Windows and Android apps". Facts were taken from
+  `SettingsView.tsx` (Text size, the Quick entry card) and this file's typing-mode story; nothing was invented (an idea about
+  restaurants as a merge target was left out because the Tags section already covers rename and merge).
+- **The bug report:** "the manual is kind of broken ... stuck in a really weird bottom section", then "squeezed into short strip at
+  bottom" (browser on the PC). Not reproducible as a layout fault: in the pane (desktop and 375 px wide, localhost and the live site) the
+  card has no fixed height or inner scroll and the only sticky element is the search bar. Cause: the card is last on a long
+  Settings page, so Show only grows the page below the button. Fix (build 19, `ba49b36`): `useEffect` + `scrollIntoView({ block: 'start' })`
+  when it opens, `scroll-margin-top: 5rem` on `.card.manual`. Checked in the pane (card top at 80 px, under the search bar); the user
+  confirmed on the live site. No test added: the behavior is a DOM scroll (jsdom has no layout), guarded with `?.` so tests still run.
+- **Apps:** `gh workflow run build.yml` in the app repo (run 46036993738). The Android job failed once on Maven Central
+  "429 Too Many Requests" (not our code); `gh run rerun --failed` passed. APK 10,214,079 bytes and `.exe` 6,345,728 into `builds\`; the
+  `.exe` started from a scratch copy; the APK installed with `adb install -r` on the Pixel 9a (`adb` exists on the user's PC, in scoop).
+
 ## Test-suite trim (2026-11-18): 685 → 448 tests, no app change, not pushed
 
 The user (2026-11-17): "I don't think we need like 700 unit tests in a small app like this". Reviewed first: 685
