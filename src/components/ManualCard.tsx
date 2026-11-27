@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { searchHour, uses12HourClock } from '../lib/clock'
 import { searchSyntax, syntaxExamples } from '../search/syntax'
 
@@ -6,9 +6,15 @@ import { searchSyntax, syntaxExamples } from '../search/syntax'
 export function ManualCard() {
   const [open, setOpen] = useState(false)
   const twelve = uses12HourClock() // times and the search examples are written for the device's clock
+  const card = useRef<HTMLDivElement>(null)
+
+  // The card sits far down Settings, so opening it only grows the page below the button: bring its top into view.
+  useEffect(() => {
+    if (open) card.current?.scrollIntoView?.({ block: 'start' })
+  }, [open])
 
   return (
-    <div className="card manual">
+    <div className="card manual" ref={card}>
       <h3>Manual</h3>
       <p className="muted">How to write entries, what the tags and other marks mean, and how to search.</p>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide the manual' : 'Show the manual'}</button>

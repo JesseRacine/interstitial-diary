@@ -489,6 +489,7 @@ button.track-title:hover:not(:disabled) { text-decoration: underline; border-col
 .notice { margin: 0 0 0.75rem; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem; }
 .notice.warn { border-left: 3px solid var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
 .notice .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.4rem; }
+.card.manual { scroll-margin-top: 5rem; } /* clear the sticky search bar when scrolled into view */
 .manual-body { margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.93rem; }
 .manual-body h4 { margin: 1rem 0 0.3rem; font-size: 1rem; }
 .manual-body ul { margin: 0.3rem 0 0.4rem; padding-left: 1.2rem; }
